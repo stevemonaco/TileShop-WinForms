@@ -53,5 +53,10 @@ namespace TileShop
         {
             fileOffsetLabel.Text = offset.ToString("X");
         }
+
+        public void updateSelectionLabel(string text)
+        {
+            selectionLabel.Text = text;
+        }
     }
 }

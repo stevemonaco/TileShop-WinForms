@@ -62,6 +62,7 @@
     <Compile Include="GraphicsMdiChild.Designer.cs">
       <DependentUpon>GraphicsMdiChild.cs</DependentUpon>
     </Compile>
+    <Compile Include="Palette.cs" />
     <Compile Include="TileCache.cs" />
     <Compile Include="TileShopForm.cs">
       <SubType>Form</SubType>

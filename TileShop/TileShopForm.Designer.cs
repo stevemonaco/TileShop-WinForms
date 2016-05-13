@@ -54,6 +54,7 @@
             this.fileToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
+            this.menuStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
             this.menuStrip.Size = new System.Drawing.Size(963, 24);
             this.menuStrip.TabIndex = 1;
             this.menuStrip.Text = "menuStrip1";
@@ -142,6 +143,7 @@
             this.mainToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.mainToolStrip.Location = new System.Drawing.Point(0, 24);
             this.mainToolStrip.Name = "mainToolStrip";
+            this.mainToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
             this.mainToolStrip.Size = new System.Drawing.Size(963, 25);
             this.mainToolStrip.TabIndex = 2;
             this.mainToolStrip.Text = "toolStrip1";
@@ -167,7 +169,7 @@
             // 
             this.fileOffsetLabel.Name = "fileOffsetLabel";
             this.fileOffsetLabel.Overflow = System.Windows.Forms.ToolStripItemOverflow.Always;
-            this.fileOffsetLabel.Size = new System.Drawing.Size(726, 17);
+            this.fileOffsetLabel.Size = new System.Drawing.Size(890, 17);
             this.fileOffsetLabel.Spring = true;
             this.fileOffsetLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 

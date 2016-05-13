@@ -13,33 +13,41 @@ namespace TileShop
 {
     public class GraphicsCodec
     {
-        public static void Decode(Bitmap bmp, GraphicsFormat fmt, int Offset, BinaryReader br, Color[] pal)
+        public static void Decode(Bitmap bmp, GraphicsFormat fmt, int Offset, BinaryReader br, Palette pal)
         {
-            if (fmt.ImageType == "tiled")
-                TiledDecode(bmp, fmt, Offset, br, pal);
+            if (fmt.ColorType == "indexed")
+                IndexedDecode(bmp, fmt, Offset, br, pal);
         }
 
-        public unsafe static void TiledDecode(Bitmap bmp, GraphicsFormat fmt, int Offset, BinaryReader br, Color[] pal)
+        public unsafe static void IndexedDecode(Bitmap bmp, GraphicsFormat fmt, int Offset, BinaryReader br, Palette pal)
         {
             byte[] data = br.ReadBytes(fmt.Size());
             BitStream bs = new BitStream(data, data.Length * 8);
 
             int plane = 0;
+            int pos = 0;
+
             foreach (ImageProperty tp in fmt.ImagePropertyList)
             {
+                pos = 0;
                 if (tp.RowInterlace)
                 {
                     for (int y = 0; y < fmt.Height; y++)
-                        for(int curPlane = plane; curPlane < plane + tp.ColorDepth; curPlane++)
-                            for (int x = 0; x < fmt.Width; x++)
-                                fmt.TileData[curPlane][x + y * fmt.Height] = (byte)bs.ReadBit();
+                    {
+                        for (int curPlane = plane; curPlane < plane + tp.ColorDepth; curPlane++)
+                        {
+                            pos = y * fmt.Height;
+                            for (int x = 0; x < fmt.Width; x++, pos++)
+                                fmt.TileData[curPlane][pos] = (byte)bs.ReadBit();
+                        }
+                    }
                 }
                 else
                 {
                     for (int y = 0; y < fmt.Height; y++)
-                        for (int x = 0; x < fmt.Width; x++)
+                        for (int x = 0; x < fmt.Width; x++, pos++)
                             for (int curPlane = plane; curPlane < plane + tp.ColorDepth; curPlane++)
-                                fmt.TileData[curPlane][x + y * fmt.Height] = (byte)bs.ReadBit();
+                                fmt.TileData[curPlane][pos] = (byte)bs.ReadBit();
                 }
 
                 plane += tp.ColorDepth;
@@ -47,32 +55,42 @@ namespace TileShop
 
             // Merge into composite tile
             byte idx = 0;
+
+            for(pos = 0; pos < fmt.MergedData.Length; pos++)
+            {
+                idx = 0;
+                for (int i = 0; i < fmt.ColorDepth; i++)
+                    idx |= (byte)(fmt.TileData[i][pos] << i);
+                fmt.MergedData[pos] = idx;
+            }
+
+            DrawBitmap(bmp, fmt, pal);
+        }
+
+        private static unsafe void DrawBitmap(Bitmap bmp, GraphicsFormat fmt, Palette pal)
+        {
             Rectangle lockRect = new Rectangle(0, 0, bmp.Width, bmp.Height);
             BitmapData bd = bmp.LockBits(lockRect, System.Drawing.Imaging.ImageLockMode.WriteOnly, bmp.PixelFormat);
 
-            for (int y = 0; y < fmt.Height; y++)
-            {
-                for (int x = 0; x < fmt.Height; x++)
-                {
-                    idx = 0;
-                    for (int i = 0; i < fmt.ColorDepth; i++)
-                        idx |= (byte)(fmt.TileData[i][x + y * fmt.Height] << i);
-                    fmt.MergedData[x + y * fmt.Height] = idx;
-                }
-            }
-
             // Draw bitmap
-            int* dest = (int*)(void*)bd.Scan0;
+            uint* dest = (uint*)bd.Scan0;
             int StrideWidth = bd.Stride - (bmp.Width * 4);
 
-            for (int y = 0; y < fmt.Height; y++)
+            Random rand = new Random(Environment.TickCount);
+
+            fixed(byte* fixedData = fmt.MergedData) // Fix fmt.MergedData in memory so pointers can be used in unsafe code without copying via marshal
             {
-                for (int x = 0; x < fmt.Width; x++)
+                byte* src = fixedData;
+                for (int y = 0; y < fmt.Height; y++)
                 {
-                    *dest = pal[fmt.MergedData[x + y * fmt.Height]].ToArgb();
-                    dest++;
+                    for (int x = 0; x < fmt.Width; x++)
+                    {
+                        *dest = pal[*src];
+                        dest++;
+                        src++;
+                    }
+                    dest += StrideWidth;
                 }
-                dest += StrideWidth;
             }
 
             bmp.UnlockBits(bd);

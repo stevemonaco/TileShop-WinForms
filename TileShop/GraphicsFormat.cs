@@ -63,6 +63,7 @@ namespace TileShop
             MergedData = new byte[Width * Height];
         }
 
+        // Load a codec via XML format
         public bool Load(string Filename)
         {
             ImagePropertyList.Clear();

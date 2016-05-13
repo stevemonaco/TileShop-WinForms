@@ -18,27 +18,38 @@ namespace TileShop
         int prevFormatIndex = -1;
         string filename;
 
-        int zoom = 2;
+        int zoom = 1;
+        bool showGridlines = true;
         long FileOffset = 0;
         BinaryReader br = null;
         byte[] FileData = null;
         BinaryReader mr = null;
-        TileCache cache = new TileCache();
-        Color[] pal = new Color[] { Color.Black, Color.Blue, Color.Red, Color.Green };
 
         uint TilesX = 32;
-        uint TilesY = 32;
+        uint TilesY = 16;
+
+        // Selection
+        bool inSelection = false;
+        bool hasSelection = false;
+        Rectangle selectionRect;
+        Point initialSelectionPoint;
 
         GraphicsFormat fmt = new GraphicsFormat();
-        OldGraphicsCodec codec = new OldGraphicsCodec();
+        //Color[] pal = new Color[] { Color.Black, Color.Blue, Color.Red, Color.Green };
+        Palette pal = new Palette();
+        TileCache cache = new TileCache();
 
         public GraphicsMdiChild(TileShopForm parent)
         {
             parentInstance = parent;
             InitializeComponent();
 
+            SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
+
             //typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.NonPublic, null,
             //CanvasPanel, new object[] { true });
+
+            pal.LoadPalette("C:\\Projects\\TileShop\\pal\\default.pal");
 
             this.GotFocus += GraphicsMdiChild_GotFocus;
         }
@@ -76,54 +87,11 @@ namespace TileShop
                     break;
             }
 
+            zoomSelectBox.SelectedIndex = 0;
+
             Invalidate();
             return true;
         }
-
-        /*private void CanvasPanel_Paint(object sender, PaintEventArgs e)
-        {
-            if (br == null)
-                return;
-
-            e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-            e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.None;
-            e.Graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
-
-            mr.BaseStream.Seek(FileOffset, SeekOrigin.Begin);
-            uint TileOffset = (uint)FileOffset;
-
-            Rectangle src = new Rectangle(0, 0, (int)fmt.PixelsX, (int)fmt.PixelsY);
-            Rectangle dest = new Rectangle(0, 0, 0, 0);
-
-            int xzoomsize = (int)fmt.PixelsX * zoom;
-            int yzoomsize = (int)fmt.PixelsY * zoom;
-
-            // Paint data
-            for (int y = 0; y < TilesY; y++)
-            {
-                for (int x = 0; x < TilesX; x++)
-                {
-                    Bitmap bmp = cache.GetTile(TileOffset);
-                    if (bmp == null) // Decode tile
-                    {
-                        bmp = new Bitmap((int)fmt.PixelsX, (int)fmt.PixelsY, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                        mr.BaseStream.Seek(TileOffset, SeekOrigin.Begin);
-                        codec.Decode(bmp, fmt, -1, mr, pal);
-                        cache.AddTile(bmp, TileOffset);
-                    }
-
-                    int posx = x * (int)fmt.PixelsX * zoom;
-                    int posy = y * (int)fmt.PixelsY * zoom;
-                    dest = new Rectangle(posx, posy, xzoomsize, yzoomsize);
-
-                    //e.Graphics.DrawImage(bmp, x * PixelsX, y * PixelsY);
-                    e.Graphics.DrawImage(bmp, dest, src, GraphicsUnit.Pixel);
-
-                    TileOffset = TileOffset + (uint)fmt.Bytes();
-                }
-            }
-        }*/
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
@@ -195,12 +163,14 @@ namespace TileShop
                 FileOffset = 0;
                 parentInstance.updateOffsetLabel(FileOffset);
                 Invalidate();
+                return true;
             }
             else if(keyData == Keys.End)
             {
                 FileOffset = br.BaseStream.Length - (TilesX * TilesY * fmt.Size());
                 parentInstance.updateOffsetLabel(FileOffset);
                 Invalidate();
+                return true;
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
@@ -217,11 +187,14 @@ namespace TileShop
                 case 0: // 2bpp NES
                     fmt.Load("C:\\Projects\\TileShop\\codecs\\NES2bpp.xml");
                     break;
-                case 1: // SNES
+                case 1: // SNES 2bpp
                     fmt.Load("C:\\Projects\\TileShop\\codecs\\SNES2bpp.xml");
                     break;
-                case 2:
+                case 2: // NES 1bpp
                     fmt.Load("C:\\Projects\\TileShop\\codecs\\NES1bpp.xml");
+                    break;
+                case 3: // SNES 4bpp
+                    fmt.Load("C:\\Projects\\TileShop\\codecs\\SNES4bpp.xml");
                     break;
             }
 
@@ -238,43 +211,110 @@ namespace TileShop
 
             e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-            e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.None;
+            e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
             e.Graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
 
             mr.BaseStream.Seek(FileOffset, SeekOrigin.Begin);
             uint TileOffset = (uint)FileOffset;
 
-            Rectangle src = new Rectangle(0, 0, (int)fmt.Width, (int)fmt.Height);
-            Rectangle dest = new Rectangle(0, 0, 0, 0);
-
             int xzoomsize = (int)fmt.Width * zoom;
             int yzoomsize = (int)fmt.Height * zoom;
+
+            Rectangle src = new Rectangle(0, 0, (int)fmt.Width, (int)fmt.Height);
+            Rectangle dest = new Rectangle(0, toolStrip1.Height, xzoomsize, yzoomsize);
 
             // Paint data
             for (int y = 0; y < TilesY; y++)
             {
+                dest.X = 0;
+
                 for (int x = 0; x < TilesX; x++)
                 {
                     //Bitmap bmp = cache.GetTile(TileOffset);
                     Bitmap bmp = null;
                     if (bmp == null) // Decode tile
                     {
-                        bmp = new Bitmap((int)fmt.Width, (int)fmt.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                        bmp = new Bitmap((int)fmt.Width, (int)fmt.Height, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
                         mr.BaseStream.Seek(TileOffset, SeekOrigin.Begin);
                         GraphicsCodec.Decode(bmp, fmt, -1, mr, pal);
                         //cache.AddTile(bmp, TileOffset);
                     }
 
-                    int posx = x * (int)fmt.Width * zoom;
-                    int posy = y * (int)fmt.Height * zoom + toolStrip1.Height;
-                    dest = new Rectangle(posx, posy, xzoomsize, yzoomsize);
-
-                    //e.Graphics.DrawImage(bmp, x * PixelsX, y * PixelsY);
                     e.Graphics.DrawImage(bmp, dest, src, GraphicsUnit.Pixel);
+                    //e.Graphics.DrawImage(bmp, dest);
 
                     TileOffset = TileOffset + (uint)fmt.Size();
+                    dest.X += xzoomsize;
+                }
+
+                dest.Y += yzoomsize;
+            }
+
+            // Paint gridlines
+            if(showGridlines)
+            {
+                for(int y = 0; y < TilesY; y++) // Draw horizontal lines
+                    e.Graphics.DrawLine(Pens.White, 0, y * yzoomsize + toolStrip1.Height, TilesX * xzoomsize, y * yzoomsize + toolStrip1.Height);
+
+                for(int x = 0; x < TilesX; x++) // Draw vertical lines
+                    e.Graphics.DrawLine(Pens.White, x * xzoomsize, 0, x * xzoomsize, TilesY * yzoomsize + toolStrip1.Height);
+            }
+
+            // Paint selection
+            if(hasSelection)
+            {
+
+            }
+        }
+
+        private void zoomSelectBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            switch(zoomSelectBox.SelectedIndex)
+            {
+                case 0:
+                    zoom = 1;
+                    break;
+                case 1:
+                    zoom = 2;
+                    break;
+                case 2:
+                    zoom = 3;
+                    break;
+                case 3:
+                    zoom = 4;
+                    break;
+            }
+
+            Invalidate();
+        }
+
+        private void GraphicsMdiChild_MouseClick(object sender, MouseEventArgs e)
+        {
+            if(e.Button == MouseButtons.Left)
+            {
+                if (e.X < TilesX * fmt.Width * zoom && e.Y < TilesY * fmt.Height * zoom)
+                {
+                    hasSelection = true;
+                    string text = String.Format("Selected Pixel {0} {1} Tile {2} {3}", e.X, e.Y, Math.Floor(e.X / (double)fmt.Width / zoom), Math.Floor((e.Y - toolStrip1.Height) / (double)fmt.Height / zoom));
+                    parentInstance.updateSelectionLabel(text);
                 }
             }
+        }
+
+        private void GraphicsMdiChild_MouseMove(object sender, MouseEventArgs e)
+        {
+
+        }
+
+        private void showGridlinesButton_Click(object sender, EventArgs e)
+        {
+            showGridlines ^= true;
+            if (showGridlines)
+                showGridlinesButton.Checked = true;
+            else
+                showGridlinesButton.Checked = false;
+            Invalidate();
         }
     }
 }
