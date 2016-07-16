@@ -13,16 +13,16 @@ namespace TileShop
 {
     public class GraphicsCodec
     {
-        public static void Decode(Bitmap bmp, GraphicsFormat fmt, int Offset, BinaryReader br, Palette pal)
+        public static void Decode(Bitmap bmp, GraphicsFormat fmt, int OffsetX, int OffsetY, BinaryReader br, Palette pal)
         {
             if (fmt.ColorType == "indexed")
-                IndexedDecode(bmp, fmt, Offset, br, pal);
+                IndexedDecode(bmp, fmt, OffsetX, OffsetY, br, pal);
         }
 
-        public unsafe static void IndexedDecode(Bitmap bmp, GraphicsFormat fmt, int Offset, BinaryReader br, Palette pal)
+        public unsafe static void IndexedDecode(Bitmap bmp, GraphicsFormat fmt, int OffsetX, int OffsetY, BinaryReader br, Palette pal)
         {
             byte[] data = br.ReadBytes(fmt.Size());
-            BitStream bs = new BitStream(data, data.Length * 8);
+            BitStream bs = new BitStream(data, data.Length * 8); // TODO: Add Constructor for BinaryReader, length (optimize copy)
 
             int plane = 0;
             int pos = 0;
@@ -64,31 +64,33 @@ namespace TileShop
                 fmt.MergedData[pos] = idx;
             }
 
-            DrawBitmap(bmp, fmt, pal);
+            DrawBitmap(bmp, fmt, OffsetX, OffsetY, pal);
         }
 
-        private static unsafe void DrawBitmap(Bitmap bmp, GraphicsFormat fmt, Palette pal)
+        private static unsafe void DrawBitmap(Bitmap bmp, GraphicsFormat fmt, int OffsetX, int OffsetY, Palette pal)
         {
             Rectangle lockRect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-            BitmapData bd = bmp.LockBits(lockRect, System.Drawing.Imaging.ImageLockMode.WriteOnly, bmp.PixelFormat);
+            BitmapData bd = bmp.LockBits(lockRect, ImageLockMode.WriteOnly, bmp.PixelFormat);
 
             // Draw bitmap
             uint* dest = (uint*)bd.Scan0;
             int StrideWidth = bd.Stride - (bmp.Width * 4);
 
-            Random rand = new Random(Environment.TickCount);
+            dest += (bd.Stride / 4) * OffsetY;
 
             fixed(byte* fixedData = fmt.MergedData) // Fix fmt.MergedData in memory so pointers can be used in unsafe code without copying via marshal
             {
                 byte* src = fixedData;
                 for (int y = 0; y < fmt.Height; y++)
                 {
+                    dest += OffsetX;
                     for (int x = 0; x < fmt.Width; x++)
                     {
                         *dest = pal[*src];
                         dest++;
                         src++;
                     }
+                    dest += (bmp.Width - OffsetX - fmt.Width);
                     dest += StrideWidth;
                 }
             }

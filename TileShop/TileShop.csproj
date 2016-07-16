@@ -53,16 +53,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BitStream.cs" />
+    <Compile Include="FileManager.cs" />
     <Compile Include="GraphicsCodec.cs" />
     <Compile Include="GraphicsFormat.cs" />
     <Compile Include="OldGraphicsCodec.cs" />
-    <Compile Include="GraphicsMdiChild.cs">
+    <Compile Include="GraphicsViewerMdiChild.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GraphicsMdiChild.Designer.cs">
-      <DependentUpon>GraphicsMdiChild.cs</DependentUpon>
+    <Compile Include="GraphicsViewerMdiChild.Designer.cs">
+      <DependentUpon>GraphicsViewerMdiChild.cs</DependentUpon>
     </Compile>
     <Compile Include="Palette.cs" />
+    <Compile Include="ArrangerList.cs" />
+    <Compile Include="RenderManager.cs" />
+    <Compile Include="TileArrangerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TileArrangerForm.Designer.cs">
+      <DependentUpon>TileArrangerForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="TileCache.cs" />
     <Compile Include="TileShopForm.cs">
       <SubType>Form</SubType>
@@ -72,8 +81,8 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="GraphicsMdiChild.resx">
-      <DependentUpon>GraphicsMdiChild.cs</DependentUpon>
+    <EmbeddedResource Include="GraphicsViewerMdiChild.resx">
+      <DependentUpon>GraphicsViewerMdiChild.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -100,9 +109,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="license.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

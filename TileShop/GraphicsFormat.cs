@@ -31,9 +31,9 @@ namespace TileShop
         public bool FixedSize;
         public int Width;
         public int Height;
-        public string ImageType; // "Tiled" or "Linear"
+        public string ImageType; // "tiled" or "linear"
         public int ColorDepth;
-        public string ColorType; // "Indexed" or "Direct"
+        public string ColorType; // "indexed" or "direct"
         public int Stride;
 
         public int Size() { return (Width + Stride) * Height * ColorDepth / 8; }

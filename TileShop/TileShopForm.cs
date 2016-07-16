@@ -1,25 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 
 namespace TileShop
 {
     public partial class TileShopForm : Form
     {
+        private string CodecDirectoryPath = "D:\\Projects\\TileShop\\codecs\\";
+        private string PaletteDirectoryPath = "D:\\Projects\\TileShop\\pal\\";
         public TileShopForm()
         {
             InitializeComponent();
+            LoadCodecs(CodecDirectoryPath);
+            LoadPalettes(PaletteDirectoryPath);
         }
 
         private void newGraphicsProjectMenu_Click(object sender, EventArgs e)
         {
-            GraphicsMdiChild gmc = new GraphicsMdiChild(this);
+            GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this);
             gmc.MdiParent = this;
             gmc.Show();
         }
@@ -36,7 +34,7 @@ namespace TileShop
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                GraphicsMdiChild gmc = new GraphicsMdiChild(this);
+                GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this);
 
                 if(gmc.OpenFile(ofd.FileName) == false)
                 {
@@ -46,6 +44,10 @@ namespace TileShop
                 }
                 gmc.MdiParent = this;
                 gmc.Show();
+
+                //GraphicsEditorMdiChild gec = new GraphicsEditorMdiChild();
+                //gec.MdiParent = this;
+                //gec.Show();
             }
         }
 
@@ -57,6 +59,45 @@ namespace TileShop
         public void updateSelectionLabel(string text)
         {
             selectionLabel.Text = text;
+        }
+
+        private void LoadCodecs(string path)
+        {
+            string[] filenames = Directory.GetFiles(path);
+
+            foreach(string s in filenames)
+            {
+                if(Path.GetExtension(s) == ".xml")
+                    FileManager.Instance.LoadFormat(s);
+            }
+        }
+
+        private void LoadPalettes(string path)
+        {
+            string[] filenames = Directory.GetFiles(path);
+
+            foreach (string s in filenames)
+            {
+                if (Path.GetExtension(s) == ".pal")
+                    FileManager.Instance.LoadPalette(s);
+            }
+        }
+
+        private void debugToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            WindowState = FormWindowState.Maximized;
+            GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this);
+
+            if (gmc.OpenFile("D:\\Projects\\ff2.sfc") == false)
+            {
+                gmc.Close();
+                MessageBox.Show("Could not open file " + "D:\\Projects\\ff2.sfc");
+                return;
+            }
+            gmc.MdiParent = this;
+            gmc.WindowState = FormWindowState.Maximized;
+            gmc.zoom = 6;
+            gmc.Show();
         }
     }
 }

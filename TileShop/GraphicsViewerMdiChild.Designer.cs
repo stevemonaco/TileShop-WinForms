@@ -1,6 +1,6 @@
 ﻿namespace TileShop
 {
-    partial class GraphicsMdiChild
+    partial class GraphicsViewerMdiChild
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GraphicsMdiChild));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GraphicsViewerMdiChild));
             this.vertScroll = new System.Windows.Forms.VScrollBar();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.formatSelectBox = new System.Windows.Forms.ToolStripComboBox();
@@ -86,7 +86,11 @@
             "Zoom 100%",
             "Zoom 200%",
             "Zoom 300%",
-            "Zoom 400%"});
+            "Zoom 400%",
+            "Zoom 500%",
+            "Zoom 600%",
+            "Zoom 700%",
+            "Zoom 800%"});
             this.zoomSelectBox.Name = "zoomSelectBox";
             this.zoomSelectBox.Size = new System.Drawing.Size(121, 25);
             this.zoomSelectBox.SelectedIndexChanged += new System.EventHandler(this.zoomSelectBox_SelectedIndexChanged);
@@ -104,21 +108,22 @@
             this.showGridlinesButton.ToolTipText = "Show Gridlines";
             this.showGridlinesButton.Click += new System.EventHandler(this.showGridlinesButton_Click);
             // 
-            // GraphicsMdiChild
+            // GraphicsViewerMdiChild
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.ControlDark;
+            this.BackColor = System.Drawing.SystemColors.Control;
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.ClientSize = new System.Drawing.Size(564, 457);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.vertScroll);
             this.DoubleBuffered = true;
-            this.Name = "GraphicsMdiChild";
+            this.Name = "GraphicsViewerMdiChild";
             this.Text = "GraphicsMdiChild";
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.GraphicsMdiChild_Paint);
-            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.GraphicsMdiChild_MouseClick);
+            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.GraphicsViewerMdiChild_MouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.GraphicsMdiChild_MouseMove);
+            this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.GraphicsViewerMdiChild_MouseUp);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             this.ResumeLayout(false);
