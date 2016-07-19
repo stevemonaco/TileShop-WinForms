@@ -12,7 +12,6 @@ namespace TileShop
 {
     public class RenderManager
     {
-        //private int Zoom { get; set; }
         public Bitmap bmp { get; set; }
         public ArrangerList list { get; set; }
 
@@ -71,12 +70,25 @@ namespace TileShop
             list = new ArrangerList(ElementsX, ElementsY, Filename, format);
             bmp = new Bitmap(ElementsX * format.Width, ElementsY * format.Height, PixelFormat.Format32bppRgb);
             g = Graphics.FromImage(bmp);
+
+            NeedsRedraw = true;
+
             return true;
         }
 
-        public bool ResizeArranger(int ElementsX, int ElementsY)
+        public long ResizeArranger(int ElementsX, int ElementsY)
         {
-            return false;
+            long offset = GetInitialSequentialFileOffset();
+            GraphicsFormat fmt = FileManager.Instance.GetFormat(list.ElementList[0, 0].Format);
+            list = new ArrangerList(ElementsX, ElementsY, list.ElementList[0, 0].FileName, fmt);
+            offset = list.Move(offset);
+
+            bmp = new Bitmap(ElementsX * fmt.Width, ElementsY * fmt.Height, PixelFormat.Format32bppRgb);
+            g = Graphics.FromImage(bmp);
+
+            NeedsRedraw = true;
+
+            return offset;
         }
 
         public long MoveOffset(ArrangerMoveType MoveType)
@@ -100,8 +112,12 @@ namespace TileShop
             long offset = list.ElementList[0, 0].FileOffset;
             GraphicsFormat fmt = FileManager.Instance.GetFormat(Format);
             int elemsize = fmt.Width * fmt.Height * fmt.ColorDepth / 8;
+            list.ArrangerByteSize = list.ListX * list.ListY * elemsize;
 
-            foreach(ArrangerElement el in list.ElementList)
+            if (list.FileSize < offset + list.ArrangerByteSize)
+                offset = list.FileSize - list.ArrangerByteSize;
+
+            foreach (ArrangerElement el in list.ElementList)
             {
                 el.FileOffset = offset;
                 offset += elemsize;
@@ -111,6 +127,14 @@ namespace TileShop
             NeedsRedraw = true;
 
             return true;
+        }
+
+        public long GetInitialSequentialFileOffset()
+        {
+            if (list != null)
+                return list.ElementList[0, 0].FileOffset;
+            else
+                return 0;
         }
 
         bool SetPixel(int x, int y, Color color)

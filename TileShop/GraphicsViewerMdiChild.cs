@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Reflection;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace TileShop
 {
-    public partial class GraphicsViewerMdiChild : Form
+    public partial class GraphicsViewerMdiChild : DockContent
     {
         TileShopForm parentInstance = null;
         int prevFormatIndex = -1;
@@ -22,8 +23,7 @@ namespace TileShop
         bool showGridlines = true;
         long FileOffset = 0;
 
-        int TilesX = 16;
-        int TilesY = 16;
+        Size DisplayElements = new Size(8, 16);
         RenderManager rm = new RenderManager();
 
         // Selection
@@ -93,7 +93,7 @@ namespace TileShop
 
             zoomSelectBox.SelectedIndex = 0;
 
-            rm.NewArranger(TilesX, TilesY, Path.GetFileNameWithoutExtension(InputFilename), fmt);
+            rm.NewArranger(DisplayElements.Width, DisplayElements.Height, Path.GetFileNameWithoutExtension(InputFilename), fmt);
 
             Invalidate();
             return true;
@@ -104,64 +104,64 @@ namespace TileShop
             if (keyData == Keys.Add || keyData == Keys.Oemplus)
             {
                 FileOffset = rm.MoveOffset(ArrangerMoveType.ByteDown);
-
                 parentInstance.updateOffsetLabel(FileOffset);
+                CancelSelection();
                 Invalidate();
                 return true;
             }
             if (keyData == Keys.Subtract || keyData == Keys.OemMinus)
             {
                 FileOffset = rm.MoveOffset(ArrangerMoveType.ByteUp);
-
                 parentInstance.updateOffsetLabel(FileOffset);
+                CancelSelection();
                 Invalidate();
                 return true;
             }
             if (keyData == Keys.Down)
             {
                 FileOffset = rm.MoveOffset(ArrangerMoveType.RowDown);
-
                 parentInstance.updateOffsetLabel(FileOffset);
+                CancelSelection();
                 Invalidate();
                 return true;
             }
             else if (keyData == Keys.Up)
             {
                 FileOffset = rm.MoveOffset(ArrangerMoveType.RowUp);
-
                 parentInstance.updateOffsetLabel(FileOffset);
+                CancelSelection();
                 Invalidate();
                 return true;
             }
             else if (keyData == Keys.Right)
             {
                 FileOffset = rm.MoveOffset(ArrangerMoveType.ColRight);
-
                 parentInstance.updateOffsetLabel(FileOffset);
+                CancelSelection();
                 Invalidate();
                 return true;
             }
             else if (keyData == Keys.Left)
             {
                 FileOffset = rm.MoveOffset(ArrangerMoveType.ColLeft);
-
                 parentInstance.updateOffsetLabel(FileOffset);
+                CancelSelection();
                 Invalidate();
                 return true;
             }
             else if (keyData == Keys.PageDown)
             {
                 FileOffset = rm.MoveOffset(ArrangerMoveType.PageDown);
-
                 parentInstance.updateOffsetLabel(FileOffset);
+                CancelSelection();
                 Invalidate();
                 return true;
             }
             else if (keyData == Keys.PageUp)
             {
                 FileOffset = rm.MoveOffset(ArrangerMoveType.PageUp);
-
                 parentInstance.updateOffsetLabel(FileOffset);
+                CancelSelection();
                 Invalidate();
                 return true;
             }
@@ -169,6 +169,7 @@ namespace TileShop
             {
                 FileOffset = rm.MoveOffset(ArrangerMoveType.Home);
                 parentInstance.updateOffsetLabel(FileOffset);
+                CancelSelection();
                 Invalidate();
                 return true;
             }
@@ -176,19 +177,51 @@ namespace TileShop
             {
                 FileOffset = rm.MoveOffset(ArrangerMoveType.End);
                 parentInstance.updateOffsetLabel(FileOffset);
+                CancelSelection();
                 Invalidate();
                 return true;
             }
             else if (keyData == Keys.Escape) // Cancel selection
             {
-                beginSelectionPoint = Point.Empty;
-                endSelectionPoint = Point.Empty;
-                ViewSelectionRect = new Rectangle(0, 0, 0, 0);
-                hasSelection = false;
-                inSelection = false;
+                CancelSelection();
                 Invalidate();
                 return true;
             }
+            else if (keyData == Keys.OemPeriod)
+            {
+                DisplayElements.Width++;
+                FileOffset = rm.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
+                parentInstance.updateOffsetLabel(FileOffset);
+                Invalidate();
+            }
+            else if(keyData == Keys.Oemcomma)
+            {
+                DisplayElements.Width--;
+                if (DisplayElements.Width < 1)
+                    DisplayElements.Width = 1;
+
+                FileOffset = rm.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
+                parentInstance.updateOffsetLabel(FileOffset);
+                Invalidate();
+            }
+            else if(keyData == Keys.L)
+            {
+                DisplayElements.Height--;
+                if (DisplayElements.Height < 1)
+                    DisplayElements.Height = 1;
+
+                FileOffset = rm.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
+                parentInstance.updateOffsetLabel(FileOffset);
+                Invalidate();
+            }
+            else if(keyData == Keys.OemSemicolon)
+            {
+                DisplayElements.Height++;
+                FileOffset = rm.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
+                parentInstance.updateOffsetLabel(FileOffset);
+                Invalidate();
+            }
+
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
@@ -217,8 +250,14 @@ namespace TileShop
                     fmt = FileManager.Instance.GetFormat("SNES 4bpp");
                     rm.SetGraphicsFormat("SNES 4bpp");
                     break;
+                case 4: // SNES 3bpp
+                    fmt = FileManager.Instance.GetFormat("SNES 3bpp");
+                    rm.SetGraphicsFormat("SNES 3bpp");
+                    break;
             }
 
+            FileOffset = rm.GetInitialSequentialFileOffset();
+            parentInstance.updateOffsetLabel(FileOffset);
             prevFormatIndex = index;
             cache.Clear();
             Invalidate();
@@ -248,11 +287,14 @@ namespace TileShop
 
         private void DrawGridlines(Graphics g)
         {
-            for (int y = 0; y < TilesY; y++) // Draw horizontal lines
-                g.DrawLine(Pens.White, 0, y * fmt.Height * zoom + toolStrip1.Height, TilesX * fmt.Width * zoom, y * fmt.Height * zoom + toolStrip1.Height);
+            if (showGridlines)
+            {
+                for (int y = 0; y < DisplayElements.Height; y++) // Draw horizontal lines
+                    g.DrawLine(Pens.White, 0, y * fmt.Height * zoom + toolStrip1.Height, DisplayElements.Width * fmt.Width * zoom, y * fmt.Height * zoom + toolStrip1.Height);
 
-            for (int x = 0; x < TilesX; x++) // Draw vertical lines
-                g.DrawLine(Pens.White, x * fmt.Width * zoom, 0, x * fmt.Width * zoom, TilesY * fmt.Height * zoom + toolStrip1.Height);
+                for (int x = 0; x < DisplayElements.Width; x++) // Draw vertical lines
+                    g.DrawLine(Pens.White, x * fmt.Width * zoom, 0, x * fmt.Width * zoom, DisplayElements.Height * fmt.Height * zoom + toolStrip1.Height);
+            }
         }
 
         private void DrawSelection(Graphics g)
@@ -263,6 +305,15 @@ namespace TileShop
                 g.DrawRectangle(p, ViewSelectionRect);
                 g.FillRectangle(b, ViewSelectionRect);
             }
+        }
+
+        private void CancelSelection()
+        {
+            beginSelectionPoint = Point.Empty;
+            endSelectionPoint = Point.Empty;
+            ViewSelectionRect = new Rectangle(0, 0, 0, 0);
+            hasSelection = false;
+            inSelection = false;
         }
 
         private void zoomSelectBox_SelectedIndexChanged(object sender, EventArgs e)

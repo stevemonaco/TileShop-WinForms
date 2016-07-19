@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.IO;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace TileShop
 {
@@ -8,18 +9,21 @@ namespace TileShop
     {
         private string CodecDirectoryPath = "D:\\Projects\\TileShop\\codecs\\";
         private string PaletteDirectoryPath = "D:\\Projects\\TileShop\\pal\\";
+
+        private GameDescriptorControl gdc = new GameDescriptorControl();
+
         public TileShopForm()
         {
             InitializeComponent();
+            gdc.Show(dockPanel, DockState.DockLeft);
             LoadCodecs(CodecDirectoryPath);
             LoadPalettes(PaletteDirectoryPath);
         }
 
         private void newGraphicsProjectMenu_Click(object sender, EventArgs e)
         {
-            GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this);
-            gmc.MdiParent = this;
-            gmc.Show();
+            //GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this);
+            //gmc.Show(dockPanel, DockState.Document);
         }
 
         private void openFileMenu_Click(object sender, EventArgs e)
@@ -42,12 +46,9 @@ namespace TileShop
                     MessageBox.Show("Could not open file " + ofd.FileName);
                     return;
                 }
-                gmc.MdiParent = this;
-                gmc.Show();
 
-                //GraphicsEditorMdiChild gec = new GraphicsEditorMdiChild();
-                //gec.MdiParent = this;
-                //gec.Show();
+                gdc.AddFile(ofd.FileName);
+                gmc.Show(dockPanel, DockState.Document);
             }
         }
 
@@ -94,10 +95,11 @@ namespace TileShop
                 MessageBox.Show("Could not open file " + "D:\\Projects\\ff2.sfc");
                 return;
             }
-            gmc.MdiParent = this;
+
+            gdc.AddFile("D:\\Projects\\ff2.sfc");
             gmc.WindowState = FormWindowState.Maximized;
             gmc.zoom = 6;
-            gmc.Show();
+            gmc.Show(dockPanel, DockState.Document);
         }
     }
 }

@@ -40,11 +40,13 @@
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainToolStrip = new System.Windows.Forms.ToolStrip();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.selectionLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.fileOffsetLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dockTheme = new WeifenLuo.WinFormsUI.Docking.VS2013BlueTheme();
+            this.dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
             this.menuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -140,6 +142,13 @@
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             // 
+            // debugToolStripMenuItem
+            // 
+            this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
+            this.debugToolStripMenuItem.Size = new System.Drawing.Size(54, 20);
+            this.debugToolStripMenuItem.Text = "&Debug";
+            this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
+            // 
             // mainToolStrip
             // 
             this.mainToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
@@ -163,37 +172,44 @@
             // 
             // selectionLabel
             // 
+            this.selectionLabel.BackColor = System.Drawing.SystemColors.Control;
             this.selectionLabel.Name = "selectionLabel";
             this.selectionLabel.Size = new System.Drawing.Size(58, 17);
             this.selectionLabel.Text = "Selection ";
             // 
             // fileOffsetLabel
             // 
+            this.fileOffsetLabel.BackColor = System.Drawing.SystemColors.Control;
             this.fileOffsetLabel.Name = "fileOffsetLabel";
             this.fileOffsetLabel.Overflow = System.Windows.Forms.ToolStripItemOverflow.Always;
             this.fileOffsetLabel.Size = new System.Drawing.Size(890, 17);
             this.fileOffsetLabel.Spring = true;
             this.fileOffsetLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // debugToolStripMenuItem
+            // dockPanel
             // 
-            this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
-            this.debugToolStripMenuItem.Size = new System.Drawing.Size(54, 20);
-            this.debugToolStripMenuItem.Text = "&Debug";
-            this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
+            this.dockPanel.BackColor = System.Drawing.SystemColors.Control;
+            this.dockPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dockPanel.Location = new System.Drawing.Point(0, 49);
+            this.dockPanel.Name = "dockPanel";
+            this.dockPanel.Size = new System.Drawing.Size(963, 554);
+            this.dockPanel.TabIndex = 4;
+            this.dockPanel.Theme = this.dockTheme;
             // 
             // TileShopForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.ControlDark;
             this.ClientSize = new System.Drawing.Size(963, 625);
+            this.Controls.Add(this.dockPanel);
             this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.mainToolStrip);
             this.Controls.Add(this.menuStrip);
             this.IsMdiContainer = true;
             this.MainMenuStrip = this.menuStrip;
             this.Name = "TileShopForm";
-            this.Text = "TileShop 0.01b";
+            this.Text = "TileShop 0.01c";
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.statusStrip.ResumeLayout(false);
@@ -222,6 +238,8 @@
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripStatusLabel selectionLabel;
         private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
+        private WeifenLuo.WinFormsUI.Docking.VS2013BlueTheme dockTheme;
+        private WeifenLuo.WinFormsUI.Docking.DockPanel dockPanel;
     }
 }
 

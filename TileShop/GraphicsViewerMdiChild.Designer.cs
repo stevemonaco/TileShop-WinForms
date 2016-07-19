@@ -69,7 +69,8 @@
             "NES 2bpp",
             "GB/SNES 2bpp",
             "NES 1bpp",
-            "SNES 4bpp"});
+            "SNES 4bpp",
+            "SNES 3bpp"});
             this.formatSelectBox.Name = "formatSelectBox";
             this.formatSelectBox.Size = new System.Drawing.Size(121, 25);
             this.formatSelectBox.SelectedIndexChanged += new System.EventHandler(this.formatSelectBox_SelectedIndexChanged);
@@ -118,6 +119,7 @@
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.vertScroll);
             this.DoubleBuffered = true;
+            this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "GraphicsViewerMdiChild";
             this.Text = "GraphicsMdiChild";
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.GraphicsMdiChild_Paint);

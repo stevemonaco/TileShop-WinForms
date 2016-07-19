@@ -7,7 +7,7 @@ using System.Drawing;
 
 namespace TileShop
 {
-    public enum ArrangerMoveType { ByteDown = 0, ByteUp, RowDown, RowUp, ColRight, ColLeft, PageDown, PageUp, Home, End };
+    public enum ArrangerMoveType { ByteDown = 0, ByteUp, RowDown, RowUp, ColRight, ColLeft, PageDown, PageUp, Home, End, Absolute };
     public class ArrangerList
     {
         public bool IsSequential;
@@ -210,8 +210,23 @@ namespace TileShop
             return offset;
         }
 
+        public long Move(long AbsoluteOffset)
+        {
+            long newoffset;
+            if (AbsoluteOffset + ArrangerByteSize > FileSize)
+                newoffset = FileSize - ArrangerByteSize;
+            else
+                newoffset = AbsoluteOffset;
+
+            SetNewSequentialFileOffset(newoffset);
+            return newoffset;
+        }
+
         void SetNewSequentialFileOffset(long FileOffset)
         {
+            if (ElementList == null)
+                throw new NullReferenceException();
+
             for (int i = 0; i < ListY; i++)
             {
                 for (int j = 0; j < ListX; j++)
@@ -221,7 +236,6 @@ namespace TileShop
                 }
             }
         }
-
     }
 
     public class ArrangerElement
