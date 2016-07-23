@@ -47,6 +47,7 @@
             this.fileOffsetLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.dockTheme = new WeifenLuo.WinFormsUI.Docking.VS2013BlueTheme();
             this.dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
+            this.blankArrangerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -80,9 +81,10 @@
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.newGraphicsProjectMenu});
+            this.newGraphicsProjectMenu,
+            this.blankArrangerToolStripMenuItem});
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.newToolStripMenuItem.Text = "New";
             // 
             // newGraphicsProjectMenu
@@ -98,7 +100,7 @@
             this.openFileMenu,
             this.openGraphicsProject});
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.openToolStripMenuItem.Text = "Open";
             // 
             // openFileMenu
@@ -117,29 +119,29 @@
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(120, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(149, 6);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.saveToolStripMenuItem.Text = "&Save";
             // 
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.saveAsToolStripMenuItem.Text = "Save &As...";
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(120, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(149, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             // 
             // debugToolStripMenuItem
@@ -196,6 +198,13 @@
             this.dockPanel.TabIndex = 4;
             this.dockPanel.Theme = this.dockTheme;
             // 
+            // blankArrangerToolStripMenuItem
+            // 
+            this.blankArrangerToolStripMenuItem.Name = "blankArrangerToolStripMenuItem";
+            this.blankArrangerToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.blankArrangerToolStripMenuItem.Text = "Blank Arranger";
+            this.blankArrangerToolStripMenuItem.Click += new System.EventHandler(this.blankArrangerToolStripMenuItem_Click);
+            // 
             // TileShopForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -240,6 +249,7 @@
         private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
         private WeifenLuo.WinFormsUI.Docking.VS2013BlueTheme dockTheme;
         private WeifenLuo.WinFormsUI.Docking.DockPanel dockPanel;
+        private System.Windows.Forms.ToolStripMenuItem blankArrangerToolStripMenuItem;
     }
 }
 

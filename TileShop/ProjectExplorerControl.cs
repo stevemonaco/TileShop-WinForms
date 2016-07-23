@@ -12,9 +12,9 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace TileShop
 {
-    public partial class GameDescriptorControl : DockContent
+    public partial class ProjectExplorerControl : DockContent
     {
-        public GameDescriptorControl()
+        public ProjectExplorerControl()
         {
             InitializeComponent();
         }

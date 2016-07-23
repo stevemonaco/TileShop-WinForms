@@ -243,6 +243,8 @@ namespace TileShop
         public string FileName = "";
         public long FileOffset = 0;
         public string Format = "";
+        public int Width = 0;
+        public int Height = 0;
         public string Palette = "";
         public int X1 = 0; // Locations are unzoomed
         public int Y1 = 0;

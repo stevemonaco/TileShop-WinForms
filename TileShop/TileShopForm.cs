@@ -10,7 +10,7 @@ namespace TileShop
         private string CodecDirectoryPath = "D:\\Projects\\TileShop\\codecs\\";
         private string PaletteDirectoryPath = "D:\\Projects\\TileShop\\pal\\";
 
-        private GameDescriptorControl gdc = new GameDescriptorControl();
+        private ProjectExplorerControl gdc = new ProjectExplorerControl();
 
         public TileShopForm()
         {
@@ -38,7 +38,7 @@ namespace TileShop
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this);
+                GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ViewerMode.SequentialFile);
 
                 if(gmc.OpenFile(ofd.FileName) == false)
                 {
@@ -87,7 +87,7 @@ namespace TileShop
         private void debugToolStripMenuItem_Click(object sender, EventArgs e)
         {
             WindowState = FormWindowState.Maximized;
-            GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this);
+            GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ViewerMode.SequentialFile);
 
             if (gmc.OpenFile("D:\\Projects\\ff2.sfc") == false)
             {
@@ -100,6 +100,29 @@ namespace TileShop
             gmc.WindowState = FormWindowState.Maximized;
             gmc.zoom = 6;
             gmc.Show(dockPanel, DockState.Document);
+        }
+
+        private void blankArrangerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            NewTileArrangerForm ntaf = new NewTileArrangerForm();
+
+            if (ActiveMdiChild != null)
+            {
+                if (ActiveMdiChild.GetType() == typeof(GraphicsViewerMdiChild))
+                {
+                    GraphicsViewerMdiChild gmc = (GraphicsViewerMdiChild)ActiveMdiChild;
+                    GraphicsFormat fmt = gmc.graphicsFormat;
+                    ntaf.SetFormat(fmt.Name);
+                    ntaf.SetDefaults(fmt.Width, fmt.Height, 16, 8);
+                }
+            }
+
+            if(DialogResult.OK == ntaf.ShowDialog())
+            {
+                GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ViewerMode.Arranger);
+                //GraphicsFormat 
+                //gmc.LoadTileArranger(ntaf.GetFormatName(), ntaf.GetArrangerSize(), null);
+            }
         }
     }
 }

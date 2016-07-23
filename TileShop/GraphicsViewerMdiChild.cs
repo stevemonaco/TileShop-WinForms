@@ -13,9 +13,11 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace TileShop
 {
+    public enum ViewerMode { SequentialFile = 0, Arranger };
     public partial class GraphicsViewerMdiChild : DockContent
     {
         TileShopForm parentInstance = null;
+        ViewerMode viewerMode;
         int prevFormatIndex = -1;
         string filename;
 
@@ -33,16 +35,18 @@ namespace TileShop
         Point beginSelectionPoint = Point.Empty;
         Point endSelectionPoint = Point.Empty;
 
-        GraphicsFormat fmt = new GraphicsFormat();
+        public GraphicsFormat graphicsFormat = new GraphicsFormat();
         Pen p = new Pen(Brushes.Magenta);
         Brush b = new SolidBrush(Color.FromArgb(200, 255, 0, 255));
 
         //Color[] pal = new Color[] { Color.Black, Color.Blue, Color.Red, Color.Green };
         TileCache cache = new TileCache();
 
-        public GraphicsViewerMdiChild(TileShopForm parent)
+        public GraphicsViewerMdiChild(TileShopForm parent, ViewerMode v)
         {
             parentInstance = parent;
+            viewerMode = v;
+
             InitializeComponent();
 
             SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
@@ -54,6 +58,18 @@ namespace TileShop
             p.Width = (float)zoom;
 
             this.GotFocus += GraphicsMdiChild_GotFocus;
+        }
+
+        public void LoadTileArranger(GraphicsFormat format, Size TileArrangerSize, string XmlFilename)
+        {
+            if(XmlFilename == null) // Create blank arranger
+            {
+                rm.NewArranger(TileArrangerSize.Width, TileArrangerSize.Height, null, format);
+            }
+            else // Load arrangement via XML
+            {
+
+            }
         }
 
         private void GraphicsMdiChild_GotFocus(object sender, EventArgs e)
@@ -93,7 +109,7 @@ namespace TileShop
 
             zoomSelectBox.SelectedIndex = 0;
 
-            rm.NewArranger(DisplayElements.Width, DisplayElements.Height, Path.GetFileNameWithoutExtension(InputFilename), fmt);
+            rm.NewArranger(DisplayElements.Width, DisplayElements.Height, Path.GetFileNameWithoutExtension(InputFilename), graphicsFormat);
 
             Invalidate();
             return true;
@@ -235,23 +251,23 @@ namespace TileShop
             switch(index)
             {
                 case 0: // 2bpp NES
-                    fmt = FileManager.Instance.GetFormat("NES 2bpp");
+                    graphicsFormat = FileManager.Instance.GetFormat("NES 2bpp");
                     rm.SetGraphicsFormat("NES 2bpp");
                     break;
                 case 1: // SNES 2bpp
-                    fmt = FileManager.Instance.GetFormat("SNES/GB 2bpp");
+                    graphicsFormat = FileManager.Instance.GetFormat("SNES/GB 2bpp");
                     rm.SetGraphicsFormat("SNES/GB 2bpp");
                     break;
                 case 2: // NES 1bpp
-                    fmt = FileManager.Instance.GetFormat("NES 1bpp");
+                    graphicsFormat = FileManager.Instance.GetFormat("NES 1bpp");
                     rm.SetGraphicsFormat("NES 1bpp");
                     break;
                 case 3: // SNES 4bpp
-                    fmt = FileManager.Instance.GetFormat("SNES 4bpp");
+                    graphicsFormat = FileManager.Instance.GetFormat("SNES 4bpp");
                     rm.SetGraphicsFormat("SNES 4bpp");
                     break;
                 case 4: // SNES 3bpp
-                    fmt = FileManager.Instance.GetFormat("SNES 3bpp");
+                    graphicsFormat = FileManager.Instance.GetFormat("SNES 3bpp");
                     rm.SetGraphicsFormat("SNES 3bpp");
                     break;
             }
@@ -290,10 +306,10 @@ namespace TileShop
             if (showGridlines)
             {
                 for (int y = 0; y < DisplayElements.Height; y++) // Draw horizontal lines
-                    g.DrawLine(Pens.White, 0, y * fmt.Height * zoom + toolStrip1.Height, DisplayElements.Width * fmt.Width * zoom, y * fmt.Height * zoom + toolStrip1.Height);
+                    g.DrawLine(Pens.White, 0, y * graphicsFormat.Height * zoom + toolStrip1.Height, DisplayElements.Width * graphicsFormat.Width * zoom, y * graphicsFormat.Height * zoom + toolStrip1.Height);
 
                 for (int x = 0; x < DisplayElements.Width; x++) // Draw vertical lines
-                    g.DrawLine(Pens.White, x * fmt.Width * zoom, 0, x * fmt.Width * zoom, DisplayElements.Height * fmt.Height * zoom + toolStrip1.Height);
+                    g.DrawLine(Pens.White, x * graphicsFormat.Width * zoom, 0, x * graphicsFormat.Width * zoom, DisplayElements.Height * graphicsFormat.Height * zoom + toolStrip1.Height);
             }
         }
 

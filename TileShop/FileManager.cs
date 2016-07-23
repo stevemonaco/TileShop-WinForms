@@ -41,9 +41,9 @@ namespace TileShop
                 return null;
         }
 
-        public void AddGraphicsFormat(string FormatName, GraphicsFormat format)
+        public void AddGraphicsFormat(GraphicsFormat format)
         {
-            FormatList.Add(FormatName, format);
+            FormatList.Add(format.Name, format);
         }
 
         public GraphicsFormat GetFormat(string FormatName)
@@ -69,7 +69,7 @@ namespace TileShop
             if (!fmt.Load(Filename))
                 return false;
 
-            AddGraphicsFormat(fmt.Name, fmt);
+            AddGraphicsFormat(fmt);
             return true;
         }
 

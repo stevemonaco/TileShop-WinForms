@@ -1,6 +1,6 @@
 ﻿namespace TileShop
 {
-    partial class GameDescriptorControl
+    partial class ProjectExplorerControl
     {
         /// <summary> 
         /// Required designer variable.
