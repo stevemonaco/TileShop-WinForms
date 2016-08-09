@@ -30,7 +30,7 @@
         {
             this.cancelButton = new System.Windows.Forms.Button();
             this.createButton = new System.Windows.Forms.Button();
-            this.graphicsBox = new System.Windows.Forms.ComboBox();
+            this.formatBox = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -64,13 +64,13 @@
             this.createButton.Text = "Create";
             this.createButton.UseVisualStyleBackColor = true;
             // 
-            // graphicsBox
+            // formatBox
             // 
-            this.graphicsBox.FormattingEnabled = true;
-            this.graphicsBox.Location = new System.Drawing.Point(8, 25);
-            this.graphicsBox.Name = "graphicsBox";
-            this.graphicsBox.Size = new System.Drawing.Size(168, 21);
-            this.graphicsBox.TabIndex = 2;
+            this.formatBox.FormattingEnabled = true;
+            this.formatBox.Location = new System.Drawing.Point(8, 25);
+            this.formatBox.Name = "formatBox";
+            this.formatBox.Size = new System.Drawing.Size(168, 21);
+            this.formatBox.TabIndex = 2;
             // 
             // label1
             // 
@@ -148,7 +148,7 @@
             // 
             this.groupBox2.Controls.Add(this.tileHeightBox);
             this.groupBox2.Controls.Add(this.tileWidthBox);
-            this.groupBox2.Controls.Add(this.graphicsBox);
+            this.groupBox2.Controls.Add(this.formatBox);
             this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Controls.Add(this.label1);
@@ -196,7 +196,7 @@
 
         private System.Windows.Forms.Button cancelButton;
         private System.Windows.Forms.Button createButton;
-        private System.Windows.Forms.ComboBox graphicsBox;
+        private System.Windows.Forms.ComboBox formatBox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;

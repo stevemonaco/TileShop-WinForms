@@ -19,6 +19,7 @@ namespace TileShop
             InitializeComponent();
         }
 
+        // Adds all graphic
         public void EnumerateFormats()
         {
             Dictionary<string, GraphicsFormat>.KeyCollection keys = FileManager.Instance.FormatList.Keys;
@@ -27,7 +28,7 @@ namespace TileShop
 
             foreach(string s in keyList)
             {
-                graphicsBox.Items.Add(s);
+                formatBox.Items.Add(s);
             }
         }
 
@@ -43,10 +44,10 @@ namespace TileShop
         public void SetFormat(string FormatName)
         {
             int idx = 0;
-            foreach(string s in graphicsBox.Items)
+            foreach(string s in formatBox.Items)
             {
                 if(s == FormatName)
-                    graphicsBox.SelectedIndex = idx;
+                    formatBox.SelectedIndex = idx;
             }
         }
 
@@ -58,7 +59,6 @@ namespace TileShop
             return s;
         }
 
-
         public Size GetArrangerSize()
         {
             Size s = new Size();
@@ -69,7 +69,7 @@ namespace TileShop
 
         public string GetFormatName()
         {
-            return graphicsBox.SelectedText;
+            return formatBox.SelectedText;
         }
 
     }

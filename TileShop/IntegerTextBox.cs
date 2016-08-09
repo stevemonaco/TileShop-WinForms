@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 using System.Globalization;
 
 // Code adopted from http://stackoverflow.com/questions/463299/how-do-i-make-a-textbox-that-only-accepts-numbers

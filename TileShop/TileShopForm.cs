@@ -38,7 +38,7 @@ namespace TileShop
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ViewerMode.SequentialFile);
+                GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ArrangerMode.SequentialFile);
 
                 if(gmc.OpenFile(ofd.FileName) == false)
                 {
@@ -87,7 +87,7 @@ namespace TileShop
         private void debugToolStripMenuItem_Click(object sender, EventArgs e)
         {
             WindowState = FormWindowState.Maximized;
-            GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ViewerMode.SequentialFile);
+            GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ArrangerMode.SequentialFile);
 
             if (gmc.OpenFile("D:\\Projects\\ff2.sfc") == false)
             {
@@ -119,7 +119,7 @@ namespace TileShop
 
             if(DialogResult.OK == ntaf.ShowDialog())
             {
-                GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ViewerMode.Arranger);
+                GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ArrangerMode.MemoryArranger);
                 //GraphicsFormat 
                 //gmc.LoadTileArranger(ntaf.GetFormatName(), ntaf.GetArrangerSize(), null);
             }

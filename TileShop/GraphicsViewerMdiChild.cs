@@ -13,11 +13,10 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace TileShop
 {
-    public enum ViewerMode { SequentialFile = 0, Arranger };
     public partial class GraphicsViewerMdiChild : DockContent
     {
         TileShopForm parentInstance = null;
-        ViewerMode viewerMode;
+        ArrangerMode arrangerMode;
         int prevFormatIndex = -1;
         string filename;
 
@@ -27,6 +26,7 @@ namespace TileShop
 
         Size DisplayElements = new Size(8, 16);
         RenderManager rm = new RenderManager();
+        ArrangerList list = null;
 
         // Selection
         bool inSelection = false;
@@ -35,17 +35,17 @@ namespace TileShop
         Point beginSelectionPoint = Point.Empty;
         Point endSelectionPoint = Point.Empty;
 
-        public GraphicsFormat graphicsFormat = new GraphicsFormat();
+        public GraphicsFormat graphicsFormat = null;
         Pen p = new Pen(Brushes.Magenta);
         Brush b = new SolidBrush(Color.FromArgb(200, 255, 0, 255));
 
         //Color[] pal = new Color[] { Color.Black, Color.Blue, Color.Red, Color.Green };
         TileCache cache = new TileCache();
 
-        public GraphicsViewerMdiChild(TileShopForm parent, ViewerMode v)
+        public GraphicsViewerMdiChild(TileShopForm parent, ArrangerMode v)
         {
             parentInstance = parent;
-            viewerMode = v;
+            arrangerMode = v;
 
             InitializeComponent();
 
@@ -64,11 +64,14 @@ namespace TileShop
         {
             if(XmlFilename == null) // Create blank arranger
             {
-                rm.NewArranger(TileArrangerSize.Width, TileArrangerSize.Height, null, format);
+                list = new ArrangerList(TileArrangerSize.Width, TileArrangerSize.Height, null, format, arrangerMode);
+
+                
+                //rm.NewTileArranger(TileArrangerSize.Width, TileArrangerSize.Height, null, format);
             }
             else // Load arrangement via XML
             {
-
+                //rm.NewArranger(TileArrangerSize.Width, TileArrangerSize.Height, null, );
             }
         }
 
@@ -94,22 +97,37 @@ namespace TileShop
             vertScroll.Maximum = (int) FileManager.Instance.GetFileStream(filename).Length;
             vertScroll.Minimum = 0;
 
+            int formatIdx = 0;
+
             switch(Path.GetExtension(InputFilename))
             {
                 case ".sfc": case ".smc":
-                    formatSelectBox.SelectedIndex = 1;
+                    arrangerMode = ArrangerMode.SequentialFile;
+                    formatIdx = 1;
+                    formatSelectBox.Visible = true;
                     break;
                 case ".nes":
-                    formatSelectBox.SelectedIndex = 0;
+                    arrangerMode = ArrangerMode.SequentialFile;
+                    formatIdx = 0;
+                    formatSelectBox.Visible = true;
+                    break;
+                case ".xml":
+                    arrangerMode = ArrangerMode.ScatteredArranger;
+                    formatSelectBox.Visible = false;
                     break;
                 default:
-                    formatSelectBox.SelectedIndex = 0;
+                    arrangerMode = ArrangerMode.SequentialFile;
+                    formatIdx = 0;
+                    formatSelectBox.Visible = true;
                     break;
             }
 
-            zoomSelectBox.SelectedIndex = 0;
+            graphicsFormat = GetGraphicsFormatFromIndex(formatIdx);
 
-            rm.NewArranger(DisplayElements.Width, DisplayElements.Height, Path.GetFileNameWithoutExtension(InputFilename), graphicsFormat);
+            list = new ArrangerList(DisplayElements.Width, DisplayElements.Height, Path.GetFileNameWithoutExtension(InputFilename), graphicsFormat, arrangerMode);
+
+            zoomSelectBox.SelectedIndex = 0;
+            formatSelectBox.SelectedIndex = formatIdx;
 
             Invalidate();
             return true;
@@ -117,83 +135,93 @@ namespace TileShop
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (keyData == Keys.Add || keyData == Keys.Oemplus)
+            if (keyData == Keys.Add || keyData == Keys.Oemplus && arrangerMode == ArrangerMode.SequentialFile)
             {
-                FileOffset = rm.MoveOffset(ArrangerMoveType.ByteDown);
+                FileOffset = list.Move(ArrangerMoveType.ByteDown);
                 parentInstance.updateOffsetLabel(FileOffset);
                 CancelSelection();
+                rm.Invalidate();
                 Invalidate();
                 return true;
             }
-            if (keyData == Keys.Subtract || keyData == Keys.OemMinus)
+            if (keyData == Keys.Subtract || keyData == Keys.OemMinus && arrangerMode == ArrangerMode.SequentialFile)
             {
-                FileOffset = rm.MoveOffset(ArrangerMoveType.ByteUp);
+                FileOffset = list.Move(ArrangerMoveType.ByteUp);
                 parentInstance.updateOffsetLabel(FileOffset);
                 CancelSelection();
+                rm.Invalidate();
                 Invalidate();
                 return true;
             }
-            if (keyData == Keys.Down)
+            if (keyData == Keys.Down && arrangerMode == ArrangerMode.SequentialFile)
             {
-                FileOffset = rm.MoveOffset(ArrangerMoveType.RowDown);
+                FileOffset = list.Move(ArrangerMoveType.RowDown);
                 parentInstance.updateOffsetLabel(FileOffset);
                 CancelSelection();
+                rm.Invalidate();
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.Up)
+            else if (keyData == Keys.Up && arrangerMode == ArrangerMode.SequentialFile)
             {
-                FileOffset = rm.MoveOffset(ArrangerMoveType.RowUp);
+                FileOffset = list.Move(ArrangerMoveType.RowUp);
                 parentInstance.updateOffsetLabel(FileOffset);
                 CancelSelection();
+                rm.Invalidate();
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.Right)
+            else if (keyData == Keys.Right && arrangerMode == ArrangerMode.SequentialFile)
             {
-                FileOffset = rm.MoveOffset(ArrangerMoveType.ColRight);
+                FileOffset = list.Move(ArrangerMoveType.ColRight);
                 parentInstance.updateOffsetLabel(FileOffset);
                 CancelSelection();
+                rm.Invalidate();
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.Left)
+            else if (keyData == Keys.Left && arrangerMode == ArrangerMode.SequentialFile)
             {
-                FileOffset = rm.MoveOffset(ArrangerMoveType.ColLeft);
+                FileOffset = list.Move(ArrangerMoveType.ColLeft);
                 parentInstance.updateOffsetLabel(FileOffset);
                 CancelSelection();
+                rm.Invalidate();
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.PageDown)
+            else if (keyData == Keys.PageDown && arrangerMode == ArrangerMode.SequentialFile)
             {
-                FileOffset = rm.MoveOffset(ArrangerMoveType.PageDown);
+                FileOffset = list.Move(ArrangerMoveType.PageDown);
                 parentInstance.updateOffsetLabel(FileOffset);
                 CancelSelection();
+                rm.Invalidate();
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.PageUp)
+            else if (keyData == Keys.PageUp && arrangerMode == ArrangerMode.SequentialFile)
             {
-                FileOffset = rm.MoveOffset(ArrangerMoveType.PageUp);
+                FileOffset = list.Move(ArrangerMoveType.PageUp);
                 parentInstance.updateOffsetLabel(FileOffset);
                 CancelSelection();
+                rm.Invalidate();
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.Home)
+            else if (keyData == Keys.Home && arrangerMode == ArrangerMode.SequentialFile)
             {
-                FileOffset = rm.MoveOffset(ArrangerMoveType.Home);
+                FileOffset = list.Move(ArrangerMoveType.Home);
                 parentInstance.updateOffsetLabel(FileOffset);
                 CancelSelection();
+                rm.Invalidate();
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.End)
+            else if (keyData == Keys.End && arrangerMode == ArrangerMode.SequentialFile)
             {
-                FileOffset = rm.MoveOffset(ArrangerMoveType.End);
+                FileOffset = list.Move(ArrangerMoveType.End);
                 parentInstance.updateOffsetLabel(FileOffset);
                 CancelSelection();
+                rm.Invalidate();
                 Invalidate();
                 return true;
             }
@@ -203,38 +231,42 @@ namespace TileShop
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.OemPeriod)
+            else if (keyData == Keys.OemPeriod && arrangerMode == ArrangerMode.SequentialFile) // Make arranger one element wider
             {
                 DisplayElements.Width++;
-                FileOffset = rm.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
+                FileOffset = list.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
                 parentInstance.updateOffsetLabel(FileOffset);
+                rm.Invalidate();
                 Invalidate();
             }
-            else if(keyData == Keys.Oemcomma)
+            else if(keyData == Keys.Oemcomma && arrangerMode == ArrangerMode.SequentialFile) // Make arranger one element thinner
             {
                 DisplayElements.Width--;
                 if (DisplayElements.Width < 1)
                     DisplayElements.Width = 1;
 
-                FileOffset = rm.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
+                FileOffset = list.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
                 parentInstance.updateOffsetLabel(FileOffset);
+                rm.Invalidate();
                 Invalidate();
             }
-            else if(keyData == Keys.L)
+            else if(keyData == Keys.L && arrangerMode == ArrangerMode.SequentialFile) // Make arranger one element shorter
             {
                 DisplayElements.Height--;
                 if (DisplayElements.Height < 1)
                     DisplayElements.Height = 1;
 
-                FileOffset = rm.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
+                FileOffset = list.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
                 parentInstance.updateOffsetLabel(FileOffset);
+                rm.Invalidate();
                 Invalidate();
             }
-            else if(keyData == Keys.OemSemicolon)
+            else if(keyData == Keys.OemSemicolon && arrangerMode == ArrangerMode.SequentialFile) // Make arranger one element taller
             {
                 DisplayElements.Height++;
-                FileOffset = rm.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
+                FileOffset = list.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
                 parentInstance.updateOffsetLabel(FileOffset);
+                rm.Invalidate();
                 Invalidate();
             }
 
@@ -248,41 +280,40 @@ namespace TileShop
             if (index == prevFormatIndex) // No need to change formats and clear cache
                 return;
 
-            switch(index)
-            {
-                case 0: // 2bpp NES
-                    graphicsFormat = FileManager.Instance.GetFormat("NES 2bpp");
-                    rm.SetGraphicsFormat("NES 2bpp");
-                    break;
-                case 1: // SNES 2bpp
-                    graphicsFormat = FileManager.Instance.GetFormat("SNES/GB 2bpp");
-                    rm.SetGraphicsFormat("SNES/GB 2bpp");
-                    break;
-                case 2: // NES 1bpp
-                    graphicsFormat = FileManager.Instance.GetFormat("NES 1bpp");
-                    rm.SetGraphicsFormat("NES 1bpp");
-                    break;
-                case 3: // SNES 4bpp
-                    graphicsFormat = FileManager.Instance.GetFormat("SNES 4bpp");
-                    rm.SetGraphicsFormat("SNES 4bpp");
-                    break;
-                case 4: // SNES 3bpp
-                    graphicsFormat = FileManager.Instance.GetFormat("SNES 3bpp");
-                    rm.SetGraphicsFormat("SNES 3bpp");
-                    break;
-            }
+            graphicsFormat = GetGraphicsFormatFromIndex(index);
+            list.SetGraphicsFormat(graphicsFormat.Name);
 
-            FileOffset = rm.GetInitialSequentialFileOffset();
+            FileOffset = list.GetInitialSequentialFileOffset();
             parentInstance.updateOffsetLabel(FileOffset);
             prevFormatIndex = index;
             cache.Clear();
+            rm.Invalidate();
             Invalidate();
             return;
         }
 
+        private GraphicsFormat GetGraphicsFormatFromIndex(int index)
+        {
+            if(index == 0) // NES 1bpp
+                return FileManager.Instance.GetFormat("NES 2bpp");
+            else if (index == 1) // SNES 2bpp
+                return FileManager.Instance.GetFormat("SNES/GB 2bpp");
+            else if (index == 2) // NES 1bpp
+                return FileManager.Instance.GetFormat("NES 1bpp");
+            else if (index == 3) // SNES 4bpp
+                return FileManager.Instance.GetFormat("SNES 4bpp");
+            else if (index == 4) // SNES 3bpp
+                return FileManager.Instance.GetFormat("SNES 3bpp");
+
+            return FileManager.Instance.GetFormat("Transparent");
+        }
+
         private void GraphicsMdiChild_Paint(object sender, PaintEventArgs e)
         {
-            rm.Render();
+            if (list == null)
+                return;
+
+            rm.Render(list);
 
             e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
@@ -291,10 +322,10 @@ namespace TileShop
             e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
             e.Graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
 
-            Rectangle src = new Rectangle(0, 0, rm.list.ArrangerSize.Width, rm.list.ArrangerSize.Height);
-            Rectangle dest = new Rectangle(0, toolStrip1.Height, rm.list.ArrangerSize.Width * zoom, rm.list.ArrangerSize.Height * zoom);
+            Rectangle src = new Rectangle(0, 0, list.ArrangerPixelSize.Width, list.ArrangerPixelSize.Height);
+            Rectangle dest = new Rectangle(0, toolStrip1.Height, list.ArrangerPixelSize.Width * zoom, list.ArrangerPixelSize.Height * zoom);
 
-            e.Graphics.DrawImage(rm.bmp, dest, src, GraphicsUnit.Pixel);
+            e.Graphics.DrawImage(rm.Image, dest, src, GraphicsUnit.Pixel);
 
             // Paint overlays
             DrawGridlines(e.Graphics);
@@ -334,34 +365,7 @@ namespace TileShop
 
         private void zoomSelectBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            switch(zoomSelectBox.SelectedIndex)
-            {
-                case 0:
-                    zoom = 1;
-                    break;
-                case 1:
-                    zoom = 2;
-                    break;
-                case 2:
-                    zoom = 3;
-                    break;
-                case 3:
-                    zoom = 4;
-                    break;
-                case 4:
-                    zoom = 5;
-                    break;
-                case 5:
-                    zoom = 6;
-                    break;
-                case 6:
-                    zoom = 7;
-                    break;
-                case 7:
-                    zoom = 8;
-                    break;
-            }
-
+            zoom = zoomSelectBox.SelectedIndex + 1;
             Invalidate();
         }
 
@@ -465,7 +469,7 @@ namespace TileShop
 
             Rectangle UnzoomedRect = new Rectangle(pleft, ptop, pright - pleft, pbottom - ptop);
 
-            Rectangle ArrRect = rm.list.GetSelectionRect(UnzoomedRect);
+            Rectangle ArrRect = list.GetSelectionRect(UnzoomedRect);
 
             Rectangle ResizedRect = new Rectangle(new Point(ArrRect.Left * zoom, (ArrRect.Top * zoom) + toolStrip1.Height),
                 new Size(ArrRect.Width * zoom, ArrRect.Height * zoom));

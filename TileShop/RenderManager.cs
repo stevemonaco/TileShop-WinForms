@@ -10,20 +10,30 @@ using System.IO;
 
 namespace TileShop
 {
+    // RenderManager
+    // Class that 
+
     public class RenderManager
     {
-        public Bitmap bmp { get; set; }
-        public ArrangerList list { get; set; }
-
+        public Bitmap Image { get; set; }
         private Graphics g = null;
         private bool NeedsRedraw = true;
 
-        public bool Render()
+        public bool Render(ArrangerList list)
         {
             if (list == null)
+                throw new NullReferenceException();
+            if (list.ArrangerPixelSize.Width == 0 || list.ArrangerPixelSize.Height == 0)
                 return false;
-            if (list.ListX == 0 || list.ListY == 0)
-                return false;
+
+            if (Image == null || list.ArrangerPixelSize.Width != Image.Width || list.ArrangerPixelSize.Height != Image.Height)
+            {
+                Image = new Bitmap(list.ArrangerPixelSize.Width, list.ArrangerPixelSize.Height, PixelFormat.Format32bppRgb);
+                g = Graphics.FromImage(Image);
+            }
+
+            if(g == null || Image == null)
+                throw new NullReferenceException();
 
             if (!NeedsRedraw)
                 return true;
@@ -45,9 +55,9 @@ namespace TileShop
                 br.BaseStream.Seek(list.ElementList[0, 0].FileOffset, SeekOrigin.Begin);
             }
 
-            for(int i = 0; i < list.ListY; i++)
+            for(int i = 0; i < list.ArrangerElementSize.Height; i++)
             {
-                for(int j = 0; j < list.ListX; j++)
+                for(int j = 0; j < list.ArrangerElementSize.Width; j++)
                 {
                     ArrangerElement el = list.ElementList[j, i];
                     if (!list.IsSequential) // Reader update required
@@ -56,7 +66,7 @@ namespace TileShop
                         br.BaseStream.Seek(el.FileOffset, SeekOrigin.Begin);
                     }
 
-                    GraphicsCodec.Decode(bmp, FileManager.Instance.GetFormat(el.Format), el.X1, el.Y1, br, FileManager.Instance.GetPalette(el.Palette));
+                    GraphicsCodec.Decode(Image, FileManager.Instance.GetFormat(el.Format), el.X1, el.Y1, br, FileManager.Instance.GetPalette(el.Palette));
                 }
             }
 
@@ -65,76 +75,10 @@ namespace TileShop
             return true;
         }
 
-        public bool NewArranger(int ElementsX, int ElementsY, string Filename, GraphicsFormat format)
+        // Forces a redraw for next Render call
+        public void Invalidate()
         {
-            list = new ArrangerList(ElementsX, ElementsY, Filename, format);
-            bmp = new Bitmap(ElementsX * format.Width, ElementsY * format.Height, PixelFormat.Format32bppRgb);
-            g = Graphics.FromImage(bmp);
-
             NeedsRedraw = true;
-
-            return true;
-        }
-
-        public long ResizeArranger(int ElementsX, int ElementsY)
-        {
-            long offset = GetInitialSequentialFileOffset();
-            GraphicsFormat fmt = FileManager.Instance.GetFormat(list.ElementList[0, 0].Format);
-            list = new ArrangerList(ElementsX, ElementsY, list.ElementList[0, 0].FileName, fmt);
-            offset = list.Move(offset);
-
-            bmp = new Bitmap(ElementsX * fmt.Width, ElementsY * fmt.Height, PixelFormat.Format32bppRgb);
-            g = Graphics.FromImage(bmp);
-
-            NeedsRedraw = true;
-
-            return offset;
-        }
-
-        public long MoveOffset(ArrangerMoveType MoveType)
-        {
-            if (list == null)
-                return -1;
-
-            long offset = list.ElementList[0, 0].FileOffset;
-            long newoffset = list.Move(MoveType);
-            if (newoffset != offset) // Same offset, no move
-                NeedsRedraw = true;
-
-            return newoffset;
-        }
-
-        public bool SetGraphicsFormat(string Format)
-        {
-            if (list == null)
-                return false;
-
-            long offset = list.ElementList[0, 0].FileOffset;
-            GraphicsFormat fmt = FileManager.Instance.GetFormat(Format);
-            int elemsize = fmt.Width * fmt.Height * fmt.ColorDepth / 8;
-            list.ArrangerByteSize = list.ListX * list.ListY * elemsize;
-
-            if (list.FileSize < offset + list.ArrangerByteSize)
-                offset = list.FileSize - list.ArrangerByteSize;
-
-            foreach (ArrangerElement el in list.ElementList)
-            {
-                el.FileOffset = offset;
-                offset += elemsize;
-                el.Format = Format;
-            }
-
-            NeedsRedraw = true;
-
-            return true;
-        }
-
-        public long GetInitialSequentialFileOffset()
-        {
-            if (list != null)
-                return list.ElementList[0, 0].FileOffset;
-            else
-                return 0;
         }
 
         bool SetPixel(int x, int y, Color color)
