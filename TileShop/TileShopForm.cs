@@ -38,17 +38,17 @@ namespace TileShop
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ArrangerMode.SequentialFile);
+                GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, ArrangerMode.SequentialArranger);
 
-                if(gmc.OpenFile(ofd.FileName) == false)
+                if(gv.OpenFile(ofd.FileName) == false)
                 {
-                    gmc.Close();
+                    gv.Close();
                     MessageBox.Show("Could not open file " + ofd.FileName);
                     return;
                 }
 
                 gdc.AddFile(ofd.FileName);
-                gmc.Show(dockPanel, DockState.Document);
+                gv.Show(dockPanel, DockState.Document);
             }
         }
 
@@ -80,14 +80,14 @@ namespace TileShop
             foreach (string s in filenames)
             {
                 if (Path.GetExtension(s) == ".pal")
-                    FileManager.Instance.LoadPalette(s);
+                    FileManager.Instance.LoadPalette(s, Path.GetFileNameWithoutExtension(s));
             }
         }
 
         private void debugToolStripMenuItem_Click(object sender, EventArgs e)
         {
             WindowState = FormWindowState.Maximized;
-            GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ArrangerMode.SequentialFile);
+            GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ArrangerMode.SequentialArranger);
 
             if (gmc.OpenFile("D:\\Projects\\ff2.sfc") == false)
             {

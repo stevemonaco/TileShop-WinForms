@@ -44,5 +44,15 @@ namespace TileShop
 
             return true;
         }
+
+        public bool AddArranger()
+        {
+            return true;
+        }
+
+        public bool RemoveArranger()
+        {
+            return true;
+        }
     }
 }

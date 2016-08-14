@@ -12,6 +12,7 @@ namespace TileShop
         public static readonly FileManager Instance = new FileManager();
 
         public Dictionary<string, FileStream> FileList = new Dictionary<string, FileStream>();
+        public Dictionary<string, Arranger> ArrangerList = new Dictionary<string, Arranger>();
         public Dictionary<string, Palette> PaletteList = new Dictionary<string, Palette>();
         public Dictionary<string, GraphicsFormat> FormatList = new Dictionary<string, GraphicsFormat>();
 
@@ -25,7 +26,7 @@ namespace TileShop
             if (FileList.ContainsKey(FileName))
                 return FileList[FileName];
             else
-                return null;
+                throw new KeyNotFoundException();
         }
 
         public void AddPalette(string PaletteName, Palette pal)
@@ -38,7 +39,7 @@ namespace TileShop
             if (PaletteList.ContainsKey(PaletteName))
                 return PaletteList[PaletteName];
             else
-                return null;
+                throw new KeyNotFoundException();
         }
 
         public void AddGraphicsFormat(GraphicsFormat format)
@@ -51,31 +52,41 @@ namespace TileShop
             if (FormatList.ContainsKey(FormatName))
                 return FormatList[FormatName];
             else
-                return null;
+                throw new KeyNotFoundException();
         }
 
         public bool LoadFile(string Filename)
         {
             // TODO: Error handling
-            FileStream fs = File.Open(Filename, FileMode.Open, FileAccess.ReadWrite);
+            try
+            {
+                FileStream fs = File.Open(Filename, FileMode.Open, FileAccess.ReadWrite);
+                AddFileStream(Path.GetFileNameWithoutExtension(Filename), fs);
+            }
+            catch(FileNotFoundException ex)
+            {
+                return false;
+            }
 
-            AddFileStream(Path.GetFileNameWithoutExtension(Filename), fs);
             return true;
         }
 
         public bool LoadFormat(string Filename)
         {
             GraphicsFormat fmt = new GraphicsFormat();
-            if (!fmt.Load(Filename))
+            if (!fmt.LoadFromXml(Filename))
                 return false;
 
             AddGraphicsFormat(fmt);
             return true;
         }
 
-        public bool LoadPalette(string Filename)
+        public bool LoadPalette(string Filename, string PaletteName)
         {
-            Palette pal = new Palette();
+            if (Filename == null || PaletteName == null)
+                throw new ArgumentNullException();
+
+            Palette pal = new Palette(PaletteName);
             if (!pal.LoadPalette(Filename))
                 return false;
 

@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="BitStream.cs" />
     <Compile Include="FileManager.cs" />
+    <Compile Include="GameDescriptorFile.cs" />
     <Compile Include="IntegerTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -86,7 +87,7 @@
       <DependentUpon>GraphicsViewerMdiChild.cs</DependentUpon>
     </Compile>
     <Compile Include="Palette.cs" />
-    <Compile Include="ArrangerList.cs" />
+    <Compile Include="Arranger.cs" />
     <Compile Include="RenderManager.cs" />
     <Compile Include="TileArrangerForm.cs">
       <SubType>Form</SubType>

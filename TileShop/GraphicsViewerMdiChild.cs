@@ -26,7 +26,7 @@ namespace TileShop
 
         Size DisplayElements = new Size(8, 16);
         RenderManager rm = new RenderManager();
-        ArrangerList list = null;
+        Arranger list = null;
 
         // Selection
         bool inSelection = false;
@@ -60,19 +60,13 @@ namespace TileShop
             this.GotFocus += GraphicsMdiChild_GotFocus;
         }
 
-        public void LoadTileArranger(GraphicsFormat format, Size TileArrangerSize, string XmlFilename)
+        // Create a scattered arranger via settings from an XML file
+        public bool LoadScatteredArrangerFile(string XmlFilename)
         {
-            if(XmlFilename == null) // Create blank arranger
-            {
-                list = new ArrangerList(TileArrangerSize.Width, TileArrangerSize.Height, null, format, arrangerMode);
+            if (XmlFilename == null)
+                throw new ArgumentNullException();
 
-                
-                //rm.NewTileArranger(TileArrangerSize.Width, TileArrangerSize.Height, null, format);
-            }
-            else // Load arrangement via XML
-            {
-                //rm.NewArranger(TileArrangerSize.Width, TileArrangerSize.Height, null, );
-            }
+            return true;
         }
 
         private void GraphicsMdiChild_GotFocus(object sender, EventArgs e)
@@ -82,12 +76,18 @@ namespace TileShop
 
         public bool OpenFile(string InputFilename)
         {
+            if (InputFilename == null)
+                throw new ArgumentNullException();
+
             if(!FileManager.Instance.LoadFile(InputFilename))
             {
                 MessageBox.Show("Failed to open " + InputFilename, "File Error", MessageBoxButtons.OK);
                 this.Close();
                 return false;
             }
+
+            if (Path.GetExtension(InputFilename) == ".xml")
+                return LoadScatteredArrangerFile(InputFilename);
 
             this.Text = InputFilename;
             filename = Path.GetFileNameWithoutExtension(InputFilename);
@@ -102,12 +102,12 @@ namespace TileShop
             switch(Path.GetExtension(InputFilename))
             {
                 case ".sfc": case ".smc":
-                    arrangerMode = ArrangerMode.SequentialFile;
+                    arrangerMode = ArrangerMode.SequentialArranger;
                     formatIdx = 1;
                     formatSelectBox.Visible = true;
                     break;
                 case ".nes":
-                    arrangerMode = ArrangerMode.SequentialFile;
+                    arrangerMode = ArrangerMode.SequentialArranger;
                     formatIdx = 0;
                     formatSelectBox.Visible = true;
                     break;
@@ -116,7 +116,7 @@ namespace TileShop
                     formatSelectBox.Visible = false;
                     break;
                 default:
-                    arrangerMode = ArrangerMode.SequentialFile;
+                    arrangerMode = ArrangerMode.SequentialArranger;
                     formatIdx = 0;
                     formatSelectBox.Visible = true;
                     break;
@@ -124,7 +124,7 @@ namespace TileShop
 
             graphicsFormat = GetGraphicsFormatFromIndex(formatIdx);
 
-            list = new ArrangerList(DisplayElements.Width, DisplayElements.Height, Path.GetFileNameWithoutExtension(InputFilename), graphicsFormat, arrangerMode);
+            list = Arranger.NewSequentialArranger(DisplayElements.Width, DisplayElements.Height, Path.GetFileNameWithoutExtension(InputFilename), graphicsFormat);
 
             zoomSelectBox.SelectedIndex = 0;
             formatSelectBox.SelectedIndex = formatIdx;
@@ -135,7 +135,7 @@ namespace TileShop
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (keyData == Keys.Add || keyData == Keys.Oemplus && arrangerMode == ArrangerMode.SequentialFile)
+            if (keyData == Keys.Add || keyData == Keys.Oemplus && arrangerMode == ArrangerMode.SequentialArranger)
             {
                 FileOffset = list.Move(ArrangerMoveType.ByteDown);
                 parentInstance.updateOffsetLabel(FileOffset);
@@ -144,7 +144,7 @@ namespace TileShop
                 Invalidate();
                 return true;
             }
-            if (keyData == Keys.Subtract || keyData == Keys.OemMinus && arrangerMode == ArrangerMode.SequentialFile)
+            if (keyData == Keys.Subtract || keyData == Keys.OemMinus && arrangerMode == ArrangerMode.SequentialArranger)
             {
                 FileOffset = list.Move(ArrangerMoveType.ByteUp);
                 parentInstance.updateOffsetLabel(FileOffset);
@@ -153,7 +153,7 @@ namespace TileShop
                 Invalidate();
                 return true;
             }
-            if (keyData == Keys.Down && arrangerMode == ArrangerMode.SequentialFile)
+            if (keyData == Keys.Down && arrangerMode == ArrangerMode.SequentialArranger)
             {
                 FileOffset = list.Move(ArrangerMoveType.RowDown);
                 parentInstance.updateOffsetLabel(FileOffset);
@@ -162,7 +162,7 @@ namespace TileShop
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.Up && arrangerMode == ArrangerMode.SequentialFile)
+            else if (keyData == Keys.Up && arrangerMode == ArrangerMode.SequentialArranger)
             {
                 FileOffset = list.Move(ArrangerMoveType.RowUp);
                 parentInstance.updateOffsetLabel(FileOffset);
@@ -171,7 +171,7 @@ namespace TileShop
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.Right && arrangerMode == ArrangerMode.SequentialFile)
+            else if (keyData == Keys.Right && arrangerMode == ArrangerMode.SequentialArranger)
             {
                 FileOffset = list.Move(ArrangerMoveType.ColRight);
                 parentInstance.updateOffsetLabel(FileOffset);
@@ -180,7 +180,7 @@ namespace TileShop
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.Left && arrangerMode == ArrangerMode.SequentialFile)
+            else if (keyData == Keys.Left && arrangerMode == ArrangerMode.SequentialArranger)
             {
                 FileOffset = list.Move(ArrangerMoveType.ColLeft);
                 parentInstance.updateOffsetLabel(FileOffset);
@@ -189,7 +189,7 @@ namespace TileShop
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.PageDown && arrangerMode == ArrangerMode.SequentialFile)
+            else if (keyData == Keys.PageDown && arrangerMode == ArrangerMode.SequentialArranger)
             {
                 FileOffset = list.Move(ArrangerMoveType.PageDown);
                 parentInstance.updateOffsetLabel(FileOffset);
@@ -198,7 +198,7 @@ namespace TileShop
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.PageUp && arrangerMode == ArrangerMode.SequentialFile)
+            else if (keyData == Keys.PageUp && arrangerMode == ArrangerMode.SequentialArranger)
             {
                 FileOffset = list.Move(ArrangerMoveType.PageUp);
                 parentInstance.updateOffsetLabel(FileOffset);
@@ -207,7 +207,7 @@ namespace TileShop
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.Home && arrangerMode == ArrangerMode.SequentialFile)
+            else if (keyData == Keys.Home && arrangerMode == ArrangerMode.SequentialArranger)
             {
                 FileOffset = list.Move(ArrangerMoveType.Home);
                 parentInstance.updateOffsetLabel(FileOffset);
@@ -216,7 +216,7 @@ namespace TileShop
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.End && arrangerMode == ArrangerMode.SequentialFile)
+            else if (keyData == Keys.End && arrangerMode == ArrangerMode.SequentialArranger)
             {
                 FileOffset = list.Move(ArrangerMoveType.End);
                 parentInstance.updateOffsetLabel(FileOffset);
@@ -231,40 +231,40 @@ namespace TileShop
                 Invalidate();
                 return true;
             }
-            else if (keyData == Keys.OemPeriod && arrangerMode == ArrangerMode.SequentialFile) // Make arranger one element wider
+            else if (keyData == Keys.OemPeriod && arrangerMode == ArrangerMode.SequentialArranger) // Make arranger one element wider
             {
                 DisplayElements.Width++;
-                FileOffset = list.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
+                FileOffset = list.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
                 parentInstance.updateOffsetLabel(FileOffset);
                 rm.Invalidate();
                 Invalidate();
             }
-            else if(keyData == Keys.Oemcomma && arrangerMode == ArrangerMode.SequentialFile) // Make arranger one element thinner
+            else if(keyData == Keys.Oemcomma && arrangerMode == ArrangerMode.SequentialArranger) // Make arranger one element thinner
             {
                 DisplayElements.Width--;
                 if (DisplayElements.Width < 1)
                     DisplayElements.Width = 1;
 
-                FileOffset = list.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
+                FileOffset = list.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
                 parentInstance.updateOffsetLabel(FileOffset);
                 rm.Invalidate();
                 Invalidate();
             }
-            else if(keyData == Keys.L && arrangerMode == ArrangerMode.SequentialFile) // Make arranger one element shorter
+            else if(keyData == Keys.L && arrangerMode == ArrangerMode.SequentialArranger) // Make arranger one element shorter
             {
                 DisplayElements.Height--;
                 if (DisplayElements.Height < 1)
                     DisplayElements.Height = 1;
 
-                FileOffset = list.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
+                FileOffset = list.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
                 parentInstance.updateOffsetLabel(FileOffset);
                 rm.Invalidate();
                 Invalidate();
             }
-            else if(keyData == Keys.OemSemicolon && arrangerMode == ArrangerMode.SequentialFile) // Make arranger one element taller
+            else if(keyData == Keys.OemSemicolon && arrangerMode == ArrangerMode.SequentialArranger) // Make arranger one element taller
             {
                 DisplayElements.Height++;
-                FileOffset = list.ResizeArranger(DisplayElements.Width, DisplayElements.Height);
+                FileOffset = list.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
                 parentInstance.updateOffsetLabel(FileOffset);
                 rm.Invalidate();
                 Invalidate();

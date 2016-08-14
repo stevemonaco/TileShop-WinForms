@@ -4,32 +4,41 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.Xml.Linq;
 
 namespace TileShop
 {
-    public enum ArrangerMode { SequentialFile = 0, ScatteredArranger, MemoryArranger };
+    public enum ArrangerMode { SequentialArranger = 0, ScatteredArranger, MemoryArranger };
     public enum ArrangerMoveType { ByteDown = 0, ByteUp, RowDown, RowUp, ColRight, ColLeft, PageDown, PageUp, Home, End, Absolute };
 
-    public class ArrangerList
+    public class Arranger
     {
-        public bool IsSequential { get; private set; }
-        public long FileSize { get; private set; }
-        public long ArrangerByteSize { get; private set; } // Number of bytes required to be read from file sequentially
-        public ArrangerElement[,] ElementList;
+        // General Arranger variables
+        public ArrangerElement[,] ElementList { get; private set; }
         public Size ArrangerElementSize { get; private set; } // Size of the entire arranger in elements
         public Size ArrangerPixelSize { get; private set; } // Size of the entire arranger in pixels
         public Size ElementPixelSize { get; private set; } // Size of each individual element in pixels
         public ArrangerMode Mode { get; private set; }
+        public string Name { get; set; }
 
-        public ArrangerList(int ElementsX, int ElementsY, string Filename, GraphicsFormat format, ArrangerMode arrangerMode)
+        // Sequential Arranger variables
+        public bool IsSequential { get; private set; }
+        public long FileSize { get; private set; }
+        public long ArrangerByteSize { get; private set; } // Number of bytes required to be read from file sequentially
+
+        // Scattered Arranger variables
+        public string DefaultCodec { get; private set; }
+        public string DefaultFile { get; private set; }
+        public string DefaultPalette { get; private set; }
+
+        private Arranger()
         {
-            NewArranger(ElementsX, ElementsY, Filename, format, arrangerMode);
         }
 
         void NewBlankArranger(int ElementsX, int ElementsY, GraphicsFormat format)
         {
             if (format == null)
-                throw new NullReferenceException();
+                throw new ArgumentNullException();
 
             ElementList = new ArrangerElement[ElementsX, ElementsY];
 
@@ -42,11 +51,12 @@ namespace TileShop
                 for (int j = 0; j < ElementsX; j++)
                 {
                     ArrangerElement re = new ArrangerElement();
+                    re.FileOffset = 0;
                     re.X1 = x;
                     re.Y1 = y;
                     re.X2 = x + format.Width - 1;
                     re.Y2 = y + format.Height - 1;
-                    re.Format = "Transparent";
+                    re.Format = format.Name;
                     re.Palette = "Default";
                     ElementList[j, i] = re;
 
@@ -59,13 +69,23 @@ namespace TileShop
             ArrangerPixelSize = new Size(LastElem.X2, LastElem.Y2);
         }
 
-        void NewArranger(int ElementsX, int ElementsY, string Filename, GraphicsFormat format, ArrangerMode arrangerMode)
+        public static Arranger NewSequentialArranger(int ElementsX, int ElementsY, string Filename, GraphicsFormat format)
         {
-            Mode = arrangerMode;
-            long offset = 0;
-            IsSequential = true;
-            FileSize = FileManager.Instance.GetFileStream(Filename).Length;
-            NewBlankArranger(ElementsX, ElementsY, format);
+            Arranger arr = new Arranger();
+            arr.Mode = ArrangerMode.SequentialArranger;
+            arr.IsSequential = true;
+            arr.FileSize = FileManager.Instance.GetFileStream(Filename).Length;
+
+            arr.ResizeSequentialArranger(ElementsX, ElementsY, Filename, format);
+
+            return arr;
+        }
+
+        private long ResizeSequentialArranger(int ElementsX, int ElementsY, string Filename, GraphicsFormat format)
+        {
+            long offset = GetInitialSequentialFileOffset();
+
+            ElementList = new ArrangerElement[ElementsX, ElementsY];
             ArrangerByteSize = ElementsX * ElementsY * format.Size();
             int x = 0;
             int y = 0;
@@ -75,19 +95,23 @@ namespace TileShop
                 x = 0;
                 for (int j = 0; j < ElementsX; j++)
                 {
-                    ElementList[j, i].FileOffset = offset;
+                    ArrangerElement el = new ArrangerElement();
+                    el.FileOffset = offset;
+
                     if (format.ImageType == "tiled")
                         offset += format.Size();
                     else // Linear
                         offset += (format.Width + format.Stride) * format.ColorDepth / 4;
 
-                    ElementList[j, i].X1 = x;
-                    ElementList[j, i].Y1 = y;
-                    ElementList[j, i].X2 = x + format.Width - 1;
-                    ElementList[j, i].Y2 = y + format.Height - 1;
-                    ElementList[j, i].FileName = Filename;
-                    ElementList[j, i].Format = format.Name;
-                    ElementList[j, i].Palette = "Default";
+                    el.X1 = x;
+                    el.Y1 = y;
+                    el.X2 = x + format.Width - 1;
+                    el.Y2 = y + format.Height - 1;
+                    el.FileName = Filename;
+                    el.Format = format.Name;
+                    el.Palette = "Default";
+
+                    ElementList[j, i] = el;
 
                     x += format.Width;
                 }
@@ -98,29 +122,50 @@ namespace TileShop
             ArrangerPixelSize = new Size(LastElem.X2 + 1, LastElem.Y2 + 1);
             ArrangerElementSize = new Size(ElementsX, ElementsY);
             ElementPixelSize = new Size(format.Width, format.Height);
-        }
 
-        public long ResizeArranger(int ElementsX, int ElementsY)
-        {
-            long offset = GetInitialSequentialFileOffset();
-            GraphicsFormat fmt = FileManager.Instance.GetFormat(ElementList[0, 0].Format);
-            NewArranger(ElementsX, ElementsY, ElementList[0, 0].FileName, fmt, Mode);
+            offset = GetInitialSequentialFileOffset();
             offset = Move(offset);
 
             return offset;
         }
 
-        /*void Resize(int x, int y, GraphicsCodec codec)
+        public long ResizeSequentialArranger(int ElementsX, int ElementsY)
         {
-            if (ElementList == null) // Create new list
-            {
-                ElementList = new ArrangerElement[x, y];
-            }
-            else // Create new list and merge previous offset list
-            {
-                ArrangerElement[,] newList = new ArrangerElement[x, y];
-            }
-        }*/
+            if (Mode != ArrangerMode.SequentialArranger)
+                throw new ArgumentException();
+
+            return ResizeSequentialArranger(ElementsX, ElementsY, ElementList[0, 0].FileName, FileManager.Instance.GetFormat(ElementList[0, 0].Format));
+        }
+
+        public static Arranger NewScatteredArranger(int ElementsX, int ElementsY)
+        {
+            Arranger arr = new Arranger();
+            arr.Mode = ArrangerMode.ScatteredArranger;
+            arr.IsSequential = false;
+
+            arr.ElementList = new ArrangerElement[ElementsX, ElementsY];
+
+            return arr;
+        }
+
+        public void SetElement(ArrangerElement element, int posx, int posy)
+        {
+            if (ElementList == null)
+                throw new ArgumentNullException();
+
+            if (posx > ArrangerElementSize.Width || posy > ArrangerElementSize.Height)
+                throw new ArgumentOutOfRangeException();
+
+            ElementList[posx, posy] = element;
+        }
+
+        public ArrangerElement GetElement(int posx, int posy)
+        {
+            if (ElementList == null)
+                throw new ArgumentNullException();
+
+            return ElementList[posx, posy];
+        }
 
         public Rectangle GetSelectionRect(Rectangle r)
         {
@@ -161,6 +206,9 @@ namespace TileShop
         // Returns new fileoffset
         public long Move(ArrangerMoveType MoveType)
         {
+            if (Mode != ArrangerMode.SequentialArranger)
+                throw new InvalidOperationException();
+
             long offset = ElementList[0, 0].FileOffset;
             long delta;
 

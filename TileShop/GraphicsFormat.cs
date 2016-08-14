@@ -64,7 +64,7 @@ namespace TileShop
         }
 
         // Load a codec via XML format
-        public bool Load(string Filename)
+        public bool LoadFromXml(string Filename)
         {
             ImagePropertyList.Clear();
 

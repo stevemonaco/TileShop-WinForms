@@ -19,10 +19,10 @@ namespace TileShop
         private Graphics g = null;
         private bool NeedsRedraw = true;
 
-        public bool Render(ArrangerList list)
+        public bool Render(Arranger list)
         {
             if (list == null)
-                throw new NullReferenceException();
+                throw new ArgumentNullException();
             if (list.ArrangerPixelSize.Width == 0 || list.ArrangerPixelSize.Height == 0)
                 return false;
 
