@@ -16,19 +16,19 @@ namespace TileShop
     public class RenderManager
     {
         public Bitmap Image { get; set; }
-        private Graphics g = null;
-        private bool NeedsRedraw = true;
+        Graphics g = null;
+        bool NeedsRedraw = true;
 
-        public bool Render(Arranger list)
+        public bool Render(Arranger arranger)
         {
-            if (list == null)
+            if (arranger == null)
                 throw new ArgumentNullException();
-            if (list.ArrangerPixelSize.Width == 0 || list.ArrangerPixelSize.Height == 0)
+            if (arranger.ArrangerPixelSize.Width == 0 || arranger.ArrangerPixelSize.Height == 0)
                 return false;
 
-            if (Image == null || list.ArrangerPixelSize.Width != Image.Width || list.ArrangerPixelSize.Height != Image.Height)
+            if (Image == null || arranger.ArrangerPixelSize.Width != Image.Width || arranger.ArrangerPixelSize.Height != Image.Height)
             {
-                Image = new Bitmap(list.ArrangerPixelSize.Width, list.ArrangerPixelSize.Height, PixelFormat.Format32bppRgb);
+                Image = new Bitmap(arranger.ArrangerPixelSize.Width, arranger.ArrangerPixelSize.Height, PixelFormat.Format32bppRgb);
                 g = Graphics.FromImage(Image);
             }
 
@@ -49,24 +49,29 @@ namespace TileShop
             // TODO: Refactor into separate render loops for sequential and arranged versions
             // Remember TileCache
 
-            if(list.IsSequential)
+            if(arranger.IsSequential)
             {
-                br = new BinaryReader(FileManager.Instance.GetFileStream(list.ElementList[0, 0].FileName));
-                br.BaseStream.Seek(list.ElementList[0, 0].FileOffset, SeekOrigin.Begin);
+                br = new BinaryReader(FileManager.Instance.GetFileStream(arranger.ElementList[0, 0].FileName));
+                br.BaseStream.Seek(arranger.ElementList[0, 0].FileOffset, SeekOrigin.Begin);
             }
 
-            for(int i = 0; i < list.ArrangerElementSize.Height; i++)
+            for(int i = 0; i < arranger.ArrangerElementSize.Height; i++)
             {
-                for(int j = 0; j < list.ArrangerElementSize.Width; j++)
+                for(int j = 0; j < arranger.ArrangerElementSize.Width; j++)
                 {
-                    ArrangerElement el = list.ElementList[j, i];
-                    if (!list.IsSequential) // Reader update required
+                    ArrangerElement el = arranger.ElementList[j, i];
+                    if (!arranger.IsSequential) // Reader update required
                     {
+                        if (el.Format == null) // Null format means a blank tile
+                        {
+                            GraphicsCodec.DecodeBlank(Image, el);
+                            continue;
+                        }
                         br = new BinaryReader(FileManager.Instance.GetFileStream(el.FileName));
                         br.BaseStream.Seek(el.FileOffset, SeekOrigin.Begin);
                     }
 
-                    GraphicsCodec.Decode(Image, FileManager.Instance.GetFormat(el.Format), el.X1, el.Y1, br, FileManager.Instance.GetPalette(el.Palette));
+                    GraphicsCodec.Decode(Image, FileManager.Instance.GetGraphicsFormat(el.Format), el.X1, el.Y1, br, FileManager.Instance.GetPalette(el.Palette));
                 }
             }
 

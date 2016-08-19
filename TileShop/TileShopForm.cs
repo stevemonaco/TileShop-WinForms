@@ -1,21 +1,24 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.IO;
+using System.Drawing;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace TileShop
 {
     public partial class TileShopForm : Form
     {
-        private string CodecDirectoryPath = "D:\\Projects\\TileShop\\codecs\\";
-        private string PaletteDirectoryPath = "D:\\Projects\\TileShop\\pal\\";
+        string CodecDirectoryPath = "D:\\Projects\\TileShop\\codecs\\";
+        string PaletteDirectoryPath = "D:\\Projects\\TileShop\\pal\\";
 
-        private ProjectExplorerControl gdc = new ProjectExplorerControl();
+        ProjectExplorerControl pec;
 
         public TileShopForm()
         {
             InitializeComponent();
-            gdc.Show(dockPanel, DockState.DockLeft);
+
+            pec = new ProjectExplorerControl(this);
+            pec.Show(dockPanel, DockState.DockLeft);
             LoadCodecs(CodecDirectoryPath);
             LoadPalettes(PaletteDirectoryPath);
         }
@@ -38,18 +41,54 @@ namespace TileShop
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, ArrangerMode.SequentialArranger);
-
-                if(gv.OpenFile(ofd.FileName) == false)
+                if (Path.GetExtension(ofd.FileName) == ".xml")
                 {
-                    gv.Close();
-                    MessageBox.Show("Could not open file " + ofd.FileName);
-                    return;
-                }
+                    // Clear all files/arrangers/palettes
+                    FileManager.Instance.ClearAll();
+                    pec.ClearAll();
 
-                gdc.AddFile(ofd.FileName);
-                gv.Show(dockPanel, DockState.Document);
+                    // Add saving for modified viewers here
+                    foreach(Control c in this.Controls)
+                    {
+                        if(c.GetType() == typeof(GraphicsViewerMdiChild))
+                        {
+                            c.Dispose();
+                        }
+                    }
+
+                    // Read new XML file
+                    GameDescriptorFile.LoadFromXml(ofd.FileName);                    
+                }
+                else
+                {
+                    if (FileManager.Instance.LoadSequentialArrangerFromFilename(ofd.FileName))
+                    {
+                        GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, ofd.FileName);
+                        pec.AddFile(ofd.FileName);
+                        gv.Show(dockPanel, DockState.Document);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Could not open file " + ofd.FileName);
+                        return;
+                    }
+                }
             }
+        }
+
+        public bool openExistingArranger(string arrangerName)
+        {
+            // Check if the arranger is already an opened Document
+            foreach(Control c in dockPanel.Documents)
+            {
+                if (c.Text == arrangerName)
+                    return false;
+            }
+
+            GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, arrangerName);
+            gv.Show(dockPanel, DockState.Document);
+
+            return true;
         }
 
         public void updateOffsetLabel(long offset)
@@ -87,19 +126,20 @@ namespace TileShop
         private void debugToolStripMenuItem_Click(object sender, EventArgs e)
         {
             WindowState = FormWindowState.Maximized;
-            GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ArrangerMode.SequentialArranger);
 
-            if (gmc.OpenFile("D:\\Projects\\ff2.sfc") == false)
+            if (FileManager.Instance.LoadSequentialArrangerFromFilename("D:\\Projects\\ff2.sfc"))
             {
-                gmc.Close();
+                GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, "D:\\Projects\\ff2.sfc");
+                pec.AddFile("D:\\Projects\\ff2.sfc");
+                gv.WindowState = FormWindowState.Maximized;
+                gv.SetZoom(6);
+                gv.Show(dockPanel, DockState.Document);
+            }
+            else
+            {
                 MessageBox.Show("Could not open file " + "D:\\Projects\\ff2.sfc");
                 return;
             }
-
-            gdc.AddFile("D:\\Projects\\ff2.sfc");
-            gmc.WindowState = FormWindowState.Maximized;
-            gmc.zoom = 6;
-            gmc.Show(dockPanel, DockState.Document);
         }
 
         private void blankArrangerToolStripMenuItem_Click(object sender, EventArgs e)
@@ -110,18 +150,66 @@ namespace TileShop
             {
                 if (ActiveMdiChild.GetType() == typeof(GraphicsViewerMdiChild))
                 {
-                    GraphicsViewerMdiChild gmc = (GraphicsViewerMdiChild)ActiveMdiChild;
-                    GraphicsFormat fmt = gmc.graphicsFormat;
-                    ntaf.SetFormat(fmt.Name);
-                    ntaf.SetDefaults(fmt.Width, fmt.Height, 16, 8);
+                    GraphicsViewerMdiChild gv = (GraphicsViewerMdiChild)ActiveMdiChild;
+
+                    Size ElementSize = gv.arranger.ElementPixelSize;
+                    ntaf.SetDefaults(ElementSize.Width, ElementSize.Height, 16, 8);
+
+                    if (gv.arranger.Mode == ArrangerMode.SequentialArranger)
+                    {
+                        GraphicsFormat fmt = FileManager.Instance.GetGraphicsFormat(gv.arranger.GetSequentialGraphicsFormat());
+                        ntaf.SetFormat(fmt.Name);
+                    }
                 }
             }
 
             if(DialogResult.OK == ntaf.ShowDialog())
             {
-                GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ArrangerMode.MemoryArranger);
+                //GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ArrangerMode.MemoryArranger);
                 //GraphicsFormat 
                 //gmc.LoadTileArranger(ntaf.GetFormatName(), ntaf.GetArrangerSize(), null);
+            }
+        }
+
+        private void debugXmlToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            WindowState = FormWindowState.Maximized;
+
+            GameDescriptorFile.LoadFromXml("D:\\Projects\\ff2.xml");
+            GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, "Font");
+            gv.WindowState = FormWindowState.Maximized;
+            gv.SetZoom(6);
+            gv.Show(dockPanel, DockState.Document);
+        }
+
+        private void scatteredArrangerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            NewScatteredArrangerForm nsaf = new NewScatteredArrangerForm();
+
+            if (ActiveMdiChild != null)
+            {
+                if (ActiveMdiChild.GetType() == typeof(GraphicsViewerMdiChild))
+                {
+                    GraphicsViewerMdiChild gv = (GraphicsViewerMdiChild)ActiveMdiChild;
+                    Size ElementSize = gv.arranger.ElementPixelSize;
+                    nsaf.SetDefaults(ElementSize.Width, ElementSize.Height, 16, 8);
+                }
+            }
+
+            if (DialogResult.OK == nsaf.ShowDialog())
+            {
+                Size ArrSize = nsaf.GetArrangerSize();
+                Size TileSize = nsaf.GetTileSize();
+
+                Arranger arr = Arranger.NewScatteredArranger(ArrSize.Width, ArrSize.Height, TileSize.Width, TileSize.Height);
+                arr.Name = nsaf.GetArrangerName();
+                FileManager.Instance.AddArranger(arr);
+
+                GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, arr.Name);
+                pec.AddArranger(arr.Name);
+                gv.WindowState = FormWindowState.Maximized;
+                gv.SetZoom(6);
+                gv.Show(dockPanel, DockState.Document);
             }
         }
     }

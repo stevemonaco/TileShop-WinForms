@@ -10,43 +10,22 @@ using System.Windows.Forms;
 
 namespace TileShop
 {
-    public partial class NewTileArrangerForm : Form
+    public partial class NewScatteredArrangerForm : Form
     {
-        public NewTileArrangerForm()
+        public NewScatteredArrangerForm()
         {
             InitializeComponent();
-            EnumerateFormats();
             SetDefaults(8, 8, 16, 8);
-        }
-
-        // Adds all graphic format names
-        public void EnumerateFormats()
-        {
-            List<string> FormatNames = FileManager.Instance.GetGraphicsFormatsNameList();
-
-            foreach (string s in FormatNames)
-            {
-                formatBox.Items.Add(s);
-            }
+            ActiveControl = nameTextBox;
         }
 
         public void SetDefaults(int TileWidth, int TileHeight, int ArrangerTilesX, int ArrangerTilesY)
         {
-            
+
             tileWidthBox.Text = TileWidth.ToString();
             tileHeightBox.Text = TileHeight.ToString();
             tilesXBox.Text = ArrangerTilesX.ToString();
             tilesYBox.Text = ArrangerTilesY.ToString();
-        }
-
-        public void SetFormat(string FormatName)
-        {
-            int idx = 0;
-            foreach(string s in formatBox.Items)
-            {
-                if(s == FormatName)
-                    formatBox.SelectedIndex = idx;
-            }
         }
 
         public Size GetTileSize()
@@ -65,10 +44,21 @@ namespace TileShop
             return s;
         }
 
-        public string GetFormatName()
+        public string GetArrangerName()
         {
-            return formatBox.SelectedText;
+            return nameTextBox.Text;
         }
 
+        private void createButton_Click(object sender, EventArgs e)
+        {
+            if (FileManager.Instance.HasArranger(nameTextBox.Text))
+            {
+                MessageBox.Show("Arranger " + nameTextBox.Text + " already exists. Please choose an alternate name");
+                return;
+            }
+
+            DialogResult = DialogResult.OK;
+            this.Close();
+        }
     }
 }

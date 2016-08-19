@@ -75,6 +75,7 @@
             this.filesTreeView.Name = "filesTreeView";
             this.filesTreeView.Size = new System.Drawing.Size(255, 341);
             this.filesTreeView.TabIndex = 0;
+            this.filesTreeView.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.filesTreeView_NodeMouseDoubleClick);
             // 
             // arrangersTabPage
             // 
@@ -93,6 +94,7 @@
             this.arrangersTreeView.Name = "arrangersTreeView";
             this.arrangersTreeView.Size = new System.Drawing.Size(261, 347);
             this.arrangersTreeView.TabIndex = 0;
+            this.arrangersTreeView.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.arrangersTreeView_NodeMouseDoubleClick);
             // 
             // palettesTabPage
             // 
@@ -112,14 +114,14 @@
             this.palettesTreeView.Size = new System.Drawing.Size(261, 347);
             this.palettesTreeView.TabIndex = 0;
             // 
-            // GameDescriptorControl
+            // ProjectExplorerControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(269, 373);
             this.Controls.Add(this.tabControl1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Name = "GameDescriptorControl";
+            this.Name = "ProjectExplorerControl";
             this.Text = "Project Explorer";
             this.tabControl1.ResumeLayout(false);
             this.filesTabPage.ResumeLayout(false);

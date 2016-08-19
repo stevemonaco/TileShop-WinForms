@@ -11,14 +11,35 @@ namespace TileShop
     {
         public static readonly FileManager Instance = new FileManager();
 
-        public Dictionary<string, FileStream> FileList = new Dictionary<string, FileStream>();
-        public Dictionary<string, Arranger> ArrangerList = new Dictionary<string, Arranger>();
-        public Dictionary<string, Palette> PaletteList = new Dictionary<string, Palette>();
-        public Dictionary<string, GraphicsFormat> FormatList = new Dictionary<string, GraphicsFormat>();
+        private Dictionary<string, FileStream> FileList = new Dictionary<string, FileStream>();
+        private Dictionary<string, Arranger> ArrangerList = new Dictionary<string, Arranger>();
+        private Dictionary<string, Palette> PaletteList = new Dictionary<string, Palette>();
+        private Dictionary<string, GraphicsFormat> FormatList = new Dictionary<string, GraphicsFormat>();
+        private FileTypeLoader Loader = new FileTypeLoader();
+
+        const int DefaultElementsX = 8;
+        const int DefaultElementsY = 16;
+
+        // public GameDescriptorFile Descriptor = new GameDescriptorFile();
 
         public void AddFileStream(string FileName, FileStream fs)
         {
             FileList.Add(FileName, fs);
+        }
+
+        public void AddGraphicsFormat(GraphicsFormat format)
+        {
+            FormatList.Add(format.Name, format);
+        }
+
+        public void AddArranger(Arranger arr)
+        {
+            ArrangerList.Add(arr.Name, arr);
+        }
+
+        public void AddPalette(string PaletteName, Palette pal)
+        {
+            PaletteList.Add(PaletteName, pal);
         }
 
         public FileStream GetFileStream(string FileName)
@@ -29,11 +50,6 @@ namespace TileShop
                 throw new KeyNotFoundException();
         }
 
-        public void AddPalette(string PaletteName, Palette pal)
-        {
-            PaletteList.Add(PaletteName, pal);
-        }
-
         public Palette GetPalette(string PaletteName)
         {
             if (PaletteList.ContainsKey(PaletteName))
@@ -41,13 +57,21 @@ namespace TileShop
             else
                 throw new KeyNotFoundException();
         }
-
-        public void AddGraphicsFormat(GraphicsFormat format)
+        
+        public Arranger GetArranger(string ArrangerName)
         {
-            FormatList.Add(format.Name, format);
+            if (HasArranger(ArrangerName))
+                return ArrangerList[ArrangerName];
+            else
+                throw new KeyNotFoundException();
         }
 
-        public GraphicsFormat GetFormat(string FormatName)
+        public bool HasArranger(string ArrangerName)
+        {
+            return ArrangerList.ContainsKey(ArrangerName);
+        }
+
+        public GraphicsFormat GetGraphicsFormat(string FormatName)
         {
             if (FormatList.ContainsKey(FormatName))
                 return FormatList[FormatName];
@@ -55,18 +79,42 @@ namespace TileShop
                 throw new KeyNotFoundException();
         }
 
+        public List<string> GetGraphicsFormatsNameList()
+        {
+            Dictionary<string, GraphicsFormat>.KeyCollection keys = FileManager.Instance.FormatList.Keys;
+            List<string> keyList = keys.ToList<string>();
+            keyList.Sort();
+
+            return keyList;
+        }
+
         public bool LoadFile(string Filename)
         {
             // TODO: Error handling
             try
             {
-                FileStream fs = File.Open(Filename, FileMode.Open, FileAccess.ReadWrite);
-                AddFileStream(Path.GetFileNameWithoutExtension(Filename), fs);
+                if (!FileList.ContainsKey(Filename))
+                {
+                    FileStream fs = File.Open(Filename, FileMode.Open, FileAccess.ReadWrite);
+                    AddFileStream(Filename, fs);
+                }
             }
             catch(FileNotFoundException ex)
             {
                 return false;
             }
+
+            return true;
+        }
+
+        public bool LoadSequentialArrangerFromFilename(string Filename)
+        {
+            if (!LoadFile(Filename))
+                return false;
+
+            string formatname = Loader.GetDefaultFormatName(Filename);
+            Arranger arranger = Arranger.NewSequentialArranger(DefaultElementsX, DefaultElementsY, Filename, GetGraphicsFormat(formatname));
+            AddArranger(arranger);
 
             return true;
         }
@@ -93,6 +141,26 @@ namespace TileShop
             string palname = Path.GetFileNameWithoutExtension(Filename);
 
             AddPalette(palname, pal);
+            return true;
+        }
+
+        public bool RemoveArranger(string ArrangerName)
+        {
+            if(ArrangerList.ContainsKey(ArrangerName))
+            {
+                ArrangerList.Remove(ArrangerName);
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool ClearAll()
+        {
+            FileList.Clear();
+            PaletteList.Clear();
+            ArrangerList.Clear();
+
             return true;
         }
 

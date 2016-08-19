@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 using System.Xml.Linq;
 using System.Xml;
 
@@ -11,11 +12,18 @@ namespace TileShop
     public class GameDescriptorFile
     {
         //GameDescriptorSettings settings;
+        private GameDescriptorFile()
+        {
+        }
 
         // Loads data files, palettes, and arrangers from XML
         public static bool LoadFromXml(string XmlFileName)
         {
             XElement xe = XElement.Load(XmlFileName);
+
+            string path = Path.GetDirectoryName(XmlFileName);
+
+            Directory.SetCurrentDirectory(path);
 
             var settings = xe.Descendants("settings")
                 .Select(e => new
@@ -23,11 +31,10 @@ namespace TileShop
                     numberformat = e.Descendants("filelocationnumberformat").First().Value
                 });
 
-            var datafiles = xe.Descendants("image")
+            var datafiles = xe.Descendants("file")
                 .Select(e => new
                 {
                     location = e.Attribute("location").Value,
-                    id = e.Attribute("id").Value
                 });
 
             foreach (var datafile in datafiles)
@@ -76,29 +83,30 @@ namespace TileShop
             var arrangers = xe.Descendants("arranger")
                 .Select(e => new
                 {
-                    name = e.Descendants("name").First().Value,
-                    elementsx = int.Parse(e.Descendants("elementsx").First().Value),
-                    elementsy = int.Parse(e.Descendants("elementsy").First().Value),
-                    height = int.Parse(e.Descendants("height").First().Value),
-                    width = int.Parse(e.Descendants("width").First().Value),
-                    defaultformat = e.Descendants("defaultformat").First().Value,
-                    defaultfile = e.Descendants("defaultfile").First().Value,
-                    defaultpalette = e.Descendants("defaultpalette").First().Value,
-                    graphics = e.Descendants("graphic")
+                    name = e.Attribute("name").Value,
+                    elementsx = int.Parse(e.Attribute("elementsx").Value),
+                    elementsy = int.Parse(e.Attribute("elementsy").Value),
+                    height = int.Parse(e.Attribute("height").Value),
+                    width = int.Parse(e.Attribute("width").Value),
+                    defaultformat = e.Attribute("defaultformat").Value,
+                    defaultfile = e.Attribute("defaultfile").Value,
+                    defaultpalette = e.Attribute("defaultpalette").Value,
+                    graphiclist = e.Descendants("graphic")
                 });
 
-            foreach(var arranger in arrangers)
+            foreach (var arranger in arrangers)
             {
-                Arranger arr = Arranger.NewScatteredArranger(arranger.elementsx, arranger.elementsy);
+                Arranger arr = Arranger.NewScatteredArranger(arranger.elementsx, arranger.elementsy, arranger.width, arranger.height);
+                arr.Name = arranger.name;
 
-                var graphics = arranger.graphics.Select(e => new
+                var graphics = arranger.graphiclist.Select(e => new
                 {
-                    fileoffset = int.Parse(e.Attribute("fileoffset").Value),
+                    fileoffset = int.Parse(e.Attribute("fileoffset").Value, System.Globalization.NumberStyles.HexNumber),
                     posx = int.Parse(e.Attribute("posx").Value),
                     posy = int.Parse(e.Attribute("posy").Value),
-                    format = e.Attribute("format").Value,
-                    palette = e.Attribute("palette").Value,
-                    file = e.Attribute("file").Value
+                    format = e.Attribute("format"),
+                    palette = e.Attribute("palette"),
+                    file = e.Attribute("file")
                 });
 
                 foreach(var graphic in graphics)
@@ -109,11 +117,11 @@ namespace TileShop
                     el.Format = arranger.defaultformat;
 
                     if (graphic.file != null)
-                        el.FileName = graphic.file;
+                        el.FileName = graphic.file.Value;
                     if (graphic.palette != null)
-                        el.Palette = graphic.palette;
+                        el.Palette = graphic.palette.Value;
                     if (graphic.format != null)
-                        el.Format = graphic.format;
+                        el.Format = graphic.format.Value;
 
                     el.FileOffset = graphic.fileoffset;
                     el.Height = arranger.height;
@@ -125,6 +133,8 @@ namespace TileShop
 
                     arr.SetElement(el, graphic.posx, graphic.posy);
                 }
+
+                FileManager.Instance.AddArranger(arr);
             }
 
             return true;

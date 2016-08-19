@@ -32,6 +32,7 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newGraphicsProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.blankArrangerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.openGraphicsProject = new System.Windows.Forms.ToolStripMenuItem();
@@ -41,13 +42,14 @@
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugXmlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainToolStrip = new System.Windows.Forms.ToolStrip();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.selectionLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.fileOffsetLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.dockTheme = new WeifenLuo.WinFormsUI.Docking.VS2013BlueTheme();
             this.dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
-            this.blankArrangerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.scatteredArrangerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -56,7 +58,8 @@
             // 
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.debugToolStripMenuItem});
+            this.debugToolStripMenuItem,
+            this.debugXmlToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -82,6 +85,7 @@
             // 
             this.newToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.newGraphicsProjectMenu,
+            this.scatteredArrangerToolStripMenuItem,
             this.blankArrangerToolStripMenuItem});
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
             this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
@@ -93,6 +97,13 @@
             this.newGraphicsProjectMenu.Size = new System.Drawing.Size(177, 22);
             this.newGraphicsProjectMenu.Text = "Graphics Descriptor";
             this.newGraphicsProjectMenu.Click += new System.EventHandler(this.newGraphicsProjectMenu_Click);
+            // 
+            // blankArrangerToolStripMenuItem
+            // 
+            this.blankArrangerToolStripMenuItem.Name = "blankArrangerToolStripMenuItem";
+            this.blankArrangerToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.blankArrangerToolStripMenuItem.Text = "Blank Arranger";
+            this.blankArrangerToolStripMenuItem.Click += new System.EventHandler(this.blankArrangerToolStripMenuItem_Click);
             // 
             // openToolStripMenuItem
             // 
@@ -151,6 +162,13 @@
             this.debugToolStripMenuItem.Text = "&Debug";
             this.debugToolStripMenuItem.Click += new System.EventHandler(this.debugToolStripMenuItem_Click);
             // 
+            // debugXmlToolStripMenuItem
+            // 
+            this.debugXmlToolStripMenuItem.Name = "debugXmlToolStripMenuItem";
+            this.debugXmlToolStripMenuItem.Size = new System.Drawing.Size(78, 20);
+            this.debugXmlToolStripMenuItem.Text = "Debug Xml";
+            this.debugXmlToolStripMenuItem.Click += new System.EventHandler(this.debugXmlToolStripMenuItem_Click);
+            // 
             // mainToolStrip
             // 
             this.mainToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
@@ -198,12 +216,12 @@
             this.dockPanel.TabIndex = 4;
             this.dockPanel.Theme = this.dockTheme;
             // 
-            // blankArrangerToolStripMenuItem
+            // scatteredArrangerToolStripMenuItem
             // 
-            this.blankArrangerToolStripMenuItem.Name = "blankArrangerToolStripMenuItem";
-            this.blankArrangerToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
-            this.blankArrangerToolStripMenuItem.Text = "Blank Arranger";
-            this.blankArrangerToolStripMenuItem.Click += new System.EventHandler(this.blankArrangerToolStripMenuItem_Click);
+            this.scatteredArrangerToolStripMenuItem.Name = "scatteredArrangerToolStripMenuItem";
+            this.scatteredArrangerToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.scatteredArrangerToolStripMenuItem.Text = "Scattered Arranger";
+            this.scatteredArrangerToolStripMenuItem.Click += new System.EventHandler(this.scatteredArrangerToolStripMenuItem_Click);
             // 
             // TileShopForm
             // 
@@ -250,6 +268,8 @@
         private WeifenLuo.WinFormsUI.Docking.VS2013BlueTheme dockTheme;
         private WeifenLuo.WinFormsUI.Docking.DockPanel dockPanel;
         private System.Windows.Forms.ToolStripMenuItem blankArrangerToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debugXmlToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem scatteredArrangerToolStripMenuItem;
     }
 }
 

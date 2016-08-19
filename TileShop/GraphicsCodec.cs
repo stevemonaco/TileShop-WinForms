@@ -19,6 +19,17 @@ namespace TileShop
                 IndexedDecode(bmp, fmt, OffsetX, OffsetY, br, pal);
         }
 
+        // Draws a blank background
+        public static void DecodeBlank(Bitmap bmp, ArrangerElement el)
+        {
+            Color c = Color.FromArgb(el.Palette[0]);
+            Brush b = new SolidBrush(c);
+            Rectangle r = new Rectangle(el.X1, el.Y1, (el.X2 - el.X1) + 1, (el.Y2 - el.Y1) + 1);
+
+            Graphics g = Graphics.FromImage(bmp);
+            g.FillRectangle(b, r);
+        }
+
         public unsafe static void IndexedDecode(Bitmap bmp, GraphicsFormat fmt, int OffsetX, int OffsetY, BinaryReader br, Palette pal)
         {
             byte[] data = br.ReadBytes(fmt.Size());
