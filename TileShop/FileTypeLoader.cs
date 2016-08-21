@@ -22,7 +22,10 @@ namespace TileShop
         // Retrieves default graphics format name from a filename
         public string GetDefaultFormatName(string Filename)
         {
-            return LookupDefaultFormat[Path.GetExtension(Filename)];
+            if (LookupDefaultFormat.ContainsKey(Path.GetExtension(Filename)))
+                return LookupDefaultFormat[Path.GetExtension(Filename)];
+            else
+                return "NES 1bpp";
         }
     }
 }

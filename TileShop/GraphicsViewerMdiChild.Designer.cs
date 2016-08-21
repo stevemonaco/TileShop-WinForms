@@ -29,22 +29,14 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GraphicsViewerMdiChild));
-            this.vertScroll = new System.Windows.Forms.VScrollBar();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.formatSelectBox = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.zoomSelectBox = new System.Windows.Forms.ToolStripComboBox();
             this.showGridlinesButton = new System.Windows.Forms.ToolStripButton();
+            this.RenderPanel = new System.Windows.Forms.Panel();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // vertScroll
-            // 
-            this.vertScroll.Dock = System.Windows.Forms.DockStyle.Right;
-            this.vertScroll.Location = new System.Drawing.Point(547, 0);
-            this.vertScroll.Name = "vertScroll";
-            this.vertScroll.Size = new System.Drawing.Size(17, 457);
-            this.vertScroll.TabIndex = 2;
             // 
             // toolStrip1
             // 
@@ -58,7 +50,7 @@
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.toolStrip1.Size = new System.Drawing.Size(547, 25);
+            this.toolStrip1.Size = new System.Drawing.Size(564, 25);
             this.toolStrip1.TabIndex = 4;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -103,24 +95,39 @@
             this.showGridlinesButton.ToolTipText = "Show Gridlines";
             this.showGridlinesButton.Click += new System.EventHandler(this.showGridlinesButton_Click);
             // 
+            // RenderPanel
+            // 
+            this.RenderPanel.AllowDrop = true;
+            this.RenderPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.RenderPanel.Location = new System.Drawing.Point(0, 25);
+            this.RenderPanel.Name = "RenderPanel";
+            this.RenderPanel.Size = new System.Drawing.Size(564, 432);
+            this.RenderPanel.TabIndex = 5;
+            this.RenderPanel.DragDrop += new System.Windows.Forms.DragEventHandler(this.RenderPanel_DragDrop);
+            this.RenderPanel.DragEnter += new System.Windows.Forms.DragEventHandler(this.RenderPanel_DragEnter);
+            this.RenderPanel.DragOver += new System.Windows.Forms.DragEventHandler(this.RenderPanel_DragOver);
+            this.RenderPanel.DragLeave += new System.EventHandler(this.RenderPanel_DragLeave);
+            this.RenderPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.RenderPanel_Paint);
+            this.RenderPanel.QueryContinueDrag += new System.Windows.Forms.QueryContinueDragEventHandler(this.RenderPanel_QueryContinueDrag);
+            this.RenderPanel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.RenderPanel_MouseDown);
+            this.RenderPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.RenderPanel_MouseMove);
+            this.RenderPanel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.RenderPanel_MouseUp);
+            // 
             // GraphicsViewerMdiChild
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.ClientSize = new System.Drawing.Size(564, 457);
+            this.Controls.Add(this.RenderPanel);
             this.Controls.Add(this.toolStrip1);
-            this.Controls.Add(this.vertScroll);
             this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "GraphicsViewerMdiChild";
             this.Text = "GraphicsMdiChild";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.GraphicsViewerMdiChild_FormClosing);
-            this.Paint += new System.Windows.Forms.PaintEventHandler(this.GraphicsMdiChild_Paint);
-            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.GraphicsViewerMdiChild_MouseDown);
-            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.GraphicsMdiChild_MouseMove);
-            this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.GraphicsViewerMdiChild_MouseUp);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -129,11 +136,11 @@
         }
 
         #endregion
-        private System.Windows.Forms.VScrollBar vertScroll;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripComboBox formatSelectBox;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripComboBox zoomSelectBox;
         private System.Windows.Forms.ToolStripButton showGridlinesButton;
+        private System.Windows.Forms.Panel RenderPanel;
     }
 }

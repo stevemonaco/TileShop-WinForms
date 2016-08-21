@@ -29,19 +29,19 @@
         private void InitializeComponent()
         {
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.tileHeightBox = new TileShop.IntegerTextBox();
+            this.tileWidthBox = new TileShop.IntegerTextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
             this.nameTextBox = new System.Windows.Forms.TextBox();
+            this.tilesYBox = new TileShop.IntegerTextBox();
+            this.tilesXBox = new TileShop.IntegerTextBox();
             this.label5 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.createButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
-            this.tileHeightBox = new TileShop.IntegerTextBox();
-            this.tileWidthBox = new TileShop.IntegerTextBox();
-            this.tilesYBox = new TileShop.IntegerTextBox();
-            this.tilesXBox = new TileShop.IntegerTextBox();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -58,6 +58,20 @@
             this.groupBox2.TabIndex = 17;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Tile Size";
+            // 
+            // tileHeightBox
+            // 
+            this.tileHeightBox.Location = new System.Drawing.Point(140, 19);
+            this.tileHeightBox.Name = "tileHeightBox";
+            this.tileHeightBox.Size = new System.Drawing.Size(62, 20);
+            this.tileHeightBox.TabIndex = 4;
+            // 
+            // tileWidthBox
+            // 
+            this.tileWidthBox.Location = new System.Drawing.Point(9, 19);
+            this.tileWidthBox.Name = "tileWidthBox";
+            this.tileWidthBox.Size = new System.Drawing.Size(62, 20);
+            this.tileWidthBox.TabIndex = 3;
             // 
             // label4
             // 
@@ -108,6 +122,20 @@
             this.nameTextBox.Size = new System.Drawing.Size(216, 20);
             this.nameTextBox.TabIndex = 0;
             // 
+            // tilesYBox
+            // 
+            this.tilesYBox.Location = new System.Drawing.Point(140, 50);
+            this.tilesYBox.Name = "tilesYBox";
+            this.tilesYBox.Size = new System.Drawing.Size(62, 20);
+            this.tilesYBox.TabIndex = 2;
+            // 
+            // tilesXBox
+            // 
+            this.tilesXBox.Location = new System.Drawing.Point(9, 50);
+            this.tilesXBox.Name = "tilesXBox";
+            this.tilesXBox.Size = new System.Drawing.Size(62, 20);
+            this.tilesXBox.TabIndex = 1;
+            // 
             // label5
             // 
             this.label5.AutoSize = true;
@@ -146,38 +174,12 @@
             this.cancelButton.Text = "Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
             // 
-            // tileHeightBox
-            // 
-            this.tileHeightBox.Location = new System.Drawing.Point(140, 19);
-            this.tileHeightBox.Name = "tileHeightBox";
-            this.tileHeightBox.Size = new System.Drawing.Size(62, 20);
-            this.tileHeightBox.TabIndex = 4;
-            // 
-            // tileWidthBox
-            // 
-            this.tileWidthBox.Location = new System.Drawing.Point(9, 19);
-            this.tileWidthBox.Name = "tileWidthBox";
-            this.tileWidthBox.Size = new System.Drawing.Size(62, 20);
-            this.tileWidthBox.TabIndex = 3;
-            // 
-            // tilesYBox
-            // 
-            this.tilesYBox.Location = new System.Drawing.Point(140, 50);
-            this.tilesYBox.Name = "tilesYBox";
-            this.tilesYBox.Size = new System.Drawing.Size(62, 20);
-            this.tilesYBox.TabIndex = 2;
-            // 
-            // tilesXBox
-            // 
-            this.tilesXBox.Location = new System.Drawing.Point(9, 50);
-            this.tilesXBox.Name = "tilesXBox";
-            this.tilesXBox.Size = new System.Drawing.Size(62, 20);
-            this.tilesXBox.TabIndex = 1;
-            // 
             // NewScatteredArrangerForm
             // 
+            this.AcceptButton = this.createButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.cancelButton;
             this.ClientSize = new System.Drawing.Size(295, 199);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);

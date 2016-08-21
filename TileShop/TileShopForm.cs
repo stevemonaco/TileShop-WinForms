@@ -91,9 +91,9 @@ namespace TileShop
             return true;
         }
 
-        public void updateOffsetLabel(long offset)
+        public void updateOffsetLabel(string offset)
         {
-            fileOffsetLabel.Text = offset.ToString("X");
+            fileOffsetLabel.Text = offset;
         }
 
         public void updateSelectionLabel(string text)

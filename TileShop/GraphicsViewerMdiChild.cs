@@ -20,19 +20,16 @@ namespace TileShop
 
         public int Zoom { get; private set; }
         bool showGridlines = true;
-        long FileOffset = 0;
 
-        Size DisplayElements;
-        Size ElementSize;
+        Size DisplayElements; // The number of elements in the entire display
+        Size ElementSize; // The size of each element in unzoomed pixels
+        Rectangle DisplayRect; // The zoomed pixel size of the entire display
         RenderManager rm = new RenderManager();
         public Arranger arranger { get; private set; }
+        ArrangerSelectionData selectionData;
 
         // Selection
-        bool inSelection = false;
-        bool hasSelection = false;
         Rectangle ViewSelectionRect = new Rectangle(0, 0, 0, 0);
-        Point beginSelectionPoint = Point.Empty;
-        Point endSelectionPoint = Point.Empty;
 
         //public GraphicsFormat graphicsFormat = null; // Sequential format only
         Pen p = new Pen(Brushes.Magenta);
@@ -46,12 +43,15 @@ namespace TileShop
             parentInstance = parent;
 
             InitializeComponent();
+            typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.NonPublic, 
+                null, RenderPanel, new object[] { true }); // Enable double buffering of the RenderPanel
 
             // Setup arranger variables
             arranger = FileManager.Instance.GetArranger(ArrangerName);
             DisplayElements = arranger.ArrangerElementSize;
             ElementSize = arranger.ElementPixelSize;
             this.Text = arranger.Name;
+            selectionData = new ArrangerSelectionData(arranger.Name);
 
             if (arranger.Mode == ArrangerMode.SequentialArranger)
             {
@@ -73,13 +73,18 @@ namespace TileShop
             p.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
             p.Width = (float)Zoom;
             zoomSelectBox.SelectedIndex = 0;
+            selectionData.Zoom = 1;
+            DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
 
             this.GotFocus += GraphicsMdiChild_GotFocus;
         }
 
         private void GraphicsMdiChild_GotFocus(object sender, EventArgs e)
         {
-            parentInstance.updateOffsetLabel(FileOffset);
+            if (arranger.Mode == ArrangerMode.SequentialArranger)
+                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+            else
+                parentInstance.updateOffsetLabel("");
         }
 
         /*public bool OpenFile(string InputFilename)
@@ -114,107 +119,110 @@ namespace TileShop
         {
             if (keyData == Keys.Add || keyData == Keys.Oemplus && arranger.Mode == ArrangerMode.SequentialArranger)
             {
-                FileOffset = arranger.Move(ArrangerMoveType.ByteDown);
-                parentInstance.updateOffsetLabel(FileOffset);
+                arranger.Move(ArrangerMoveType.ByteDown);
+                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
                 CancelSelection();
                 rm.Invalidate();
-                Invalidate();
+                RenderPanel.Invalidate();
                 return true;
             }
             if (keyData == Keys.Subtract || keyData == Keys.OemMinus && arranger.Mode == ArrangerMode.SequentialArranger)
             {
-                FileOffset = arranger.Move(ArrangerMoveType.ByteUp);
-                parentInstance.updateOffsetLabel(FileOffset);
+                arranger.Move(ArrangerMoveType.ByteUp);
+                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
                 CancelSelection();
                 rm.Invalidate();
-                Invalidate();
+                RenderPanel.Invalidate();
                 return true;
             }
             if (keyData == Keys.Down && arranger.Mode == ArrangerMode.SequentialArranger)
             {
-                FileOffset = arranger.Move(ArrangerMoveType.RowDown);
-                parentInstance.updateOffsetLabel(FileOffset);
+                arranger.Move(ArrangerMoveType.RowDown);
+                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
                 CancelSelection();
                 rm.Invalidate();
-                Invalidate();
+                RenderPanel.Invalidate();
                 return true;
             }
             else if (keyData == Keys.Up && arranger.Mode == ArrangerMode.SequentialArranger)
             {
-                FileOffset = arranger.Move(ArrangerMoveType.RowUp);
-                parentInstance.updateOffsetLabel(FileOffset);
+                arranger.Move(ArrangerMoveType.RowUp);
+                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
                 CancelSelection();
                 rm.Invalidate();
-                Invalidate();
+                RenderPanel.Invalidate();
                 return true;
             }
             else if (keyData == Keys.Right && arranger.Mode == ArrangerMode.SequentialArranger)
             {
-                FileOffset = arranger.Move(ArrangerMoveType.ColRight);
-                parentInstance.updateOffsetLabel(FileOffset);
+                arranger.Move(ArrangerMoveType.ColRight);
+                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
                 CancelSelection();
                 rm.Invalidate();
-                Invalidate();
+                RenderPanel.Invalidate();
                 return true;
             }
             else if (keyData == Keys.Left && arranger.Mode == ArrangerMode.SequentialArranger)
             {
-                FileOffset = arranger.Move(ArrangerMoveType.ColLeft);
-                parentInstance.updateOffsetLabel(FileOffset);
+                arranger.Move(ArrangerMoveType.ColLeft);
+                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
                 CancelSelection();
                 rm.Invalidate();
-                Invalidate();
+                RenderPanel.Invalidate();
                 return true;
             }
             else if (keyData == Keys.PageDown && arranger.Mode == ArrangerMode.SequentialArranger)
             {
-                FileOffset = arranger.Move(ArrangerMoveType.PageDown);
-                parentInstance.updateOffsetLabel(FileOffset);
+                arranger.Move(ArrangerMoveType.PageDown);
+                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
                 CancelSelection();
                 rm.Invalidate();
-                Invalidate();
+                RenderPanel.Invalidate();
                 return true;
             }
             else if (keyData == Keys.PageUp && arranger.Mode == ArrangerMode.SequentialArranger)
             {
-                FileOffset = arranger.Move(ArrangerMoveType.PageUp);
-                parentInstance.updateOffsetLabel(FileOffset);
+                arranger.Move(ArrangerMoveType.PageUp);
+                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
                 CancelSelection();
                 rm.Invalidate();
-                Invalidate();
+                RenderPanel.Invalidate();
                 return true;
             }
             else if (keyData == Keys.Home && arranger.Mode == ArrangerMode.SequentialArranger)
             {
-                FileOffset = arranger.Move(ArrangerMoveType.Home);
-                parentInstance.updateOffsetLabel(FileOffset);
+                arranger.Move(ArrangerMoveType.Home);
+                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
                 CancelSelection();
                 rm.Invalidate();
-                Invalidate();
+                RenderPanel.Invalidate();
                 return true;
             }
             else if (keyData == Keys.End && arranger.Mode == ArrangerMode.SequentialArranger)
             {
-                FileOffset = arranger.Move(ArrangerMoveType.End);
-                parentInstance.updateOffsetLabel(FileOffset);
+                arranger.Move(ArrangerMoveType.End);
+                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
                 CancelSelection();
                 rm.Invalidate();
-                Invalidate();
+                RenderPanel.Invalidate();
                 return true;
             }
             else if (keyData == Keys.Escape) // Cancel selection
             {
                 CancelSelection();
-                Invalidate();
+                selectionData.ClearSelection();
+                RenderPanel.Cursor = Cursors.Arrow;
+                RenderPanel.Invalidate();
                 return true;
             }
             else if (keyData == Keys.OemPeriod && arranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element wider
             {
                 DisplayElements.Width++;
-                FileOffset = arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                parentInstance.updateOffsetLabel(FileOffset);
+                arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
+                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
-                Invalidate();
+                RenderPanel.Invalidate();
             }
             else if (keyData == Keys.Oemcomma && arranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element thinner
             {
@@ -222,10 +230,11 @@ namespace TileShop
                 if (DisplayElements.Width < 1)
                     DisplayElements.Width = 1;
 
-                FileOffset = arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                parentInstance.updateOffsetLabel(FileOffset);
+                arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
+                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
-                Invalidate();
+                RenderPanel.Invalidate();
             }
             else if (keyData == Keys.L && arranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element shorter
             {
@@ -233,18 +242,20 @@ namespace TileShop
                 if (DisplayElements.Height < 1)
                     DisplayElements.Height = 1;
 
-                FileOffset = arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                parentInstance.updateOffsetLabel(FileOffset);
+                arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
+                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
-                Invalidate();
+                RenderPanel.Invalidate();
             }
             else if (keyData == Keys.OemSemicolon && arranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element taller
             {
                 DisplayElements.Height++;
-                FileOffset = arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                parentInstance.updateOffsetLabel(FileOffset);
+                arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
+                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
-                Invalidate();
+                RenderPanel.Invalidate();
             }
 
             return base.ProcessCmdKey(ref msg, keyData);
@@ -262,18 +273,74 @@ namespace TileShop
 
             arranger.SetGraphicsFormat((string)formatSelectBox.SelectedItem);
 
-            FileOffset = arranger.GetInitialSequentialFileOffset();
-            parentInstance.updateOffsetLabel(FileOffset);
+            parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
             prevFormatIndex = index;
             cache.Clear();
             CancelSelection();
 
             rm.Invalidate();
-            Invalidate();
+            RenderPanel.Invalidate();
             return;
         }
 
-        private void GraphicsMdiChild_Paint(object sender, PaintEventArgs e)
+        private void DrawGridlines(Graphics g)
+        {
+            if (showGridlines)
+            {
+                for (int y = 0; y < DisplayElements.Height; y++) // Draw horizontal lines
+                    g.DrawLine(Pens.White, 0, y * ElementSize.Height * Zoom, DisplayElements.Width * ElementSize.Width * Zoom, y * ElementSize.Height * Zoom);
+
+                for (int x = 0; x < DisplayElements.Width; x++) // Draw vertical lines
+                    g.DrawLine(Pens.White, x * ElementSize.Width * Zoom, 0, x * ElementSize.Width * Zoom, DisplayElements.Height * ElementSize.Height * Zoom);
+            }
+        }
+
+        private void DrawSelection(Graphics g)
+        {
+            // Paint selection
+            if (selectionData.HasSelection)
+            {
+                g.DrawRectangle(p, ViewSelectionRect);
+                g.FillRectangle(b, ViewSelectionRect);
+            }
+        }
+
+        private void CancelSelection()
+        {
+            selectionData.ClearSelection();
+            ViewSelectionRect = new Rectangle(0, 0, 0, 0);
+        }
+
+        public void SetZoom(int ZoomLevel)
+        {
+            zoomSelectBox.SelectedIndex = ZoomLevel - 1;
+        }
+
+        private void zoomSelectBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Zoom = zoomSelectBox.SelectedIndex + 1;
+            selectionData.Zoom = Zoom;
+            DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
+            CancelSelection();
+            RenderPanel.Invalidate();
+        }
+
+        private void showGridlinesButton_Click(object sender, EventArgs e)
+        {
+            showGridlines ^= true;
+            if (showGridlines)
+                showGridlinesButton.Checked = true;
+            else
+                showGridlinesButton.Checked = false;
+            RenderPanel.Invalidate();
+        }
+
+        private void GraphicsViewerMdiChild_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            //FileManager.Instance.
+        }
+
+        private void RenderPanel_Paint(object sender, PaintEventArgs e)
         {
             if (arranger == null)
                 return;
@@ -288,7 +355,7 @@ namespace TileShop
             e.Graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
 
             Rectangle src = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width, arranger.ArrangerPixelSize.Height);
-            Rectangle dest = new Rectangle(0, toolStrip1.Height, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
+            Rectangle dest = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
 
             e.Graphics.DrawImage(rm.Image, dest, src, GraphicsUnit.Pixel);
 
@@ -297,126 +364,339 @@ namespace TileShop
             DrawSelection(e.Graphics);
         }
 
-        private void DrawGridlines(Graphics g)
-        {
-            if (showGridlines)
-            {
-                for (int y = 0; y < DisplayElements.Height; y++) // Draw horizontal lines
-                    g.DrawLine(Pens.White, 0, y * ElementSize.Height * Zoom + toolStrip1.Height, DisplayElements.Width * ElementSize.Width * Zoom, y * ElementSize.Height * Zoom + toolStrip1.Height);
-
-                for (int x = 0; x < DisplayElements.Width; x++) // Draw vertical lines
-                    g.DrawLine(Pens.White, x * ElementSize.Width * Zoom, 0, x * ElementSize.Width * Zoom, DisplayElements.Height * ElementSize.Height * Zoom + toolStrip1.Height);
-            }
-        }
-
-        private void DrawSelection(Graphics g)
-        {
-            // Paint selection
-            if (hasSelection)
-            {
-                g.DrawRectangle(p, ViewSelectionRect);
-                g.FillRectangle(b, ViewSelectionRect);
-            }
-        }
-
-        private void CancelSelection()
-        {
-            beginSelectionPoint = Point.Empty;
-            endSelectionPoint = Point.Empty;
-            ViewSelectionRect = new Rectangle(0, 0, 0, 0);
-            hasSelection = false;
-            inSelection = false;
-        }
-
-        public void SetZoom(int ZoomLevel)
-        {
-            //Zoom = ZoomLevel;
-            zoomSelectBox.SelectedIndex = ZoomLevel - 1;
-        }
-
-        private void zoomSelectBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            Zoom = zoomSelectBox.SelectedIndex + 1;
-            CancelSelection();
-            Invalidate();
-        }
-
-        private void GraphicsMdiChild_MouseMove(object sender, MouseEventArgs e)
+        private void RenderPanel_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
-                if (beginSelectionPoint != Point.Empty)
+                if (selectionData.HasSelection && !selectionData.InSelection && ViewSelectionRect.Contains(e.Location)) // Drop and drag for multiple elements
                 {
-                    inSelection = true;
-                    hasSelection = true;
-                    endSelectionPoint = e.Location;
-                    Rectangle NewViewSelectionRect = ResizeSelectionRect(PointsToRectangle(beginSelectionPoint, endSelectionPoint));
+                    selectionData.BeginDragDrop();
+                    //RenderPanel.Cursor = DragDropCursor;
 
-                    // Re-render only if the ViewSelectionRect has changed
-                    if (ViewSelectionRect.Location != NewViewSelectionRect.Location || ViewSelectionRect.Size != NewViewSelectionRect.Size)
-                    {
-                        ViewSelectionRect = NewViewSelectionRect;
-                        Invalidate();
-                    }
+                    //string s = "test";
+                    DoDragDrop(selectionData, DragDropEffects.Copy);
+                }
+                else // New selection or single drop-and-drag
+                {
+                    selectionData.BeginSelection(e.Location, e.Location);
+                    ViewSelectionRect = selectionData.SelectedClientRect;
+                    RenderPanel.Invalidate();
                 }
             }
         }
 
-        private void showGridlinesButton_Click(object sender, EventArgs e)
+        private void RenderPanel_MouseUp(object sender, MouseEventArgs e)
         {
-            showGridlines ^= true;
-            if (showGridlines)
-                showGridlinesButton.Checked = true;
+            if (e.Button == MouseButtons.Left)
+            {
+                if(selectionData.InDragState) // Drag+Drop
+                {
+                    //RenderPanel.Cursor = Cursors.Arrow;
+                    selectionData.EndDragDrop();
+                    //Drag
+                }
+                else if (selectionData.InSelection)
+                {
+                    selectionData.EndSelection();
+                    ViewSelectionRect = selectionData.SelectedClientRect;
+                    RenderPanel.Invalidate();
+                }
+            }
+        }
+
+        private void RenderPanel_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                /*if (selectionData.InDragState)
+                {
+                    if (DisplayRect.Contains(e.Location) && RenderPanel.Cursor != DragDropCursor)
+                        RenderPanel.Cursor = DragDropCursor;
+                    else if (!DisplayRect.Contains(e.Location) && RenderPanel.Cursor != CancelDragCursor)
+                        RenderPanel.Cursor = CancelDragCursor;
+                }
+                else*/
+                if (selectionData.InSelection)
+                {
+                    selectionData.UpdateSelection(e.Location);
+                    ViewSelectionRect = selectionData.SelectedClientRect;
+                    RenderPanel.Invalidate();
+                }
+            }
+        }
+
+        private void RenderPanel_DragDrop(object sender, DragEventArgs e)
+        {
+            Point LocalLocation = RenderPanel.PointToClient(new Point(e.X, e.Y));
+            if (!e.Data.GetDataPresent(typeof(ArrangerSelectionData)))
+                return;
+
+            ArrangerSelectionData sel = (ArrangerSelectionData)e.Data.GetData(typeof(ArrangerSelectionData));
+            sel.EndDragDrop();
+            sel.PopulateData();
+
+            if(arranger.Mode == ArrangerMode.SequentialArranger)
+            {
+                // Deep copy data into arranger from sel
+            }
+            else if(arranger.Mode == ArrangerMode.ScatteredArranger)
+            {
+                // Copy element data only into arranger from sel
+                Point ElementLocation = selectionData.PointToElementLocation(LocalLocation);
+
+                for (int ysrc = 0, ydest = ElementLocation.Y; ysrc < sel.SelectionSize.Height; ysrc++, ydest++)
+                {
+                    for (int xsrc = 0, xdest = ElementLocation.X; xsrc < sel.SelectionSize.Width; xsrc++, xdest++)
+                    {
+                        ArrangerElement elsrc = sel.GetElement(xsrc, ysrc);
+                        ArrangerElement eldest = arranger.GetElement(xdest, ydest);
+                        ArrangerElement elnew = elsrc.Clone();
+                        elnew.X1 = eldest.X1;
+                        elnew.X2 = eldest.X2;
+                        elnew.Y1 = eldest.Y1;
+                        elnew.Y2 = eldest.Y2;
+                        arranger.SetElement(elnew, xdest, ydest);
+                    }
+                }
+            }
+
+            rm.Invalidate();
+            RenderPanel.Invalidate();
+        }
+
+        private void RenderPanel_DragEnter(object sender, DragEventArgs e)
+        {
+            Point LocalLocation = PointToClient(new Point(e.X, e.Y));
+
+            if (e.Data.GetDataPresent(typeof(ArrangerSelectionData)))
+                e.Effect = DragDropEffects.Copy;
             else
-                showGridlinesButton.Checked = false;
-            Invalidate();
+                e.Effect = DragDropEffects.None;
         }
 
-        private void GraphicsViewerMdiChild_MouseDown(object sender, MouseEventArgs e)
+        private void RenderPanel_DragLeave(object sender, EventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
-            {
-                if (hasSelection && ViewSelectionRect.Contains(e.Location)) // Drop and drag
-                {
 
-                }
-                else // New selection
-                {
-                    inSelection = true;
-                    hasSelection = true;
-                    beginSelectionPoint = e.Location;
-                    endSelectionPoint = e.Location;
-
-                    Rectangle NewViewSelectionRect = ResizeSelectionRect(PointsToRectangle(beginSelectionPoint, endSelectionPoint));
-                    // Re-render only if the ViewSelectionRect has changed
-                    if (ViewSelectionRect.Location != NewViewSelectionRect.Location || ViewSelectionRect.Size != NewViewSelectionRect.Size)
-                    {
-                        ViewSelectionRect = NewViewSelectionRect;
-                        Invalidate();
-                    }
-                }
-            }
         }
 
-        private void GraphicsViewerMdiChild_MouseUp(object sender, MouseEventArgs e)
+        private void RenderPanel_DragOver(object sender, DragEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
-            {
-                if (beginSelectionPoint != Point.Empty && endSelectionPoint != Point.Empty)
-                {
-                    Rectangle NewViewSelectionRect = ResizeSelectionRect(PointsToRectangle(beginSelectionPoint, endSelectionPoint));
-                    beginSelectionPoint = Point.Empty;
-                    endSelectionPoint = Point.Empty;
-                    inSelection = false;
+            Point LocalLocation = PointToClient(new Point(e.X, e.Y));
+            if (e.Data.GetDataPresent(typeof(ArrangerSelectionData)) && DisplayRect.Contains(LocalLocation))
+                e.Effect = DragDropEffects.Copy;
+            else
+                e.Effect = DragDropEffects.None;
+        }
 
-                    // Re-render only if the ViewSelectionRect has changed
-                    if (ViewSelectionRect.Location != NewViewSelectionRect.Location || ViewSelectionRect.Size != NewViewSelectionRect.Size)
-                    {
-                        ViewSelectionRect = NewViewSelectionRect;
-                        Invalidate();
-                    }
+        private void RenderPanel_QueryContinueDrag(object sender, QueryContinueDragEventArgs e)
+        {
+            e.Action = DragAction.Continue;
+        }
+
+        /*private Cursor GetCursor(string cursorName)
+        {
+            var buffer = Properties.Resources.ResourceManager.GetObject(cursorName) as byte[];
+
+            using (var m = new MemoryStream(buffer))
+            {
+                return new Cursor(m);
+            }
+
+            System.IO.MemoryStream cursorMemoryStream = new System.IO.MemoryStream(TileShop.Properties.Resources.myCursorFile);
+        }*/
+
+    }
+
+    // Class to store a selection of arranger data
+
+    [Serializable]
+    public class ArrangerSelectionData
+    {
+        public string ArrangerName { get; private set; } // Name of the Arranger which holds the data to be copied
+        public Point Location { get; private set; } // Upper left location of the selection, in element units
+        public Size SelectionSize { get; private set; } // Size of selection in number of elements
+        public bool HasSelection { get; private set; }
+        public bool InSelection { get; private set; }
+        public bool InDragState { get; private set; }
+        public bool SelectionChanged { get; private set; } // Lets calling class to check if the selection has changed
+        public int Zoom { get; set; }
+        public Point BeginPoint { get; private set; } // BeginPoint/EndPoint as provided by the caller in zoomed coordinates
+        public Point EndPoint { get; private set; }
+        public Rectangle SelectedElements { get; private set; } // Selected elements of the parent arranger in units of elements
+        public Rectangle SelectedClientRect { get; private set; }
+
+        public ArrangerElement[,] ElementList { get; private set; }
+
+        public ArrangerSelectionData(string arrangerName)
+        {
+            ArrangerName = arrangerName;
+            ClearSelection();
+        }
+
+        public void ClearSelection()
+        {
+            Location = new Point(0, 0);
+            SelectionSize = new Size(0, 0);
+            ElementList = null;
+            HasSelection = false;
+            InSelection = false;
+            InDragState = false;
+            SelectionChanged = false;
+            SelectedElements = new Rectangle(0, 0, 0, 0);
+            SelectedClientRect = new Rectangle(0, 0, 0, 0);
+            BeginPoint = new Point(0, 0);
+            EndPoint = new Point(0, 0);
+        }
+
+        // Populates ElementList
+        public bool PopulateData()
+        {
+            if (!HasSelection)
+                return false;
+
+            Arranger arr = FileManager.Instance.GetArranger(ArrangerName);
+
+            ElementList = new ArrangerElement[SelectionSize.Width, SelectionSize.Height];
+            for (int ysrc = SelectedElements.Y, ydest = 0; ydest < SelectionSize.Height; ydest++, ysrc++)
+            {
+                for (int xsrc = SelectedElements.X, xdest = 0; xdest < SelectionSize.Width; xdest++, xsrc++)
+                {
+                    ElementList[xdest, ydest] = arr.GetElement(xsrc, ysrc).Clone();
                 }
             }
+
+            return true;
+        }
+
+        public ArrangerElement GetElement(int ElementX, int ElementY)
+        {
+            return ElementList[ElementX, ElementY];
+        }
+
+        public void BeginSelection(Point beginPoint, Point endPoint)
+        {
+            HasSelection = true;
+            InSelection = true;
+            SelectionChanged = true;
+            BeginPoint = beginPoint;
+            EndPoint = endPoint;
+            CalculateRectangles();
+        }
+
+        // Returns true if the selection was changed (ie. endpoint changed)
+        public bool UpdateSelection(Point endPoint)
+        {
+            if (EndPoint != endPoint)
+            {
+                EndPoint = endPoint;
+                CalculateRectangles();
+                return true;
+            }
+            else // No need to set as the two points are equal
+                return false;
+        }
+
+        public void EndSelection()
+        {
+            InSelection = false;
+            //PopulateData(); // Clean this up so that PopulateData will not crash from out of ClientRect clicks
+        }
+
+        public void BeginDragDrop()
+        {
+            InDragState = true;
+        }
+
+        public void EndDragDrop()
+        {
+            InDragState = false;
+        }
+
+        
+        public Point PointToElementLocation(Point Location)
+        {
+            Point unzoomed = new Point(Location.X / Zoom, Location.Y / Zoom);
+
+            Arranger arr = FileManager.Instance.GetArranger(ArrangerName);
+
+            // Search list for element
+            for(int y = 0; y < arr.ArrangerElementSize.Height; y++)
+            {
+                for(int x = 0; x < arr.ArrangerElementSize.Width; x++)
+                {
+                    ArrangerElement el = arr.ElementList[x, y];
+                    if (unzoomed.X >= el.X1 && unzoomed.X <= el.X2 && unzoomed.Y >= el.Y1 && unzoomed.Y <= el.Y2)
+                        return new Point(x, y);
+                }
+            }
+
+            throw new ArgumentOutOfRangeException("Location is outside of the range of all ArrangerElements in ElementList");
+        }
+
+        private void CalculateRectangles()
+        {
+            Rectangle zoomed = PointsToRectangle(BeginPoint, EndPoint); // Rectangle in zoomed coordinates
+            Rectangle unzoomed = ViewerToArrangerRectangle(zoomed);
+            Rectangle unzoomedfull = GetSelectionPixelRect(unzoomed);
+
+            SelectedClientRect = new Rectangle(unzoomedfull.X * Zoom, unzoomedfull.Y * Zoom, unzoomedfull.Width * Zoom, unzoomedfull.Height * Zoom);
+
+            Arranger arr = FileManager.Instance.GetArranger(ArrangerName);
+
+            SelectedElements = new Rectangle(unzoomedfull.X / arr.ElementPixelSize.Width, unzoomedfull.Y / arr.ElementPixelSize.Height,
+                unzoomedfull.Width / arr.ElementPixelSize.Width, unzoomedfull.Height / arr.ElementPixelSize.Height);
+
+            SelectionSize = new Size(SelectedElements.Width, SelectedElements.Height);
+        }
+
+        private Rectangle GetSelectionPixelRect(Rectangle r)
+        {
+            Arranger arr = FileManager.Instance.GetArranger(ArrangerName);
+
+            int x1 = r.Left;
+            int x2 = r.Right;
+            int y1 = r.Top;
+            int y2 = r.Bottom;
+
+            // Extend rectangle to include the entirety of partially selected tiles
+            foreach (ArrangerElement el in arr.ElementList)
+            {
+                if (x1 > el.X1 && x1 <= el.X2)
+                    x1 = el.X1;
+                if (y1 > el.Y1 && y1 <= el.Y2)
+                    y1 = el.Y1;
+                if (x2 < el.X2 && x2 >= el.X1)
+                    x2 = el.X2;
+                if (y2 < el.Y2 && y2 >= el.Y1)
+                    y2 = el.Y2;
+            }
+
+            x2++; // Fix edges
+            y2++;
+
+            // Clamp selection rectangle to max bounds of the arranger
+            if (x1 < 0)
+                x1 = 0;
+            if (y1 < 0)
+                y1 = 0;
+            if (x2 >= arr.ArrangerPixelSize.Width)
+                x2 = arr.ArrangerPixelSize.Width;
+            if (y2 >= arr.ArrangerPixelSize.Height)
+                y2 = arr.ArrangerPixelSize.Height;
+
+            return new Rectangle(x1, y1, x2 - x1, y2 - y1);
+        }
+
+        private Rectangle ViewerToArrangerRectangle(Rectangle ClientRect)
+        {
+            int pleft = ClientRect.Left / Zoom;
+            int ptop = ClientRect.Top / Zoom;
+            int pright = (int)(ClientRect.Left / (float)Zoom + (ClientRect.Right - ClientRect.Left) / (float)Zoom);
+            int pbottom = (int)(ClientRect.Top / (float)Zoom + (ClientRect.Bottom - ClientRect.Top) / (float)Zoom);
+
+            Rectangle UnzoomedRect = new Rectangle(pleft, ptop, pright - pleft, pbottom - ptop);
+
+            return UnzoomedRect;
         }
 
         private Rectangle PointsToRectangle(Point beginPoint, Point endPoint)
@@ -428,30 +708,6 @@ namespace TileShop
 
             Rectangle rect = new Rectangle(left, top, (right - left), (bottom - top));
             return rect;
-        }
-
-        // Resizes the client selection rect so that it correctly highlights all selected tiles (or pixels for linear)
-        private Rectangle ResizeSelectionRect(Rectangle ClientRect)
-        {
-            // Creating UnzoomedRect with some floating point avoids one-off errors due to integer truncations
-            int pleft = ClientRect.Left / Zoom;
-            int ptop = (ClientRect.Top - toolStrip1.Height) / Zoom;
-            int pright = (int)(ClientRect.Left / (float)Zoom + (ClientRect.Right - ClientRect.Left) / (float)Zoom);
-            int pbottom = (int)((ClientRect.Top - toolStrip1.Height) / (float)Zoom + (ClientRect.Bottom - ClientRect.Top) / (float)Zoom);
-
-            Rectangle UnzoomedRect = new Rectangle(pleft, ptop, pright - pleft, pbottom - ptop);
-
-            Rectangle ArrRect = arranger.GetSelectionRect(UnzoomedRect);
-
-            Rectangle ResizedRect = new Rectangle(new Point(ArrRect.Left * Zoom, (ArrRect.Top * Zoom) + toolStrip1.Height),
-                new Size(ArrRect.Width * Zoom, ArrRect.Height * Zoom));
-
-            return ResizedRect;
-        }
-
-        private void GraphicsViewerMdiChild_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            //FileManager.Instance.
         }
     }
 }

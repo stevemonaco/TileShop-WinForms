@@ -112,6 +112,8 @@ namespace TileShop
                     el.Y1 = y;
                     el.X2 = x + format.Width - 1;
                     el.Y2 = y + format.Height - 1;
+                    el.Width = format.Width;
+                    el.Height = format.Height;
                     el.FileName = Filename;
                     el.Format = format.Name;
                     el.Palette = "Default";
@@ -165,6 +167,8 @@ namespace TileShop
                     el.Y1 = y;
                     el.X2 = x + Width - 1;
                     el.Y2 = y + Height - 1;
+                    el.Width = Width;
+                    el.Height = Height;
                     el.Format = null;
                     el.Palette = "Default";
                     arr.ElementList[j, i] = el;
@@ -201,7 +205,7 @@ namespace TileShop
             return ElementList[posx, posy];
         }
 
-        public Rectangle GetSelectionRect(Rectangle r)
+        public Rectangle GetSelectionPixelRect(Rectangle r)
         {
             int x1 = r.Left;
             int x2 = r.Right;
@@ -388,6 +392,7 @@ namespace TileShop
         }
     }
 
+    [Serializable]
     public class ArrangerElement
     {
         public string FileName = "";
@@ -400,5 +405,23 @@ namespace TileShop
         public int Y1 = 0;
         public int X2 = 0;
         public int Y2 = 0;
+
+        public ArrangerElement Clone()
+        {
+            ArrangerElement el = new ArrangerElement();
+
+            el.FileName = FileName;
+            el.FileOffset = FileOffset;
+            el.Format = Format;
+            el.Width = Width;
+            el.Height = Height;
+            el.Palette = Palette;
+            el.X1 = X1;
+            el.Y1 = Y1;
+            el.X2 = X2;
+            el.Y2 = Y2;
+
+            return el;
+        }
     }
 }
