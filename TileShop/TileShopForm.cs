@@ -57,14 +57,14 @@ namespace TileShop
                     }
 
                     // Read new XML file
-                    GameDescriptorFile.LoadFromXml(ofd.FileName);                    
+                    pec.LoadFromXml(ofd.FileName);
                 }
                 else
                 {
                     if (FileManager.Instance.LoadSequentialArrangerFromFilename(ofd.FileName))
                     {
                         GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, ofd.FileName);
-                        pec.AddFile(ofd.FileName);
+                        pec.AddFile(ofd.FileName, true);
                         gv.Show(dockPanel, DockState.Document);
                     }
                     else
@@ -127,19 +127,8 @@ namespace TileShop
         {
             WindowState = FormWindowState.Maximized;
 
-            if (FileManager.Instance.LoadSequentialArrangerFromFilename("D:\\Projects\\ff2.sfc"))
-            {
-                GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, "D:\\Projects\\ff2.sfc");
-                pec.AddFile("D:\\Projects\\ff2.sfc");
-                gv.WindowState = FormWindowState.Maximized;
-                gv.SetZoom(6);
-                gv.Show(dockPanel, DockState.Document);
-            }
-            else
-            {
+            if(!pec.AddFile("D:\\Projects\\ff2.sfc", true))
                 MessageBox.Show("Could not open file " + "D:\\Projects\\ff2.sfc");
-                return;
-            }
         }
 
         private void blankArrangerToolStripMenuItem_Click(object sender, EventArgs e)
@@ -175,7 +164,7 @@ namespace TileShop
         {
             WindowState = FormWindowState.Maximized;
 
-            GameDescriptorFile.LoadFromXml("D:\\Projects\\ff2.xml");
+            pec.LoadFromXml("D:\\Projects\\ff2test.xml");
             GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, "Font");
             gv.WindowState = FormWindowState.Maximized;
             gv.SetZoom(6);
@@ -206,11 +195,16 @@ namespace TileShop
                 FileManager.Instance.AddArranger(arr);
 
                 GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, arr.Name);
-                pec.AddArranger(arr.Name);
+                pec.AddArranger(arr, true);
                 gv.WindowState = FormWindowState.Maximized;
                 gv.SetZoom(6);
                 gv.Show(dockPanel, DockState.Document);
             }
+        }
+
+        private void saveProjectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            pec.SaveToXml(@"D:\Projects\ff2test.xml");
         }
     }
 }

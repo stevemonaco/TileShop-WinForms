@@ -34,7 +34,8 @@ namespace TileShop
 
         public void AddArranger(Arranger arr)
         {
-            ArrangerList.Add(arr.Name, arr);
+            if(!HasArranger(arr.Name))
+                ArrangerList.Add(arr.Name, arr);
         }
 
         public void AddPalette(string PaletteName, Palette pal)
@@ -63,12 +64,22 @@ namespace TileShop
             if (HasArranger(ArrangerName))
                 return ArrangerList[ArrangerName];
             else
-                throw new KeyNotFoundException();
+                throw new KeyNotFoundException(String.Format("Arranger {0} was not found in the ArrangerList", ArrangerName));
+        }
+
+        public bool HasFile(string Filename)
+        {
+            return FileList.ContainsKey(Filename);
         }
 
         public bool HasArranger(string ArrangerName)
         {
             return ArrangerList.ContainsKey(ArrangerName);
+        }
+
+        public bool HasPalette(string PaletteName)
+        {
+            return PaletteList.ContainsKey(PaletteName);
         }
 
         public GraphicsFormat GetGraphicsFormat(string FormatName)

@@ -15,6 +15,10 @@ namespace TileShop
     public class Palette
     {
         public string Name { get; private set; }
+        public PaletteColorFormat ColorFormat { get; private set; }
+        public long FileOffset { get; private set; }
+        public string FileName { get; private set; }
+        public int Entries { get; private set; }
 
         UInt32[] palette;
 
@@ -41,11 +45,16 @@ namespace TileShop
                 //palette[idx] = ((palette[idx] & 0xFF) << 24) | ((palette[idx] & 0xFF00) << 8) | ((palette[idx] & 0xFF0000) >> 8) | ((palette[idx] & 0xFF0000) >> 24);
             }
 
+            ColorFormat = PaletteColorFormat.ARGB32;
+            FileOffset = 0;
+            FileName = filename;
+            Entries = 256;
+
             return true;
         }
 
         // Load Palette from an already loaded file
-        public bool LoadPalette(string FileId, long FileOffset, PaletteColorFormat ColorFormat, int NumEntries)
+        public bool LoadPalette(string FileId, long FileOffset, PaletteColorFormat Format, int NumEntries)
         {
             if (NumEntries > 256)
                 throw new ArgumentException("Maximum palette indices must be 256 or less");
@@ -59,10 +68,10 @@ namespace TileShop
 
             int ReadSize = 4;
 
-            if (ColorFormat == PaletteColorFormat.BGR15 || ColorFormat == PaletteColorFormat.ABGR16)
+            if (Format == PaletteColorFormat.BGR15 || Format == PaletteColorFormat.ABGR16)
                 ReadSize = 2;
 
-            if (ColorFormat == PaletteColorFormat.RGB24)
+            if (Format == PaletteColorFormat.RGB24)
                 ReadSize = 3;
 
             for(int i = 0; i < NumEntries; i++)
@@ -82,10 +91,15 @@ namespace TileShop
                 else // 4 bytes
                     ColorIn = br.ReadUInt32();
 
-                UInt32 ColorOut = ToArgb32(ColorIn, ColorFormat);
+                UInt32 ColorOut = ToArgb32(ColorIn, Format);
 
                 palette[i] = ColorOut;
             }
+
+            ColorFormat = Format;
+            FileOffset = 0;
+            FileName = FileId;
+            Entries = NumEntries;
 
             return true;
         }

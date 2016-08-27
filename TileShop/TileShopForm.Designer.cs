@@ -32,6 +32,7 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newGraphicsProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.scatteredArrangerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.blankArrangerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -49,7 +50,9 @@
             this.fileOffsetLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.dockTheme = new WeifenLuo.WinFormsUI.Docking.VS2013BlueTheme();
             this.dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
-            this.scatteredArrangerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveProjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveProjectAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
             this.menuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -76,6 +79,9 @@
             this.saveToolStripMenuItem,
             this.saveAsToolStripMenuItem,
             this.toolStripMenuItem2,
+            this.saveProjectToolStripMenuItem,
+            this.saveProjectAsToolStripMenuItem,
+            this.toolStripMenuItem3,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
@@ -88,7 +94,7 @@
             this.scatteredArrangerToolStripMenuItem,
             this.blankArrangerToolStripMenuItem});
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
             this.newToolStripMenuItem.Text = "New";
             // 
             // newGraphicsProjectMenu
@@ -97,6 +103,13 @@
             this.newGraphicsProjectMenu.Size = new System.Drawing.Size(177, 22);
             this.newGraphicsProjectMenu.Text = "Graphics Descriptor";
             this.newGraphicsProjectMenu.Click += new System.EventHandler(this.newGraphicsProjectMenu_Click);
+            // 
+            // scatteredArrangerToolStripMenuItem
+            // 
+            this.scatteredArrangerToolStripMenuItem.Name = "scatteredArrangerToolStripMenuItem";
+            this.scatteredArrangerToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.scatteredArrangerToolStripMenuItem.Text = "Scattered Arranger";
+            this.scatteredArrangerToolStripMenuItem.Click += new System.EventHandler(this.scatteredArrangerToolStripMenuItem_Click);
             // 
             // blankArrangerToolStripMenuItem
             // 
@@ -111,7 +124,7 @@
             this.openFileMenu,
             this.openGraphicsProject});
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
             this.openToolStripMenuItem.Text = "Open";
             // 
             // openFileMenu
@@ -130,29 +143,29 @@
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(149, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(120, 6);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
             this.saveToolStripMenuItem.Text = "&Save";
             // 
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
             this.saveAsToolStripMenuItem.Text = "Save &As...";
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(149, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(120, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             // 
             // debugToolStripMenuItem
@@ -216,12 +229,23 @@
             this.dockPanel.TabIndex = 4;
             this.dockPanel.Theme = this.dockTheme;
             // 
-            // scatteredArrangerToolStripMenuItem
+            // saveProjectToolStripMenuItem
             // 
-            this.scatteredArrangerToolStripMenuItem.Name = "scatteredArrangerToolStripMenuItem";
-            this.scatteredArrangerToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
-            this.scatteredArrangerToolStripMenuItem.Text = "Scattered Arranger";
-            this.scatteredArrangerToolStripMenuItem.Click += new System.EventHandler(this.scatteredArrangerToolStripMenuItem_Click);
+            this.saveProjectToolStripMenuItem.Name = "saveProjectToolStripMenuItem";
+            this.saveProjectToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.saveProjectToolStripMenuItem.Text = "Save Project";
+            this.saveProjectToolStripMenuItem.Click += new System.EventHandler(this.saveProjectToolStripMenuItem_Click);
+            // 
+            // saveProjectAsToolStripMenuItem
+            // 
+            this.saveProjectAsToolStripMenuItem.Name = "saveProjectAsToolStripMenuItem";
+            this.saveProjectAsToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.saveProjectAsToolStripMenuItem.Text = "Save Project As...";
+            // 
+            // toolStripMenuItem3
+            // 
+            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(160, 6);
             // 
             // TileShopForm
             // 
@@ -236,7 +260,7 @@
             this.IsMdiContainer = true;
             this.MainMenuStrip = this.menuStrip;
             this.Name = "TileShopForm";
-            this.Text = "TileShop 0.01c";
+            this.Text = "TileShop 0.02";
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.statusStrip.ResumeLayout(false);
@@ -266,10 +290,13 @@
         private System.Windows.Forms.ToolStripStatusLabel selectionLabel;
         private System.Windows.Forms.ToolStripMenuItem debugToolStripMenuItem;
         private WeifenLuo.WinFormsUI.Docking.VS2013BlueTheme dockTheme;
-        private WeifenLuo.WinFormsUI.Docking.DockPanel dockPanel;
         private System.Windows.Forms.ToolStripMenuItem blankArrangerToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugXmlToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem scatteredArrangerToolStripMenuItem;
+        public WeifenLuo.WinFormsUI.Docking.DockPanel dockPanel;
+        private System.Windows.Forms.ToolStripMenuItem saveProjectToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveProjectAsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem3;
     }
 }
 

@@ -161,7 +161,7 @@ namespace TileShop
                 for (int j = 0; j < ElementsX; j++)
                 {
                     ArrangerElement el = new ArrangerElement();
-                    el.FileName = null;
+                    el.FileName = "";
                     el.FileOffset = 0;
                     el.X1 = x;
                     el.Y1 = y;
@@ -169,7 +169,7 @@ namespace TileShop
                     el.Y2 = y + Height - 1;
                     el.Width = Width;
                     el.Height = Height;
-                    el.Format = null;
+                    el.Format = "";
                     el.Palette = "Default";
                     arr.ElementList[j, i] = el;
 
@@ -395,16 +395,30 @@ namespace TileShop
     [Serializable]
     public class ArrangerElement
     {
-        public string FileName = "";
-        public long FileOffset = 0;
-        public string Format = "";
-        public int Width = 0;
-        public int Height = 0;
-        public string Palette = "";
-        public int X1 = 0; // Locations are unzoomed
-        public int Y1 = 0;
-        public int X2 = 0;
-        public int Y2 = 0;
+        public string FileName { get; set; }
+        public long FileOffset { get; set; }
+        public string Format { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public string Palette { get; set; }
+        public int X1 { get; set; } // Locations in unzoomed coordinates
+        public int Y1 { get; set; }
+        public int X2 { get; set; }
+        public int Y2 { get; set; }
+
+        public ArrangerElement()
+        {
+            FileName = "";
+            FileOffset = 0;
+            Format = "";
+            Width = 0;
+            Height = 0;
+            Palette = "Default";
+            X1 = 0;
+            X2 = 0;
+            Y1 = 0;
+            Y2 = 0;
+        }
 
         public ArrangerElement Clone()
         {

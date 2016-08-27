@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Xml.Linq;
 using System.Xml;
+using System.Reflection;
 
 namespace TileShop
 {
-    public class GameDescriptorFile
+    /*public class GameDescriptorFile
     {
         //GameDescriptorSettings settings;
         private GameDescriptorFile()
@@ -73,7 +74,7 @@ namespace TileShop
                         format = PaletteColorFormat.NES;
                         break;
                     default:
-                        throw new NotImplementedException(palette.format + " is not supported");                   
+                        throw new NotImplementedException(palette.format + " is not supported");
                 }
 
                 pal.LoadPalette(palette.datafile, long.Parse(palette.fileoffset), format, int.Parse(palette.entries));
@@ -109,7 +110,7 @@ namespace TileShop
                     file = e.Attribute("file")
                 });
 
-                foreach(var graphic in graphics)
+                foreach (var graphic in graphics)
                 {
                     ArrangerElement el = arr.GetElement(graphic.posx, graphic.posy);
                     el.FileName = arranger.defaultfile;
@@ -140,9 +141,38 @@ namespace TileShop
             return true;
         }
 
-        private bool WriteToXml(string XmlFileName)
+        public static bool SaveToXml(ProjectExplorerControl pec, string XmlFileName)
         {
+            Save settings
+
+             Save each data file
+
+             Save Palettes
+
+             Save each arranger
+            Arranger arr = FileManager.Instance.GetArranger(ArrangerName);
+
+            string DefaultPalette = FindMostFrequentValue(arr, "palette");
+            string DefaultFile = FindMostFrequentValue(arr, "file");
+            string DefaultFormat = FindMostFrequentValue(arr, "format");
+
             return true;
+        }
+
+        Used to determine property defaults for XML
+        private static string FindMostFrequentValue(Arranger arr, string attributeName)
+        {
+            Dictionary<string, int> freq = new Dictionary<string, int>();
+
+            foreach (ArrangerElement el in arr.ElementList)
+            {
+                string s = (string)el.GetType().GetProperty(attributeName).GetValue(el);
+                freq[s]++;
+            }
+
+            var max = freq.FirstOrDefault(x => x.Value == freq.Values.Max()).Key;
+
+            return max;
         }
     }
 
@@ -151,5 +181,5 @@ namespace TileShop
         public enum FileLocationNumberFormat { Decimal = 0, Hexadecimal = 1 }
 
         public FileLocationNumberFormat NumberFormat { set; get; }
-    }
+    }*/
 }

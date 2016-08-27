@@ -62,7 +62,7 @@ namespace TileShop
                     ArrangerElement el = arranger.ElementList[j, i];
                     if (!arranger.IsSequential) // Reader update required
                     {
-                        if (el.Format == null) // Null format means a blank tile
+                        if (el.Format == "") // Empty format means a blank tile
                         {
                             GraphicsCodec.DecodeBlank(Image, el);
                             continue;
