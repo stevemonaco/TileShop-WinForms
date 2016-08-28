@@ -185,6 +185,9 @@
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.createButton);
             this.Controls.Add(this.cancelButton);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "NewScatteredArrangerForm";
             this.Text = "New Scattered Arranger";
             this.groupBox2.ResumeLayout(false);

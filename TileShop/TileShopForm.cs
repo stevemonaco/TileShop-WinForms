@@ -127,8 +127,10 @@ namespace TileShop
         {
             WindowState = FormWindowState.Maximized;
 
-            if(!pec.AddFile("D:\\Projects\\ff2.sfc", true))
-                MessageBox.Show("Could not open file " + "D:\\Projects\\ff2.sfc");
+            string s = @"D:\Projects\ff2.sfc";
+
+            if(!pec.AddFile(s, true))
+                MessageBox.Show("Could not open file " + s);
         }
 
         private void blankArrangerToolStripMenuItem_Click(object sender, EventArgs e)
@@ -164,14 +166,32 @@ namespace TileShop
         {
             WindowState = FormWindowState.Maximized;
 
-            pec.LoadFromXml("D:\\Projects\\ff2test.xml");
-            GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, "Font");
+            pec.LoadFromXml("D:\\Projects\\ff2.xml");
+            /*GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, "Font");
             gv.WindowState = FormWindowState.Maximized;
             gv.SetZoom(6);
-            gv.Show(dockPanel, DockState.Document);
+            gv.Show(dockPanel, DockState.Document);*/
         }
 
-        private void scatteredArrangerToolStripMenuItem_Click(object sender, EventArgs e)
+        private void saveProjectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            pec.SaveToXml(@"D:\Projects\ff2test.xml");
+        }
+
+        private void newPaletteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            NewPaletteForm npf = new NewPaletteForm();
+            npf.AddFileNames(pec.GetFileNameList());
+
+            if(DialogResult.OK == npf.ShowDialog())
+            {
+                Palette pal = new Palette(npf.PaletteName);
+                pal.LoadPalette(npf.FileName, npf.FileOffset, npf.ColorFormat, npf.Entries);
+                pec.AddPalette(pal);
+            }
+        }
+
+        private void newScatteredArrangerToolStripMenuItem_Click(object sender, EventArgs e)
         {
             NewScatteredArrangerForm nsaf = new NewScatteredArrangerForm();
 
@@ -200,11 +220,6 @@ namespace TileShop
                 gv.SetZoom(6);
                 gv.Show(dockPanel, DockState.Document);
             }
-        }
-
-        private void saveProjectToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            pec.SaveToXml(@"D:\Projects\ff2test.xml");
         }
     }
 }

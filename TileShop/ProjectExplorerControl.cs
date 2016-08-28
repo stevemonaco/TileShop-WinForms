@@ -408,9 +408,27 @@ namespace TileShop
             return max;
         }
 
+        public List<string> GetFileNameList()
+        {
+            List<string> list = new List<string>();
+
+            foreach (FileNode fn in filesNode.Nodes)
+                list.Add((string)fn.Tag);
+
+            return list;
+        }
+
         private void projectTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             //tsf.openExistingArranger(e.Node.Text);
+            if(e.Node.GetType() == typeof(FileNode))
+            {
+                ShowSequentialArranger((string)e.Node.Tag);
+            }
+            else if(e.Node.GetType() == typeof(ArrangerNode))
+            {
+                ShowScatteredArranger((string)e.Node.Tag);
+            }
         }
     }
 

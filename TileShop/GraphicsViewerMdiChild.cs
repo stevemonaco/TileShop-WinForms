@@ -67,7 +67,10 @@ namespace TileShop
                 formatSelectBox.SelectedIndex = formatSelectBox.Items.IndexOf(graphicsFormat.Name);
             }
             else
-                formatSelectBox.Enabled = false;
+            {
+                toolStripSeparator1.Visible = false;
+                formatSelectBox.Visible = false;
+            }
 
             SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
             p.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
@@ -371,18 +374,18 @@ namespace TileShop
                 if (selectionData.HasSelection && !selectionData.InSelection && ViewSelectionRect.Contains(e.Location)) // Drop and drag for multiple elements
                 {
                     selectionData.BeginDragDrop();
-                    //RenderPanel.Cursor = DragDropCursor;
-
-                    //string s = "test";
                     DoDragDrop(selectionData, DragDropEffects.Copy);
+                    return;
                 }
                 else // New selection or single drop-and-drag
                 {
                     selectionData.BeginSelection(e.Location, e.Location);
                     ViewSelectionRect = selectionData.SelectedClientRect;
                     RenderPanel.Invalidate();
+                    return;
                 }
             }
+            DockPanel.Focus();
         }
 
         private void RenderPanel_MouseUp(object sender, MouseEventArgs e)

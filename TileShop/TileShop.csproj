@@ -66,6 +66,12 @@
     <Compile Include="IntegerTextBox.Designer.cs">
       <DependentUpon>IntegerTextBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="NewPaletteForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewPaletteForm.Designer.cs">
+      <DependentUpon>NewPaletteForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="NewScatteredArrangerForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -111,6 +117,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="NewPaletteForm.resx">
+      <DependentUpon>NewPaletteForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="NewScatteredArrangerForm.resx">
       <DependentUpon>NewScatteredArrangerForm.cs</DependentUpon>
     </EmbeddedResource>

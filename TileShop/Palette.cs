@@ -54,7 +54,7 @@ namespace TileShop
         }
 
         // Load Palette from an already loaded file
-        public bool LoadPalette(string FileId, long FileOffset, PaletteColorFormat Format, int NumEntries)
+        public bool LoadPalette(string FileId, long offset, PaletteColorFormat Format, int NumEntries)
         {
             if (NumEntries > 256)
                 throw new ArgumentException("Maximum palette indices must be 256 or less");
@@ -64,7 +64,7 @@ namespace TileShop
             FileStream fs = FileManager.Instance.GetFileStream(FileId);
             BinaryReader br = new BinaryReader(fs);
 
-            fs.Seek(FileOffset, SeekOrigin.Begin);
+            fs.Seek(offset, SeekOrigin.Begin);
 
             int ReadSize = 4;
 
@@ -97,7 +97,7 @@ namespace TileShop
             }
 
             ColorFormat = Format;
-            FileOffset = 0;
+            FileOffset = offset;
             FileName = FileId;
             Entries = NumEntries;
 
@@ -136,6 +136,30 @@ namespace TileShop
 
                 return palette[i];
             }
+        }
+
+        public static PaletteColorFormat StringToFormat(string PaletteFormat)
+        {
+            switch(PaletteFormat)
+            {
+                case "RGB24":
+                    return PaletteColorFormat.RGB24;
+                case "ARGB32":
+                    return PaletteColorFormat.ARGB32;
+                case "BGR15":
+                    return PaletteColorFormat.BGR15;
+                case "ABGR16":
+                    return PaletteColorFormat.ABGR16;
+                case "NES":
+                    return PaletteColorFormat.NES;
+                default:
+                    throw new ArgumentException("PaletteColorFormat " + PaletteFormat + " is not supported");
+            }
+        }
+
+        public static List<string> GetPaletteColorFormatsNameList()
+        {
+            return Enum.GetNames(typeof(PaletteColorFormat)).Cast<string>().ToList<string>();
         }
     }
 }
