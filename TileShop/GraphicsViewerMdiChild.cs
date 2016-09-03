@@ -15,7 +15,6 @@ namespace TileShop
 {
     public partial class GraphicsViewerMdiChild : DockContent
     {
-        TileShopForm parentInstance = null;
         int prevFormatIndex = -1;
 
         public int Zoom { get; private set; }
@@ -38,10 +37,8 @@ namespace TileShop
         //Color[] pal = new Color[] { Color.Black, Color.Blue, Color.Red, Color.Green };
         TileCache cache = new TileCache();
 
-        public GraphicsViewerMdiChild(TileShopForm parent, string ArrangerName)
+        public GraphicsViewerMdiChild(string ArrangerName)
         {
-            parentInstance = parent;
-
             InitializeComponent();
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.NonPublic, 
                 null, RenderPanel, new object[] { true }); // Enable double buffering of the RenderPanel
@@ -70,6 +67,7 @@ namespace TileShop
             {
                 toolStripSeparator1.Visible = false;
                 formatSelectBox.Visible = false;
+                offsetLabel.Visible = false;
             }
 
             SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
@@ -78,16 +76,6 @@ namespace TileShop
             zoomSelectBox.SelectedIndex = 0;
             selectionData.Zoom = 1;
             DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
-
-            this.GotFocus += GraphicsMdiChild_GotFocus;
-        }
-
-        private void GraphicsMdiChild_GotFocus(object sender, EventArgs e)
-        {
-            if (arranger.Mode == ArrangerMode.SequentialArranger)
-                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
-            else
-                parentInstance.updateOffsetLabel("");
         }
 
         /*public bool OpenFile(string InputFilename)
@@ -123,7 +111,7 @@ namespace TileShop
             if (keyData == Keys.Add || keyData == Keys.Oemplus && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.ByteDown);
-                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                UpdateOffsetLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -132,7 +120,7 @@ namespace TileShop
             if (keyData == Keys.Subtract || keyData == Keys.OemMinus && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.ByteUp);
-                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                UpdateOffsetLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -141,7 +129,7 @@ namespace TileShop
             if (keyData == Keys.Down && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.RowDown);
-                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                UpdateOffsetLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -150,7 +138,7 @@ namespace TileShop
             else if (keyData == Keys.Up && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.RowUp);
-                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                UpdateOffsetLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -159,7 +147,7 @@ namespace TileShop
             else if (keyData == Keys.Right && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.ColRight);
-                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                UpdateOffsetLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -168,7 +156,7 @@ namespace TileShop
             else if (keyData == Keys.Left && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.ColLeft);
-                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                UpdateOffsetLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -177,7 +165,7 @@ namespace TileShop
             else if (keyData == Keys.PageDown && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.PageDown);
-                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                UpdateOffsetLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -186,7 +174,7 @@ namespace TileShop
             else if (keyData == Keys.PageUp && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.PageUp);
-                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                UpdateOffsetLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -195,7 +183,7 @@ namespace TileShop
             else if (keyData == Keys.Home && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.Home);
-                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                UpdateOffsetLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -204,7 +192,7 @@ namespace TileShop
             else if (keyData == Keys.End && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.End);
-                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                UpdateOffsetLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -222,7 +210,7 @@ namespace TileShop
             {
                 DisplayElements.Width++;
                 arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                UpdateOffsetLabel();
                 DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -234,7 +222,7 @@ namespace TileShop
                     DisplayElements.Width = 1;
 
                 arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                UpdateOffsetLabel();
                 DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -246,7 +234,7 @@ namespace TileShop
                     DisplayElements.Height = 1;
 
                 arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                UpdateOffsetLabel();
                 DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -255,7 +243,7 @@ namespace TileShop
             {
                 DisplayElements.Height++;
                 arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+                UpdateOffsetLabel();
                 DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -276,7 +264,7 @@ namespace TileShop
 
             arranger.SetGraphicsFormat((string)formatSelectBox.SelectedItem);
 
-            parentInstance.updateOffsetLabel(arranger.GetInitialSequentialFileOffset().ToString("X"));
+            UpdateOffsetLabel();
             prevFormatIndex = index;
             cache.Clear();
             CancelSelection();
@@ -284,6 +272,18 @@ namespace TileShop
             rm.Invalidate();
             RenderPanel.Invalidate();
             return;
+        }
+
+        private void UpdateOffsetLabel()
+        {
+            long offset = arranger.GetInitialSequentialFileOffset();
+            string sizestring = arranger.FileSize.ToString("X");
+
+            int maxdigit = sizestring.Length;
+            if (maxdigit % 2 == 1)
+                maxdigit++; // Pad out a zero
+
+            offsetLabel.Text = String.Format("{0:X" + maxdigit.ToString() + "} / {1:X" + maxdigit.ToString() + "}", offset, arranger.FileSize);
         }
 
         private void DrawGridlines(Graphics g)
@@ -386,6 +386,8 @@ namespace TileShop
                 }
             }
             DockPanel.Focus();
+            RenderPanel.Focus();
+            base.OnMouseDown(e);
         }
 
         private void RenderPanel_MouseUp(object sender, MouseEventArgs e)

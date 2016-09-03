@@ -34,6 +34,8 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.zoomSelectBox = new System.Windows.Forms.ToolStripComboBox();
             this.showGridlinesButton = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.offsetLabel = new System.Windows.Forms.ToolStripLabel();
             this.RenderPanel = new System.Windows.Forms.Panel();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -45,7 +47,9 @@
             this.formatSelectBox,
             this.toolStripSeparator1,
             this.zoomSelectBox,
-            this.showGridlinesButton});
+            this.showGridlinesButton,
+            this.toolStripSeparator2,
+            this.offsetLabel});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(3, 0, 0, 0);
@@ -95,6 +99,17 @@
             this.showGridlinesButton.ToolTipText = "Show Gridlines";
             this.showGridlinesButton.Click += new System.EventHandler(this.showGridlinesButton_Click);
             // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            // 
+            // offsetLabel
+            // 
+            this.offsetLabel.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.offsetLabel.Name = "offsetLabel";
+            this.offsetLabel.Size = new System.Drawing.Size(0, 22);
+            // 
             // RenderPanel
             // 
             this.RenderPanel.AllowDrop = true;
@@ -142,5 +157,7 @@
         private System.Windows.Forms.ToolStripComboBox zoomSelectBox;
         private System.Windows.Forms.ToolStripButton showGridlinesButton;
         private System.Windows.Forms.Panel RenderPanel;
+        private System.Windows.Forms.ToolStripLabel offsetLabel;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
     }
 }
