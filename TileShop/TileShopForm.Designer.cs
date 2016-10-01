@@ -44,6 +44,9 @@
             this.saveProjectAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newPaletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newScatteredArrangerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugXmlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainToolStrip = new System.Windows.Forms.ToolStrip();
@@ -52,9 +55,6 @@
             this.fileOffsetLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.dockTheme = new WeifenLuo.WinFormsUI.Docking.VS2013BlueTheme();
             this.dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
-            this.addToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.newPaletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.newScatteredArrangerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -181,6 +181,29 @@
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.exitToolStripMenuItem.Text = "E&xit";
             // 
+            // addToolStripMenuItem
+            // 
+            this.addToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newPaletteToolStripMenuItem,
+            this.newScatteredArrangerToolStripMenuItem});
+            this.addToolStripMenuItem.Name = "addToolStripMenuItem";
+            this.addToolStripMenuItem.Size = new System.Drawing.Size(41, 20);
+            this.addToolStripMenuItem.Text = "&Add";
+            // 
+            // newPaletteToolStripMenuItem
+            // 
+            this.newPaletteToolStripMenuItem.Name = "newPaletteToolStripMenuItem";
+            this.newPaletteToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.newPaletteToolStripMenuItem.Text = "New Palette...";
+            this.newPaletteToolStripMenuItem.Click += new System.EventHandler(this.newPaletteToolStripMenuItem_Click);
+            // 
+            // newScatteredArrangerToolStripMenuItem
+            // 
+            this.newScatteredArrangerToolStripMenuItem.Name = "newScatteredArrangerToolStripMenuItem";
+            this.newScatteredArrangerToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.newScatteredArrangerToolStripMenuItem.Text = "New Scattered Arranger...";
+            this.newScatteredArrangerToolStripMenuItem.Click += new System.EventHandler(this.newScatteredArrangerToolStripMenuItem_Click);
+            // 
             // debugToolStripMenuItem
             // 
             this.debugToolStripMenuItem.Name = "debugToolStripMenuItem";
@@ -242,29 +265,6 @@
             this.dockPanel.TabIndex = 4;
             this.dockPanel.Theme = this.dockTheme;
             // 
-            // addToolStripMenuItem
-            // 
-            this.addToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.newPaletteToolStripMenuItem,
-            this.newScatteredArrangerToolStripMenuItem});
-            this.addToolStripMenuItem.Name = "addToolStripMenuItem";
-            this.addToolStripMenuItem.Size = new System.Drawing.Size(41, 20);
-            this.addToolStripMenuItem.Text = "&Add";
-            // 
-            // newPaletteToolStripMenuItem
-            // 
-            this.newPaletteToolStripMenuItem.Name = "newPaletteToolStripMenuItem";
-            this.newPaletteToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            this.newPaletteToolStripMenuItem.Text = "New Palette...";
-            this.newPaletteToolStripMenuItem.Click += new System.EventHandler(this.newPaletteToolStripMenuItem_Click);
-            // 
-            // newScatteredArrangerToolStripMenuItem
-            // 
-            this.newScatteredArrangerToolStripMenuItem.Name = "newScatteredArrangerToolStripMenuItem";
-            this.newScatteredArrangerToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
-            this.newScatteredArrangerToolStripMenuItem.Text = "New Scattered Arranger...";
-            this.newScatteredArrangerToolStripMenuItem.Click += new System.EventHandler(this.newScatteredArrangerToolStripMenuItem_Click);
-            // 
             // TileShopForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -278,7 +278,7 @@
             this.IsMdiContainer = true;
             this.MainMenuStrip = this.menuStrip;
             this.Name = "TileShopForm";
-            this.Text = "TileShop 0.02";
+            this.Text = "TileShop 0.02c";
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.statusStrip.ResumeLayout(false);

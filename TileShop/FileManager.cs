@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
@@ -15,12 +16,11 @@ namespace TileShop
         private Dictionary<string, Arranger> ArrangerList = new Dictionary<string, Arranger>();
         private Dictionary<string, Palette> PaletteList = new Dictionary<string, Palette>();
         private Dictionary<string, GraphicsFormat> FormatList = new Dictionary<string, GraphicsFormat>();
+        private Dictionary<string, Cursor> CursorList = new Dictionary<string, Cursor>();
         private FileTypeLoader Loader = new FileTypeLoader();
 
         const int DefaultElementsX = 8;
         const int DefaultElementsY = 16;
-
-        // public GameDescriptorFile Descriptor = new GameDescriptorFile();
 
         public void AddFileStream(string FileName, FileStream fs)
         {
@@ -153,6 +153,24 @@ namespace TileShop
 
             AddPalette(palname, pal);
             return true;
+        }
+
+        public bool AddCursor(string CursorName, Cursor cursor)
+        {
+            if (!CursorList.ContainsKey(CursorName))
+            {
+                CursorList.Add(CursorName, cursor);
+                return true;
+            }
+            return false;
+        }
+
+        public Cursor GetCursor(string CursorName)
+        {
+            if (CursorList.ContainsKey(CursorName))
+                return CursorList[CursorName];
+            else
+                throw new KeyNotFoundException();
         }
 
         public bool RemoveArranger(string ArrangerName)

@@ -1,0 +1,8 @@
+﻿TODO:
+Fix focus issue with Dockpanels
+Test NewPaletteForm
+Implement new PaletteColorFormat
+
+Longer term TODO:
+Implement linear formats
+Begin work on pixel editor

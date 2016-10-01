@@ -35,6 +35,14 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ColorMine, Version=1.1.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ColorMine.1.1.3.0\lib\ColorMine.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="gTrackBar, Version=1.0.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>External\gTrackBar.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -57,9 +65,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BitStream.cs" />
+    <Compile Include="CustomCursor.cs" />
     <Compile Include="FileManager.cs" />
     <Compile Include="FileTypeLoader.cs" />
-    <Compile Include="GameDescriptorFile.cs" />
     <Compile Include="IntegerTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -77,6 +85,18 @@
     </Compile>
     <Compile Include="NewScatteredArrangerForm.Designer.cs">
       <DependentUpon>NewScatteredArrangerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PaletteEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PaletteEditorForm.Designer.cs">
+      <DependentUpon>PaletteEditorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PixelEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PixelEditorForm.Designer.cs">
+      <DependentUpon>PixelEditorForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ProjectExplorerControl.cs">
       <SubType>Form</SubType>
@@ -101,7 +121,18 @@
     </Compile>
     <Compile Include="Palette.cs" />
     <Compile Include="Arranger.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="RenderManager.cs" />
+    <Compile Include="SwatchControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SwatchControl.Designer.cs">
+      <DependentUpon>SwatchControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="TileArrangerForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -117,11 +148,20 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="IntegerTextBox.resx">
+      <DependentUpon>IntegerTextBox.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="NewPaletteForm.resx">
       <DependentUpon>NewPaletteForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="NewScatteredArrangerForm.resx">
       <DependentUpon>NewScatteredArrangerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PaletteEditorForm.resx">
+      <DependentUpon>PaletteEditorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PixelEditorForm.resx">
+      <DependentUpon>PixelEditorForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ProjectExplorerControl.resx">
       <DependentUpon>ProjectExplorerControl.cs</DependentUpon>
@@ -134,14 +174,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
+    <EmbeddedResource Include="SwatchControl.resx">
+      <DependentUpon>SwatchControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="TileShopForm.resx">
       <DependentUpon>TileShopForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -160,8 +198,20 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\CancelDragCursorSmall.cur" />
-    <Content Include="Resources\DragDropCursorSmall.cur" />
+    <Content Include="Development Notes.txt" />
+    <None Include="Resources\PencilTool.png" />
+    <None Include="Resources\PencilCursor.png" />
+    <None Include="Resources\PencilCursor.bmp" />
+    <None Include="Resources\PickerCursor.png" />
+    <None Include="Resources\PickerTool.cur" />
+    <None Include="Resources\PencilTool.cur" />
+    <None Include="Resources\EditModeTemp.png" />
+    <None Include="Resources\gridlines.png" />
+    <None Include="Resources\SelectTool.png" />
+    <None Include="External\gTrackBar.dll" />
+    <None Include="External\gTrackBar.xml" />
+    <None Include="Resources\brushpattern.bmp" />
+    <None Include="Resources\ColorPickerTool.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

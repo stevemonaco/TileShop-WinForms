@@ -12,6 +12,7 @@ namespace TileShop
         string PaletteDirectoryPath = "D:\\Projects\\TileShop\\pal\\";
 
         ProjectExplorerControl pec;
+        PixelEditorForm pef;
 
         public TileShopForm()
         {
@@ -21,6 +22,10 @@ namespace TileShop
             pec.Show(dockPanel, DockState.DockLeft);
             LoadCodecs(CodecDirectoryPath);
             LoadPalettes(PaletteDirectoryPath);
+            LoadCursors();
+
+            pef = new PixelEditorForm();
+            pef.Show(dockPanel, DockState.DockRight);
         }
 
         private void newGraphicsProjectMenu_Click(object sender, EventArgs e)
@@ -41,7 +46,7 @@ namespace TileShop
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                if (Path.GetExtension(ofd.FileName) == ".xml")
+                if (Path.GetExtension(ofd.FileName) == ".xml") // Load an XML project
                 {
                     // Clear all files/arrangers/palettes
                     FileManager.Instance.ClearAll();
@@ -61,13 +66,7 @@ namespace TileShop
                 }
                 else
                 {
-                    if (FileManager.Instance.LoadSequentialArrangerFromFilename(ofd.FileName))
-                    {
-                        GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, ofd.FileName);
-                        pec.AddFile(ofd.FileName, true);
-                        gv.Show(dockPanel, DockState.Document);
-                    }
-                    else
+                    if (!pec.AddFile(ofd.FileName, true))
                     {
                         MessageBox.Show("Could not open file " + ofd.FileName);
                         return;
@@ -85,7 +84,7 @@ namespace TileShop
                     return false;
             }
 
-            GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, arrangerName);
+            GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(arrangerName);
             gv.Show(dockPanel, DockState.Document);
 
             return true;
@@ -121,6 +120,15 @@ namespace TileShop
                 if (Path.GetExtension(s) == ".pal")
                     FileManager.Instance.LoadPalette(s, Path.GetFileNameWithoutExtension(s));
             }
+        }
+
+        private void LoadCursors()
+        {
+            Cursor PencilCursor = CustomCursor.LoadCursorFromBitmap(Properties.Resources.PencilCursor, new Point(0, 15));
+            FileManager.Instance.AddCursor("PencilCursor", PencilCursor);
+
+            Cursor PickerCursor = CustomCursor.LoadCursorFromBitmap(Properties.Resources.PickerCursor, new Point(2, 19));
+            FileManager.Instance.AddCursor("PickerCursor", PickerCursor);
         }
 
         private void debugToolStripMenuItem_Click(object sender, EventArgs e)
@@ -212,14 +220,14 @@ namespace TileShop
 
                 Arranger arr = Arranger.NewScatteredArranger(ArrSize.Width, ArrSize.Height, TileSize.Width, TileSize.Height);
                 arr.Name = nsaf.GetArrangerName();
-                FileManager.Instance.AddArranger(arr);
-
-                GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, arr.Name);
                 pec.AddArranger(arr, true);
-                gv.WindowState = FormWindowState.Maximized;
-                gv.SetZoom(6);
-                gv.Show(dockPanel, DockState.Document);
             }
+        }
+
+        public void editArrangerChanged(object sender, EventArgs e)
+        {
+            GraphicsViewerMdiChild gv = (GraphicsViewerMdiChild)sender;
+            pef.SetEditArranger(gv.EditArranger);
         }
     }
 }

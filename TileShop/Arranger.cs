@@ -186,6 +186,39 @@ namespace TileShop
             return arr;
         }
 
+        // Creates a new arranger based on a selection
+        public Arranger CreateSubArranger(string ArrangerName, int ArrangerPosX, int ArrangerPosY, int ElementsX, int ElementsY)
+        {
+            Arranger arr = new Arranger();
+            arr.Mode = ArrangerMode.ScatteredArranger; // Default to scattered arranger due to selections not being the full width of the parent arranger
+            arr.Name = ArrangerName;
+            arr.ElementList = new ArrangerElement[ElementsX, ElementsY];
+            arr.ArrangerElementSize = new Size(ElementsX, ElementsY);
+            arr.ElementPixelSize = ElementPixelSize;
+            arr.ArrangerPixelSize = new Size(ElementPixelSize.Width * ElementsX, ElementPixelSize.Height * ElementsY);
+
+            if (Mode == ArrangerMode.SequentialArranger)
+            {
+                arr.IsSequential = IsSequential;
+                arr.FileSize = FileSize;
+            }
+
+            for (int srcy = ArrangerPosY, desty = 0; srcy < ArrangerPosY + ElementsY; srcy++, desty++)
+            {
+                for (int srcx = ArrangerPosX, destx = 0; srcx < ArrangerPosX + ElementsX; srcx++, destx++)
+                {
+                    ArrangerElement el = GetElement(srcx, srcy).Clone();
+                    el.X1 = destx * arr.ElementPixelSize.Width;
+                    el.X2 = el.X1 + arr.ElementPixelSize.Width - 1;
+                    el.Y1 = desty * arr.ElementPixelSize.Height;
+                    el.Y2 = el.Y1 + arr.ElementPixelSize.Height - 1;
+                    arr.SetElement(el, destx, desty);
+                }
+            }
+
+            return arr;
+        }
+
         public void SetElement(ArrangerElement element, int posx, int posy)
         {
             if (ElementList == null)

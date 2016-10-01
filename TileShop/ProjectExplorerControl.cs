@@ -17,9 +17,10 @@ namespace TileShop
     public partial class ProjectExplorerControl : DockContent
     {
         TileShopForm tsf = null;
-        ExplorerNode filesNode = new ExplorerNode();
-        ExplorerNode palettesNode = new ExplorerNode();
-        ExplorerNode arrangersNode = new ExplorerNode();
+        FileFolderNode filesNode = new FileFolderNode();
+        PaletteFolderNode palettesNode = new PaletteFolderNode();
+        ArrangerFolderNode arrangersNode = new ArrangerFolderNode();
+        ContextMenu contextMenu = new ContextMenu();
 
         public ProjectExplorerControl(TileShopForm tileShopForm)
         {
@@ -138,7 +139,7 @@ namespace TileShop
         {
             if (FileManager.Instance.LoadSequentialArrangerFromFilename(Filename))
             {
-                GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(tsf, Filename);
+                GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(Filename);
                 gv.WindowState = FormWindowState.Maximized;
                 gv.SetZoom(6);
                 gv.Show(tsf.dockPanel, DockState.Document);
@@ -150,12 +151,22 @@ namespace TileShop
 
         public bool ShowScatteredArranger(string ArrangerName)
         {
-            // Consider doing on-demand loading of scattered arrangers from XML in the future
-
-            GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(tsf, ArrangerName);
+            GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(ArrangerName);
             gv.WindowState = FormWindowState.Maximized;
             gv.SetZoom(6);
             gv.Show(tsf.dockPanel, DockState.Document);
+            gv.EditArrangerChanged += tsf.editArrangerChanged;
+            return true;
+        }
+
+        public bool ShowPaletteEditor(string PaletteName)
+        {
+            if (!FileManager.Instance.HasPalette(PaletteName))
+                return false;
+
+            PaletteEditorForm pef = new PaletteEditorForm(PaletteName);
+            pef.Show(tsf.dockPanel, DockState.Document);
+
             return true;
         }
 
@@ -425,56 +436,152 @@ namespace TileShop
             {
                 ShowSequentialArranger((string)e.Node.Tag);
             }
+            else if(e.Node.GetType() == typeof(PaletteNode))
+            {
+                ShowPaletteEditor((string)e.Node.Tag);
+            }
             else if(e.Node.GetType() == typeof(ArrangerNode))
             {
                 ShowScatteredArranger((string)e.Node.Tag);
             }
         }
+
+        private void projectTreeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if(e.Button == MouseButtons.Right) // Show context menu
+            {
+                ProjectTreeNode ptn = (ProjectTreeNode) e.Node;
+                ptn.BuildContextMenu(contextMenu);
+                contextMenu.Show(projectTreeView, e.Location);
+            }
+        }
     }
 
-    public abstract class BaseNode : TreeNode
+    public abstract class ProjectTreeNode : TreeNode
     {
         public abstract void BuildContextMenu(ContextMenu Menu);
-
     }
 
-    public class ExplorerNode : BaseNode
+    public class FileFolderNode : ProjectTreeNode
     {
         public override void BuildContextMenu(ContextMenu Menu)
         {
             Menu.MenuItems.Clear();
+
+            Menu.MenuItems.Add(new MenuItem("Add Existing File to Project", AddFile_Click));
+        }
+
+        public void AddFile_Click(object sender, System.EventArgs e)
+        {
+
         }
     }
 
-    public class FileNode : ExplorerNode
+    public class PaletteFolderNode : ProjectTreeNode
     {
         public override void BuildContextMenu(ContextMenu Menu)
         {
-            // Open File Viewer
+            Menu.MenuItems.Clear();
 
-            // Remove File from Project
+            Menu.MenuItems.Add(new MenuItem("Add Palette from File to Project", AddPalette_Click));
+        }
+
+        public void AddPalette_Click(object sender, System.EventArgs e)
+        {
+
         }
     }
 
-    public class PaletteNode : ExplorerNode
+    public class ArrangerFolderNode : ProjectTreeNode
     {
         public override void BuildContextMenu(ContextMenu Menu)
         {
-            // Open Palette Editor
+            Menu.MenuItems.Clear();
 
-            // Remove Palette from Project
+            Menu.MenuItems.Add(new MenuItem("Add New Scattered Arranger to Project", AddScatteredArranger_Click));
+        }
+
+        public void AddScatteredArranger_Click(object sender, System.EventArgs e)
+        {
+
         }
     }
 
-    public class ArrangerNode : ExplorerNode
+    public class FileNode : ProjectTreeNode
     {
         public override void BuildContextMenu(ContextMenu Menu)
         {
-            // Open Arranger
+            Menu.MenuItems.Clear();
 
-            // Remove Arranger from Project
+            Menu.MenuItems.Add(new MenuItem("Open File in Viewer", OpenFile_Click));
+            Menu.MenuItems.Add(new MenuItem("Remove File from Project", RemoveFile_Click));
+        }
 
-            // Export Arranger from Image
+        public void OpenFile_Click(object sender, System.EventArgs e)
+        {
+
+        }
+
+        public void RemoveFile_Click(object sender, System.EventArgs e)
+        {
+
+        }
+    }
+
+    public class PaletteNode : ProjectTreeNode
+    {
+        public override void BuildContextMenu(ContextMenu Menu)
+        {
+            Menu.MenuItems.Clear();
+
+            Menu.MenuItems.Add(new MenuItem("Edit Palette", EditPalette_Click));
+            Menu.MenuItems.Add(new MenuItem("Remove Palette from Project", RemovePalette_Click));
+        }
+
+        public void EditPalette_Click(object sender, System.EventArgs e)
+        {
+            //PaletteEditor pe = new PaletteEditor("CharMapPal1");
+
+
+        }
+
+        public void RemovePalette_Click(object sender, System.EventArgs e)
+        {
+
+        }
+    }
+
+    public class ArrangerNode : ProjectTreeNode
+    {
+        public override void BuildContextMenu(ContextMenu Menu)
+        {
+            Menu.MenuItems.Clear();
+
+            Menu.MenuItems.Add(new MenuItem("Open Arranger", OpenArranger_Click));
+            Menu.MenuItems.Add(new MenuItem("Resize Arranger", ResizeArranger_Click));
+            Menu.MenuItems.Add(new MenuItem("Export Arranger", ExportArranger_Click));
+            Menu.MenuItems.Add("-");
+            Menu.MenuItems.Add(new MenuItem("Remove Arranger", RemoveArranger_Click));
+        }
+
+        public void OpenArranger_Click(object sender, System.EventArgs e)
+        {
+
+        }
+
+        public void ResizeArranger_Click(object sender, System.EventArgs e)
+        {
+
+        }
+
+        public void ExportArranger_Click(object sender, System.EventArgs e)
+        {
+
+        }
+
+        public void RemoveArranger_Click(object sender, System.EventArgs e)
+        {
+
         }
     }
 

@@ -1,0 +1,32 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+gTrackBar
+</name>
+</assembly>
+<members>
+<member name="T:gTrackBar.gTrackBar">
+ <summary>
+ Customizable TrackBar Control
+ </summary>
+ <remarks>v1.9.0</remarks>
+</member>
+<member name="T:gTrackBar.My.Resources.Resources">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:gTrackBar.My.Resources.Resources.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:gTrackBar.My.Resources.Resources.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+</members>
+</doc>

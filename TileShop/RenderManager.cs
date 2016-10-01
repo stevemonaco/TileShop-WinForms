@@ -11,42 +11,31 @@ using System.IO;
 namespace TileShop
 {
     // RenderManager
-    // Class that 
+    // Class that is responsible for rendering an Arranger into a bitmap
 
     public class RenderManager
     {
         public Bitmap Image { get; set; }
-        Graphics g = null;
         bool NeedsRedraw = true;
 
         public bool Render(Arranger arranger)
         {
             if (arranger == null)
                 throw new ArgumentNullException();
-            if (arranger.ArrangerPixelSize.Width == 0 || arranger.ArrangerPixelSize.Height == 0)
+            if (arranger.ArrangerPixelSize.Width <= 0 || arranger.ArrangerPixelSize.Height <= 0)
                 return false;
 
             if (Image == null || arranger.ArrangerPixelSize.Width != Image.Width || arranger.ArrangerPixelSize.Height != Image.Height)
-            {
-                Image = new Bitmap(arranger.ArrangerPixelSize.Width, arranger.ArrangerPixelSize.Height, PixelFormat.Format32bppRgb);
-                g = Graphics.FromImage(Image);
-            }
+                Image = new Bitmap(arranger.ArrangerPixelSize.Width, arranger.ArrangerPixelSize.Height, PixelFormat.Format32bppArgb);
 
-            if(g == null || Image == null)
+            if(Image == null)
                 throw new NullReferenceException();
 
             if (!NeedsRedraw)
                 return true;
 
-            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-            g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
-            g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
-            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
-
             BinaryReader br = null;
 
-            // TODO: Refactor into separate render loops for sequential and arranged versions
             // Remember TileCache
 
             if(arranger.IsSequential)
@@ -86,9 +75,18 @@ namespace TileShop
             NeedsRedraw = true;
         }
 
-        bool SetPixel(int x, int y, Color color)
+        public Color GetPixel(int x, int y)
         {
-            return false;
+            if (Image == null)
+                throw new NullReferenceException();
+
+            return Image.GetPixel(x, y);
+        }
+
+        public bool SetPixel(int x, int y, Color color)
+        {
+            Image.SetPixel(x, y, color);
+            return true;
         }
 
     }

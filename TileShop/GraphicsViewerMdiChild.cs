@@ -25,17 +25,24 @@ namespace TileShop
         Rectangle DisplayRect; // The zoomed pixel size of the entire display
         RenderManager rm = new RenderManager();
         public Arranger arranger { get; private set; }
+        public Arranger EditArranger { get; private set; }
         ArrangerSelectionData selectionData;
 
         // Selection
         Rectangle ViewSelectionRect = new Rectangle(0, 0, 0, 0);
 
         //public GraphicsFormat graphicsFormat = null; // Sequential format only
-        Pen p = new Pen(Brushes.Magenta);
-        Brush b = new SolidBrush(Color.FromArgb(200, 255, 0, 255));
+        Pen MoveSelectionPen = new Pen(Brushes.Magenta);
+        Brush MoveSelectionBrush = new SolidBrush(Color.FromArgb(200, 255, 0, 255));
+
+        Pen EditSelectionPen = new Pen(Brushes.Green);
+        Brush EditSelectionBrush = new SolidBrush(Color.FromArgb(200, 0, 200, 0));
 
         //Color[] pal = new Color[] { Color.Black, Color.Blue, Color.Red, Color.Green };
         TileCache cache = new TileCache();
+
+        // UI Events
+        public event EventHandler<EventArgs> EditArrangerChanged;
 
         public GraphicsViewerMdiChild(string ArrangerName)
         {
@@ -45,6 +52,7 @@ namespace TileShop
 
             // Setup arranger variables
             arranger = FileManager.Instance.GetArranger(ArrangerName);
+            EditArranger = null;
             DisplayElements = arranger.ArrangerElementSize;
             ElementSize = arranger.ElementPixelSize;
             this.Text = arranger.Name;
@@ -71,8 +79,8 @@ namespace TileShop
             }
 
             SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
-            p.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
-            p.Width = (float)Zoom;
+            MoveSelectionPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+            MoveSelectionPen.Width = (float)Zoom;
             zoomSelectBox.SelectedIndex = 0;
             selectionData.Zoom = 1;
             DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
@@ -303,8 +311,16 @@ namespace TileShop
             // Paint selection
             if (selectionData.HasSelection)
             {
-                g.DrawRectangle(p, ViewSelectionRect);
-                g.FillRectangle(b, ViewSelectionRect);
+                if (editModeButton.Checked) // Selection Edit mode
+                {
+                    g.DrawRectangle(EditSelectionPen, ViewSelectionRect);
+                    g.FillRectangle(EditSelectionBrush, ViewSelectionRect);
+                }
+                else // Selection Movement mode
+                {
+                    g.DrawRectangle(MoveSelectionPen, ViewSelectionRect);
+                    g.FillRectangle(MoveSelectionBrush, ViewSelectionRect);
+                }
             }
         }
 
@@ -353,9 +369,9 @@ namespace TileShop
             e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
             e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
-            e.Graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+            e.Graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy; // No transparency
             e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
-            e.Graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
+            //e.Graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
 
             Rectangle src = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width, arranger.ArrangerPixelSize.Height);
             Rectangle dest = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
@@ -403,8 +419,23 @@ namespace TileShop
                 else if (selectionData.InSelection)
                 {
                     selectionData.EndSelection();
-                    ViewSelectionRect = selectionData.SelectedClientRect;
-                    RenderPanel.Invalidate();
+                    if (editModeButton.Checked) // Edit mode deselects on MouseUp and pushes a subarranger to the pixel editor
+                    {
+                        selectionData.EndSelection();
+                        if (selectionData.HasSelection)
+                        {
+                            EditArranger = arranger.CreateSubArranger("PixelEditArranger", selectionData.SelectedElements.X, selectionData.SelectedElements.Y,
+                                selectionData.SelectedElements.Width, selectionData.SelectedElements.Height);
+                            CancelSelection();
+                            RenderPanel.Invalidate();
+                            EditArrangerChanged(this, null);
+                        }
+                    }
+                    else // Selection mode leaves the selection visible to be moved around between arrangers
+                    {
+                        ViewSelectionRect = selectionData.SelectedClientRect;
+                        RenderPanel.Invalidate();
+                    }
                 }
             }
         }
@@ -496,6 +527,13 @@ namespace TileShop
         private void RenderPanel_QueryContinueDrag(object sender, QueryContinueDragEventArgs e)
         {
             e.Action = DragAction.Continue;
+        }
+
+        private void editModeButton_Click(object sender, EventArgs e)
+        {
+            CancelSelection();
+            editModeButton.Checked ^= true;
+            RenderPanel.Invalidate();
         }
 
         /*private Cursor GetCursor(string cursorName)
@@ -604,6 +642,15 @@ namespace TileShop
         public void EndSelection()
         {
             InSelection = false;
+            Arranger arr = FileManager.Instance.GetArranger(ArrangerName);
+            Rectangle testBounds = new Rectangle(new Point(0, 0), arr.ArrangerElementSize);
+
+            if(!SelectedElements.IntersectsWith(testBounds)) // No intersection means no selection
+            {
+                ClearSelection();
+                HasSelection = false;
+            }
+
             //PopulateData(); // Clean this up so that PopulateData will not crash from out of ClientRect clicks
         }
 

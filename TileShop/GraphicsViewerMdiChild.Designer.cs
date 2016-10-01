@@ -36,6 +36,7 @@
             this.showGridlinesButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.offsetLabel = new System.Windows.Forms.ToolStripLabel();
+            this.editModeButton = new System.Windows.Forms.ToolStripButton();
             this.RenderPanel = new System.Windows.Forms.Panel();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -49,7 +50,8 @@
             this.zoomSelectBox,
             this.showGridlinesButton,
             this.toolStripSeparator2,
-            this.offsetLabel});
+            this.offsetLabel,
+            this.editModeButton});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(3, 0, 0, 0);
@@ -91,7 +93,7 @@
             this.showGridlinesButton.Checked = true;
             this.showGridlinesButton.CheckState = System.Windows.Forms.CheckState.Checked;
             this.showGridlinesButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.showGridlinesButton.Image = ((System.Drawing.Image)(resources.GetObject("showGridlinesButton.Image")));
+            this.showGridlinesButton.Image = global::TileShop.Properties.Resources.gridlines;
             this.showGridlinesButton.ImageTransparentColor = System.Drawing.Color.White;
             this.showGridlinesButton.Name = "showGridlinesButton";
             this.showGridlinesButton.Size = new System.Drawing.Size(23, 22);
@@ -109,6 +111,18 @@
             this.offsetLabel.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.offsetLabel.Name = "offsetLabel";
             this.offsetLabel.Size = new System.Drawing.Size(0, 22);
+            // 
+            // editModeButton
+            // 
+            this.editModeButton.Checked = true;
+            this.editModeButton.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.editModeButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.editModeButton.Image = global::TileShop.Properties.Resources.EditModeTemp;
+            this.editModeButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.editModeButton.Name = "editModeButton";
+            this.editModeButton.Size = new System.Drawing.Size(23, 22);
+            this.editModeButton.Text = "toolStripButton1";
+            this.editModeButton.Click += new System.EventHandler(this.editModeButton_Click);
             // 
             // RenderPanel
             // 
@@ -159,5 +173,6 @@
         private System.Windows.Forms.Panel RenderPanel;
         private System.Windows.Forms.ToolStripLabel offsetLabel;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripButton editModeButton;
     }
 }
