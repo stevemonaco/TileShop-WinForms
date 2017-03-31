@@ -33,9 +33,9 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.pencilButton = new System.Windows.Forms.ToolStripButton();
             this.pickerButton = new System.Windows.Forms.ToolStripButton();
-            this.PixelPanel = new System.Windows.Forms.Panel();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.gridlinesButton = new System.Windows.Forms.ToolStripButton();
+            this.PixelPanel = new System.Windows.Forms.Panel();
             this.swatchControl = new TileShop.SwatchControl();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -84,17 +84,6 @@
             this.pickerButton.Text = "toolStripButton3";
             this.pickerButton.Click += new System.EventHandler(this.pickerButton_Click);
             // 
-            // PixelPanel
-            // 
-            this.PixelPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.PixelPanel.Location = new System.Drawing.Point(0, 25);
-            this.PixelPanel.Name = "PixelPanel";
-            this.PixelPanel.Size = new System.Drawing.Size(533, 201);
-            this.PixelPanel.TabIndex = 1;
-            this.PixelPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.PixelPanel_Paint);
-            this.PixelPanel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PixelPanel_MouseDown);
-            this.PixelPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PixelPanel_MouseMove);
-            // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
@@ -110,6 +99,17 @@
             this.gridlinesButton.Size = new System.Drawing.Size(23, 22);
             this.gridlinesButton.Text = "toolStripButton3";
             this.gridlinesButton.Click += new System.EventHandler(this.gridlinesButton_Click);
+            // 
+            // PixelPanel
+            // 
+            this.PixelPanel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.PixelPanel.Location = new System.Drawing.Point(0, 25);
+            this.PixelPanel.Name = "PixelPanel";
+            this.PixelPanel.Size = new System.Drawing.Size(533, 201);
+            this.PixelPanel.TabIndex = 1;
+            this.PixelPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.PixelPanel_Paint);
+            this.PixelPanel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PixelPanel_MouseDown);
+            this.PixelPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.PixelPanel_MouseMove);
             // 
             // swatchControl
             // 
@@ -130,7 +130,7 @@
             this.Controls.Add(this.toolStrip1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "PixelEditorForm";
-            this.Text = "PixelEditorForm";
+            this.Text = "Pixel Editor";
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             this.ResumeLayout(false);

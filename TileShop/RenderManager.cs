@@ -36,7 +36,7 @@ namespace TileShop
 
             BinaryReader br = null;
 
-            // Remember TileCache
+            // TODO: Consider using Tile Cache
 
             if(arranger.IsSequential)
             {
@@ -60,7 +60,7 @@ namespace TileShop
                         br.BaseStream.Seek(el.FileOffset, SeekOrigin.Begin);
                     }
 
-                    GraphicsCodec.Decode(Image, FileManager.Instance.GetGraphicsFormat(el.Format), el.X1, el.Y1, br, FileManager.Instance.GetPalette(el.Palette));
+                    GraphicsCodec.Decode(Image, el.X1, el.Y1, FileManager.Instance.GetGraphicsFormat(el.Format), br, FileManager.Instance.GetPalette(el.Palette));
                 }
             }
 

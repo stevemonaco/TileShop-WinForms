@@ -34,8 +34,6 @@
             this.newGraphicsProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.blankArrangerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openFileMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.openGraphicsProject = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -115,25 +113,10 @@
             // 
             // openToolStripMenuItem
             // 
-            this.openToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openFileMenu,
-            this.openGraphicsProject});
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
             this.openToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.openToolStripMenuItem.Text = "Open";
-            // 
-            // openFileMenu
-            // 
-            this.openFileMenu.Name = "openFileMenu";
-            this.openFileMenu.Size = new System.Drawing.Size(177, 22);
-            this.openFileMenu.Text = "File";
-            this.openFileMenu.Click += new System.EventHandler(this.openFileMenu_Click);
-            // 
-            // openGraphicsProject
-            // 
-            this.openGraphicsProject.Name = "openGraphicsProject";
-            this.openGraphicsProject.Size = new System.Drawing.Size(177, 22);
-            this.openGraphicsProject.Text = "Graphics Descriptor";
+            this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
@@ -278,7 +261,7 @@
             this.IsMdiContainer = true;
             this.MainMenuStrip = this.menuStrip;
             this.Name = "TileShopForm";
-            this.Text = "TileShop 0.02c";
+            this.Text = "TileShop 0.02d";
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.statusStrip.ResumeLayout(false);
@@ -298,8 +281,6 @@
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newGraphicsProjectMenu;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem openFileMenu;
-        private System.Windows.Forms.ToolStripMenuItem openGraphicsProject;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;

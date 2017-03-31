@@ -1,6 +1,6 @@
 ﻿namespace TileShop
 {
-    partial class GraphicsViewerMdiChild
+    partial class GraphicsViewerChild
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GraphicsViewerMdiChild));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GraphicsViewerChild));
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.formatSelectBox = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();

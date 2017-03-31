@@ -14,6 +14,17 @@ namespace TileShop
 {
     public enum PaletteColorFormat { RGB24 = 0, ARGB32, BGR15, ABGR16, NES }
 
+    /// <summary>
+    /// Storage source of the palette
+    /// </summary>
+    public enum PaletteStorageSource { File = 0, XmlConfig }
+
+    /// <summary>
+    /// Palette manages the loading of palettes and colors from a variety of color formats
+    /// Local colors are internally ARGB32
+    /// Foreign colors are the same as the target system
+    /// </summary>
+
     public class Palette
     {
         public string Name { get; private set; }
@@ -23,8 +34,32 @@ namespace TileShop
         public int Entries { get; private set; }
         public bool HasAlpha { get; private set; }
         public bool ZeroIndexTransparent { get; private set; }
+        public PaletteStorageSource StorageSource { get; private set; }
 
-        uint[] palette; // Colors stored in ARGB order
+        /// <summary>
+        /// Gets the internal palette containing local ARGB32 colors
+        /// </summary>
+        public uint[] LocalPalette
+        {
+            get { return localPalette; }
+            private set { localPalette = value; }
+        }
+        private uint[] localPalette;
+
+        /// <summary>
+        /// Gets the internal palette containing foreign colors
+        /// </summary>
+        public uint[] ForeignPalette
+        {
+            get { return foreignPalette; }
+            private set { foreignPalette = value; }
+        }
+        private uint[] foreignPalette;
+
+        /// <summary>
+        /// Constructs a new named Palette object
+        /// </summary>
+        /// <param name="PaletteName">Name of the palette</param>
 
         public Palette(string PaletteName)
         {
@@ -37,195 +72,257 @@ namespace TileShop
             ZeroIndexTransparent = true;
         }
 
-        // Load Palette from a new file, only in ARGB32 format
+        /// <summary>
+        /// Reloads the palette data from its underlying source
+        /// </summary>
+        /// <returns></returns>
+        public bool Reload()
+        {
+            return LoadPalette(FileName, FileOffset, ColorFormat, Entries);
+        }
+
+        /// <summary>
+        /// Load a 256-entry palette from a new file in ARGB32 format
+        /// </summary>
+        /// <param name="filename">Path to the palette file</param>
+        /// <returns>Success value</returns>
         public bool LoadPalette(string filename)
         {
-            palette = new uint[256];
+            int entrySize = 256;
+
+            localPalette = new uint[entrySize];
 
             BinaryReader br = new BinaryReader(File.OpenRead(filename));
 
             int numColors = (int)br.BaseStream.Length / 4;
 
-            if (numColors != 256)
+            if (numColors != entrySize)
                 return false;
 
             for (int idx = 0; idx < numColors; idx++)
             {
-                palette[idx] = br.ReadUInt32();
-                palette[idx] |= 0xFF000000; // Disable transparency
+                localPalette[idx] = br.ReadUInt32();
+                localPalette[idx] |= 0xFF000000; // Disable transparency
             }
 
             ColorFormat = PaletteColorFormat.ARGB32;
             FileOffset = 0;
             FileName = filename;
-            Entries = 256;
+            Entries = entrySize;
+            StorageSource = PaletteStorageSource.File;
 
             return true;
         }
 
-        // Load Palette from an already loaded file
-        public bool LoadPalette(string FileId, long offset, PaletteColorFormat Format, int NumEntries)
+        /// <summary>
+        /// Load palette from an already loaded file
+        /// </summary>
+        /// <param name="fileId">Id of file in FileManager</param>
+        /// <param name="offset">File offset to the beginning of the palette</param>
+        /// <param name="format">Color format of the palette</param>
+        /// <param name="numEntries">Number of entries the palette contains</param>
+        /// <returns>Success value</returns>
+        public bool LoadPalette(string fileId, long offset, PaletteColorFormat format, int numEntries)
         {
-            if (NumEntries > 256)
+            if (numEntries > 256)
                 throw new ArgumentException("Maximum palette indices must be 256 or less");
 
-            palette = new UInt32[256];
+            localPalette = new UInt32[numEntries];
+            foreignPalette = new UInt32[numEntries];
 
-            FileStream fs = FileManager.Instance.GetFileStream(FileId);
+            FileStream fs = FileManager.Instance.GetFileStream(fileId);
             BinaryReader br = new BinaryReader(fs);
 
             fs.Seek(offset, SeekOrigin.Begin);
 
-            int ReadSize;
+            int readSize;
 
-            switch(Format)
+            switch(format)
             {
                 case PaletteColorFormat.BGR15:
-                    ReadSize = 2;
+                    readSize = 2;
                     HasAlpha = false;
                     break;
                 case PaletteColorFormat.ABGR16:
-                    ReadSize = 2;
+                    readSize = 2;
                     HasAlpha = true;
                     break;
                 case PaletteColorFormat.RGB24:
-                    ReadSize = 3;
+                    readSize = 3;
                     HasAlpha = false;
                     break;
                 case PaletteColorFormat.ARGB32:
-                    ReadSize = 4;
+                    readSize = 4;
                     HasAlpha = true;
                     break;
                 default:
-                    throw new NotSupportedException();
+                    throw new NotSupportedException("An unsupported palette format was attempted to be read");
             }
 
-            for(int i = 0; i < NumEntries; i++)
+            for(int i = 0; i < numEntries; i++)
             {
-                uint ColorIn;
+                uint foreignColor;
 
-                if (ReadSize == 1)
-                    ColorIn = br.ReadByte();
-                else if (ReadSize == 2)
-                    ColorIn = br.ReadUInt16();
-                else if (ReadSize == 3)
+                if (readSize == 1)
+                    foreignColor = br.ReadByte();
+                else if (readSize == 2)
+                    foreignColor = br.ReadUInt16();
+                else if (readSize == 3)
                 {
-                    ColorIn = ((uint)br.ReadByte());
-                    ColorIn |= ((uint)br.ReadByte()) << 8;
-                    ColorIn |= ((uint)br.ReadByte()) << 16;
+                    foreignColor = ((uint)br.ReadByte());
+                    foreignColor |= ((uint)br.ReadByte()) << 8;
+                    foreignColor |= ((uint)br.ReadByte()) << 16;
                 }
-                else // 4 bytes
-                    ColorIn = br.ReadUInt32();
+                else if (readSize == 4)
+                    foreignColor = br.ReadUInt32();
+                else
+                    throw new NotSupportedException("Palette formats with entry sizes larger than 4 bytes are not supported");
 
-                uint ColorOut = ToArgb32(ColorIn, Format);
+                uint localColor = ForeignToLocalArgb(foreignColor, format);
+                foreignPalette[i] = foreignColor;
 
                 if (i == 0)
-                    palette[i] = ColorOut & 0x00FFFFFF;
+                    localPalette[i] = localColor & 0x00FFFFFF; // Make first entry transparent TODO: Use ZeroIndexTransparent instead
                 else
-                    palette[i] = ColorOut;
+                    localPalette[i] = localColor;
             }
 
-            ColorFormat = Format;
+            ColorFormat = format;
             FileOffset = offset;
-            FileName = FileId;
-            Entries = NumEntries;
+            FileName = fileId;
+            Entries = numEntries;
+            StorageSource = PaletteStorageSource.File;
 
             return true;
         }
 
-        public static uint ToArgb32(uint ColorIn, PaletteColorFormat Format)
+        /// <summary>
+        /// Converts a foreign color to a local color
+        /// </summary>
+        /// <param name="foreignColor">Foreign color to be converted</param>
+        /// <param name="format">PaletteColorFormat of foreignColor</param>
+        /// <returns>Local ARGB32 color value</returns>
+        public static uint ForeignToLocalArgb(uint foreignColor, PaletteColorFormat format)
         {
-            uint ColorOut;
+            uint localColor;
 
-            if (Format == PaletteColorFormat.BGR15)
+            if (format == PaletteColorFormat.BGR15)
             {
-                ColorOut = (ColorIn & 0x1F) << 19; // Red
-                ColorOut |= (ColorIn & 0x3E0) << 6; // Blue
-                ColorOut |= (ColorIn & 0x7C00) >> 7; // Green
-                ColorOut |= 0xFF000000; // Alpha
+                localColor = (foreignColor & 0x1F) << 19; // Red
+                localColor |= (foreignColor & 0x3E0) << 6; // Blue
+                localColor |= (foreignColor & 0x7C00) >> 7; // Green
+                localColor |= 0xFF000000; // Alpha
             }
-            else if (Format == PaletteColorFormat.ABGR16)
+            else if (format == PaletteColorFormat.ABGR16)
             {
-                ColorOut = (ColorIn & 0x1F) << 19; // Red
-                ColorOut |= (ColorIn & 0x3E0) << 6; // Blue
-                ColorOut |= (ColorIn & 0x7C00) >> 7; // Green
-                ColorOut |= ((ColorIn & 0x8000) * 255) << 24; // Alpha
+                localColor = (foreignColor & 0x1F) << 19; // Red
+                localColor |= (foreignColor & 0x3E0) << 6; // Blue
+                localColor |= (foreignColor & 0x7C00) >> 7; // Green
+                localColor |= ((foreignColor & 0x8000) * 255) << 24; // Alpha
             }
             else
                 throw new ArgumentException("Unsupported PaletteColorFormat");
 
-            return ColorOut;
+            return localColor;
         }
 
-        public static uint GetNativeInArgb32(uint Argb32In, PaletteColorFormat ColorFormat)
+        /// <summary>
+        /// Converts a foreign color to a local color
+        /// </summary>
+        /// <param name="A">Foreign alpha channel to be converted</param>
+        /// <param name="R">Foreign red channel to be converted</param>
+        /// <param name="G">Foreign green channel to be converted</param>
+        /// <param name="B">Foreign blue channel to be converted</param>
+        /// <param name="format">PaletteColorFormat of foreignColor</param>
+        /// <returns>Local ARGB32 color value</returns>
+        public static uint ForeignToLocalArgb(byte A, byte R, byte G, byte B, PaletteColorFormat format)
         {
-            uint R, G, B, A;
-            uint ColorOut;
+            uint localColor;
 
-            if(ColorFormat == PaletteColorFormat.BGR15)
+            if (format == PaletteColorFormat.BGR15)
             {
-                R = (Argb32In & 0xFF0000) >> 19;
-                G = (Argb32In & 0xFF00) >> 11;
-                B = (Argb32In & 0xFF) >> 3;
-                ColorOut = (R << 16) | (G << 8) | B;
+                localColor = (uint) R << 19; // Red
+                localColor |= (uint) G << 11; // Green
+                localColor |= (uint) B << 3; // Blue
+                localColor |= 0xFF000000; // Alpha
             }
-            else if(ColorFormat == PaletteColorFormat.ABGR16)
+            else if (format == PaletteColorFormat.ABGR16)
             {
-                R = (Argb32In & 0xFF0000) >> 19;
-                G = (Argb32In & 0xFF00) >> 11;
-                B = (Argb32In & 0xFF) >> 3;
-                if ((Argb32In & 0xFF000000) == 0xFF000000)
-                    A = 0x80;
-                else
-                    A = 0;
-
-                ColorOut = (A << 24) | (R << 16) | (G << 8) | B;
+                localColor = (uint)R << 19; // Red
+                localColor |= (uint)G << 11; // Green
+                localColor |= (uint)B << 3; // Blue
+                localColor |= (uint) (A * 255) << 24; // Alpha
             }
             else
                 throw new ArgumentException("Unsupported PaletteColorFormat");
 
-            return ColorOut;
+            return localColor;
         }
 
-        public uint this[int i]
+        /// <summary>
+        /// Returns the local color at the specified index
+        /// </summary>
+        /// <param name="index">Zero-based palette index</param>
+        /// <returns>Local ARGB32 color</returns>
+        public uint this[int index]
         {
             get
             {
-                if (palette == null)
+                if (localPalette == null)
                     throw new ArgumentNullException();
 
-                return palette[i];
+                return localPalette[index];
             }
         }
 
-        public Color GetColor(int idx)
+        /// <summary>
+        /// Returns the local color at the specified index
+        /// </summary>
+        /// <param name="index">Zero-based palette index</param>
+        /// <returns>Local Color</returns>
+        public Color GetLocalColor(int index)
         {
-            if (palette == null)
+            if (localPalette == null)
                 throw new ArgumentNullException();
 
-            return Color.FromArgb((int)palette[idx]);
+            return Color.FromArgb((int)localPalette[index]);
         }
 
-        public int GetIndexByColor(Color col, bool ExactColorOnly)
+        /// <summary>
+        /// Finds the palette index associated with a specific color
+        /// </summary>
+        /// <param name="color">Local color to search for</param>
+        /// <param name="exactColorOnly">true to return only an exactly matched color; false to match the closest color</param>
+        /// <returns>A palette index matching the specified color</returns>
+        public int GetIndexByLocalColor(Color color, bool exactColorOnly)
         {
-            uint c = ColorToUint(col);
+            uint c = ColorToUint(color);
 
-            return GetIndexByColor(c, ExactColorOnly);
+            return GetIndexByColor(c, exactColorOnly);
         }
 
-        public int GetIndexByColor(uint col, bool ExactColorOnly)
+        /// <summary>
+        /// Returns a palette index matching the specified ARGB32 value
+        /// </summary>
+        /// <param name="color">ARGB32 value to search for</param>
+        /// <param name="exactColorOnly">true to return only exactly matched colors; false to match the closest color</param>
+        /// <returns>A palette index matching the specified colort</returns>
+        public int GetIndexByColor(uint color, bool exactColorOnly)
         {
-            for (int i = 0; i < Entries; i++)
+            if (exactColorOnly)
             {
-                if (palette[i] == col)
-                    return i;
+                for (int i = 0; i < Entries; i++)
+                {
+                    if (localPalette[i] == color)
+                        return i;
+                }
             }
 
-            if (ExactColorOnly) // Do not pick closest color in palette
+            if (exactColorOnly) // Do not pick closest color in palette
                 return -1;
 
             // Color matching involves converting colors to hue-saturation-luminance and comparing
-            var c1 = new ColorMine.ColorSpaces.Rgb { R = GetR(col), G = GetG(col), B = GetB(col) };
+            var c1 = new ColorMine.ColorSpaces.Rgb { R = RFromARGB(color), G = GFromARGB(color), B = BFromARGB(color) };
             var h1 = c1.To<ColorMine.ColorSpaces.Hsl>();
 
             double MinDistance = double.MaxValue;
@@ -234,7 +331,7 @@ namespace TileShop
 
             for(int i = 0; i < Entries; i++)
             {
-                var c2 = new ColorMine.ColorSpaces.Rgb { R = GetR(palette[i]), G = GetG(palette[i]), B = GetB(palette[i]) };
+                var c2 = new ColorMine.ColorSpaces.Rgb { R = RFromARGB(localPalette[i]), G = GFromARGB(localPalette[i]), B = BFromARGB(localPalette[i]) };
                 var h2 = c2.To<ColorMine.ColorSpaces.Hsl>();
 
                 double Distance = c1.Compare(c2, comparator);
@@ -249,58 +346,229 @@ namespace TileShop
             return MinIndex;
         }
 
-        private uint ColorToUint(Color col)
+        private uint ColorToUint(Color color)
         {
-            uint c = ((uint)col.A) << 24 | ((uint)col.R) << 16 | ((uint)col.G) << 8 | ((uint)col.B);
+            uint c = ((uint)color.A) << 24 | ((uint)color.R) << 16 | ((uint)color.G) << 8 | ((uint)color.B);
             return c;
         }
 
-        private uint GetA(uint col)
+        private uint AFromARGB(uint color)
         {
-            return (col & 0xFF000000) >> 24;
+            return (color & 0xFF000000) >> 24;
         }
 
-        private uint GetR(uint col)
+        private uint RFromARGB(uint color)
         {
-            return (col & 0xFF0000) >> 16;
+            return (color & 0xFF0000) >> 16;
         }
 
-        private uint GetG(uint col)
+        private uint GFromARGB(uint color)
         {
-            return (col & 0xFF00) >> 8;
+            return (color & 0xFF00) >> 8;
         }
 
-        private uint GetB(uint col)
+        private uint BFromARGB(uint color)
         {
-            return col & 0xFF;
+            return color & 0xFF;
         }
 
-        /*public uint GetNativeColor(int idx)
+        /// <summary>
+        /// Splits a foreign color into its foreign color components
+        /// </summary>
+        /// <param name="index">Palette index of specified color</param>
+        /// <returns>A tuple containing the alpha, red, green, and blue color components of the foreign color</returns>
+        public (byte A, byte R, byte G, byte B) SplitForeignColor(int index)
         {
+            uint foreignColor = foreignPalette[index];
 
+            return SplitForeignColor(foreignColor, ColorFormat);
         }
 
-        public int GetNativeRed(int idx)
+        /// <summary>
+        /// Splits a foreign color into its foreign color components
+        /// </summary>
+        /// <param name="foreignColor">Foreign color to be converted</param>
+        /// <param name="colorFormat">PaletteColorFormat of foreignColor</param>
+        /// <returns>A tuple containing the alpha, red, green, and blue color components</returns>
+        public static (byte A, byte R, byte G, byte B) SplitForeignColor(uint foreignColor, PaletteColorFormat colorFormat)
         {
+            byte A, R, G, B;
 
+            switch (colorFormat)
+            {
+                case PaletteColorFormat.BGR15: case PaletteColorFormat.ABGR16:
+                    R = (byte)(foreignColor & 0x1F);
+                    G = (byte)((foreignColor & 0x3E0) >> 5);
+                    B = (byte)((foreignColor & 0x7C00) >> 10);
+                    A = (byte)((foreignColor & 0x8000) >> 15);
+                    break;
+                default:
+                    throw new ArgumentException("Unsupported PaletteColorFormat");
+            }
+
+            return (A, R, G, B);
         }
 
-        public int GetNativeGreen(int idx)
+        public static uint MakeForeignColor(byte A, byte R, byte G, byte B, PaletteColorFormat colorFormat)
         {
+            uint foreignColor = 0;
 
+            switch (colorFormat)
+            {
+                // TODO: Validate color ranges
+                case PaletteColorFormat.BGR15: case PaletteColorFormat.ABGR16:
+                    foreignColor |= R;
+                    foreignColor |= ((uint)G << 5);
+                    foreignColor |= ((uint)B << 10);
+                    foreignColor |= ((uint)A << 15);
+                    break;
+                default:
+                    throw new ArgumentException("Unsupported PaletteColorFormat");
+            }
+
+            return foreignColor;
         }
 
-        public int GetNativeBlue(int idx)
+        /// <summary>
+        /// Accesses the palette and returns the foreign alpha channel value
+        /// </summary>
+        /// <param name="index">Zero-based palette index</param>
+        /// <returns></returns>
+        public uint ForeignAlpha(int index)
         {
+            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorFormat);
 
+            return R;
         }
 
-        public int GetNativeAlpha(int idx)
+        /// <summary>
+        /// Accesses the palette and returns the foreign red channel value
+        /// </summary>
+        /// <param name="index">Zero-based palette index</param>
+        /// <returns></returns>
+        public uint ForeignRed(int index)
         {
+            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorFormat);
 
-        }*/
+            return R;
+        }
 
-        public static PaletteColorFormat StringToFormat(string PaletteFormat)
+        /// <summary>
+        /// Accesses the palette and returns the foreign blue channel value
+        /// </summary>
+        /// <param name="index">Zero-based palette index</param>
+        /// <returns></returns>
+        public uint ForeignBlue(int index)
+        {
+            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorFormat);
+
+            return B;
+        }
+
+        /// <summary>
+        /// Accesses the palette and returns the foreign green channel value
+        /// </summary>
+        /// <param name="index">Zero-based palette index</param>
+        /// <returns></returns>
+        public uint ForeignGreen(int index)
+        {
+            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorFormat);
+
+            return G;
+        }
+
+        /// <summary>
+        /// Replaces the color at a particular palette index with the specified foreign color
+        /// Additionally, updates the local color in the palette
+        /// </summary>
+        /// <param name="index">Zero-based palette index</param>
+        /// <param name=""></param>
+        public void SetPaletteForeignColor(int index, uint foreignColor)
+        {
+            if (foreignPalette == null)
+                throw new NullReferenceException();
+
+            if (index >= Entries)
+                throw new ArgumentOutOfRangeException("index", index, "Index is outside the range of number of entries in the palette");
+
+            foreignPalette[index] = foreignColor;
+            localPalette[index] = ForeignToLocalArgb(foreignColor, ColorFormat);
+        }
+
+        /// <summary>
+        /// Replaces the color at a particular palette index with the specified foreign color
+        /// Additionally, updates the local color in the palette
+        /// </summary>
+        /// <param name="index">Zero-based palette index</param>
+        /// <param name=""></param>
+        public void SetPaletteForeignColor(int index, byte A, byte R, byte G, byte B)
+        {
+            uint foreignColor = Palette.MakeForeignColor(A, R, G, B, ColorFormat);
+            SetPaletteForeignColor(index, foreignColor);
+        }
+
+        /// <summary>
+        /// Saves palette's foreign colors to its underlying source and location
+        /// </summary>
+        /// <returns>Success value</returns>
+        public bool SavePalette()
+        {
+            if(StorageSource == PaletteStorageSource.File)
+            {
+                int writeSize;
+
+                switch (ColorFormat)
+                {
+                    case PaletteColorFormat.BGR15:
+                        writeSize = 2;
+                        HasAlpha = false;
+                        break;
+                    case PaletteColorFormat.ABGR16:
+                        writeSize = 2;
+                        HasAlpha = true;
+                        break;
+                    case PaletteColorFormat.RGB24:
+                        writeSize = 3;
+                        HasAlpha = false;
+                        break;
+                    case PaletteColorFormat.ARGB32:
+                        writeSize = 4;
+                        HasAlpha = true;
+                        break;
+                    default:
+                        throw new NotSupportedException("An unsupported palette format was attempted to be read");
+                }
+
+                FileStream fs = FileManager.Instance.GetFileStream(FileName);
+                BinaryWriter bw = new BinaryWriter(fs);
+
+                fs.Seek(FileOffset, SeekOrigin.Begin);
+
+                for (int i = 0; i < Entries; i++)
+                {
+                    if (writeSize == 1)
+                        bw.Write((byte)foreignPalette[i]);
+                    else if (writeSize == 2)
+                        bw.Write((short)foreignPalette[i]);
+                    else if (writeSize == 3)
+                    {
+                        bw.Write((byte)(foreignPalette[i] & 0xFF));
+                        bw.Write((byte)((foreignPalette[i] >> 8) & 0xFF));
+                        bw.Write((byte)((foreignPalette[i] >> 16) & 0xFF));
+                    }
+                    else if (writeSize == 4)
+                        bw.Write(foreignPalette[i]);
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the string name associated with a PaletteColorFormat object
+        /// </summary>
+        /// <param name="PaletteFormat">The specified PaletteColorFormat object</param>
+        /// <returns>A string name describing the PaletteColorFormat</returns>
+        public static PaletteColorFormat StringToPaletteFormat(string PaletteFormat)
         {
             switch(PaletteFormat)
             {
@@ -323,5 +591,9 @@ namespace TileShop
         {
             return Enum.GetNames(typeof(PaletteColorFormat)).Cast<string>().ToList<string>();
         }
+    }
+
+    public class PaletteNotFoundException: Exception
+    {
     }
 }

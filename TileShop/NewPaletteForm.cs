@@ -51,7 +51,7 @@ namespace TileShop
             FileName = (string)projectFileBox.SelectedItem;
             Entries = int.Parse(entriesBox.Text);
             FileOffset = long.Parse(offsetBox.Text);
-            ColorFormat = Palette.StringToFormat((string)colorFormatBox.Text);
+            ColorFormat = Palette.StringToPaletteFormat((string)colorFormatBox.Text);
 
             DialogResult = DialogResult.OK;
             this.Close();

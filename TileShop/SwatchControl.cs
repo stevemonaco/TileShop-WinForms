@@ -20,7 +20,6 @@ namespace TileShop
         public Size swatchElementSize = new Size(12, 12);
         public Size swatchElementPadding = new Size(2, 2);
 
-        private int selectedIndex; // 0-based index
         public event EventHandler<EventArgs> SelectedIndexChanged;
 
         public SwatchControl()
@@ -39,15 +38,20 @@ namespace TileShop
             get { return selectedIndex; }
             set
             {
-                selectedIndex = value;
-                Invalidate(); // Redraw borders
+                if (selectedIndex != value)
+                {
+                    selectedIndex = value;
+                    SelectedIndexChanged?.Invoke(this, null);
+                    Invalidate(); // Redraw borders
+                }
             }
         }
+        private int selectedIndex; // 0-based index
 
         public void SetPaletteName(string PaletteName)
         {
             if (String.IsNullOrEmpty(PaletteName))
-                pal = null;
+                throw new ArgumentException();
             else
                 pal = FileManager.Instance.GetPalette(PaletteName);
             Invalidate();
@@ -110,15 +114,7 @@ namespace TileShop
             {
                 int idx = palIndex.X + palIndex.Y * 16;
                 if (idx < pal.Entries)
-                {
-                    if (SelectedIndex != idx)
-                    {
-                        SelectedIndex = idx;
-                        if (SelectedIndexChanged != null)
-                            SelectedIndexChanged(this, null);
-                        Invalidate();
-                    }
-                }
+                    SelectedIndex = idx;
             }
         }
     }

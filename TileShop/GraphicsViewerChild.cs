@@ -13,7 +13,7 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace TileShop
 {
-    public partial class GraphicsViewerMdiChild : DockContent
+    public partial class GraphicsViewerChild : DockContent
     {
         int prevFormatIndex = -1;
 
@@ -44,7 +44,7 @@ namespace TileShop
         // UI Events
         public event EventHandler<EventArgs> EditArrangerChanged;
 
-        public GraphicsViewerMdiChild(string ArrangerName)
+        public GraphicsViewerChild(string ArrangerName)
         {
             InitializeComponent();
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.NonPublic, 
@@ -61,6 +61,9 @@ namespace TileShop
             if (arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 GraphicsFormat graphicsFormat = FileManager.Instance.GetGraphicsFormat(arranger.GetSequentialGraphicsFormat());
+
+                editModeButton.Checked = false; // Do not allow edits directly to a sequential arranger
+                editModeButton.Visible = false;
 
                 // Initialize the codec select box
                 List<string> formatList = FileManager.Instance.GetGraphicsFormatsNameList();
@@ -84,6 +87,17 @@ namespace TileShop
             zoomSelectBox.SelectedIndex = 0;
             selectionData.Zoom = 1;
             DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
+        }
+
+        /// <summary>
+        /// Reloads arranger data from underlying source
+        /// </summary>
+        public void ReloadArranger()
+        {
+            // Forces the render manager to do a full redraw
+            rm.Invalidate();
+            // Redraw the viewer graphics
+            RenderPanel.Invalidate();
         }
 
         /*public bool OpenFile(string InputFilename)
@@ -356,7 +370,7 @@ namespace TileShop
 
         private void GraphicsViewerMdiChild_FormClosing(object sender, FormClosingEventArgs e)
         {
-            //FileManager.Instance.
+            
         }
 
         private void RenderPanel_Paint(object sender, PaintEventArgs e)
@@ -428,7 +442,8 @@ namespace TileShop
                                 selectionData.SelectedElements.Width, selectionData.SelectedElements.Height);
                             CancelSelection();
                             RenderPanel.Invalidate();
-                            EditArrangerChanged(this, null);
+
+                            EditArrangerChanged?.Invoke(this, null);
                         }
                     }
                     else // Selection mode leaves the selection visible to be moved around between arrangers

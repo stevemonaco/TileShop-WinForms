@@ -34,47 +34,6 @@ namespace TileShop
             //gmc.Show(dockPanel, DockState.Document);
         }
 
-        private void openFileMenu_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog ofd = new OpenFileDialog();
-
-            ofd.AddExtension = true;
-            ofd.CheckFileExists = true;
-            ofd.CheckPathExists = true;
-            ofd.Multiselect = false;
-            ofd.Title = "File Location";
-
-            if (ofd.ShowDialog() == DialogResult.OK)
-            {
-                if (Path.GetExtension(ofd.FileName) == ".xml") // Load an XML project
-                {
-                    // Clear all files/arrangers/palettes
-                    FileManager.Instance.ClearAll();
-                    pec.ClearAll();
-
-                    // Add saving for modified viewers here
-                    foreach(Control c in this.Controls)
-                    {
-                        if(c.GetType() == typeof(GraphicsViewerMdiChild))
-                        {
-                            c.Dispose();
-                        }
-                    }
-
-                    // Read new XML file
-                    pec.LoadFromXml(ofd.FileName);
-                }
-                else
-                {
-                    if (!pec.AddFile(ofd.FileName, true))
-                    {
-                        MessageBox.Show("Could not open file " + ofd.FileName);
-                        return;
-                    }
-                }
-            }
-        }
-
         public bool openExistingArranger(string arrangerName)
         {
             // Check if the arranger is already an opened Document
@@ -84,7 +43,7 @@ namespace TileShop
                     return false;
             }
 
-            GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(arrangerName);
+            GraphicsViewerChild gv = new GraphicsViewerChild(arrangerName);
             gv.Show(dockPanel, DockState.Document);
 
             return true;
@@ -147,9 +106,9 @@ namespace TileShop
 
             if (ActiveMdiChild != null)
             {
-                if (ActiveMdiChild.GetType() == typeof(GraphicsViewerMdiChild))
+                if (ActiveMdiChild.GetType() == typeof(GraphicsViewerChild))
                 {
-                    GraphicsViewerMdiChild gv = (GraphicsViewerMdiChild)ActiveMdiChild;
+                    GraphicsViewerChild gv = (GraphicsViewerChild)ActiveMdiChild;
 
                     Size ElementSize = gv.arranger.ElementPixelSize;
                     ntaf.SetDefaults(ElementSize.Width, ElementSize.Height, 16, 8);
@@ -205,9 +164,9 @@ namespace TileShop
 
             if (ActiveMdiChild != null)
             {
-                if (ActiveMdiChild.GetType() == typeof(GraphicsViewerMdiChild))
+                if (ActiveMdiChild.GetType() == typeof(GraphicsViewerChild))
                 {
-                    GraphicsViewerMdiChild gv = (GraphicsViewerMdiChild)ActiveMdiChild;
+                    GraphicsViewerChild gv = (GraphicsViewerChild)ActiveMdiChild;
                     Size ElementSize = gv.arranger.ElementPixelSize;
                     nsaf.SetDefaults(ElementSize.Width, ElementSize.Height, 16, 8);
                 }
@@ -226,8 +185,65 @@ namespace TileShop
 
         public void editArrangerChanged(object sender, EventArgs e)
         {
-            GraphicsViewerMdiChild gv = (GraphicsViewerMdiChild)sender;
+            GraphicsViewerChild gv = (GraphicsViewerChild)sender;
             pef.SetEditArranger(gv.EditArranger);
+        }
+
+        public void paletteContentsModified(object sender, EventArgs e)
+        {
+            // Minor bug: Can sometimes reload arranger of some DockContents twice
+            // Example: A floating GraphicsViewerChild window (with multiple docks?)
+            foreach(DockPane dp in dockPanel.Panes)
+            {
+                foreach(DockContent dc in dp.Contents)
+                {
+                    if (dc.GetType() == typeof(GraphicsViewerChild))
+                        ((GraphicsViewerChild)dc).ReloadArranger();
+                    else if (dc.GetType() == typeof(PixelEditorForm))
+                        ((PixelEditorForm)dc).ReloadArranger();
+                }
+            }
+        }
+
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+
+            ofd.AddExtension = true;
+            ofd.CheckFileExists = true;
+            ofd.CheckPathExists = true;
+            ofd.Multiselect = false;
+            ofd.Title = "File Location";
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                if (Path.GetExtension(ofd.FileName) == ".xml") // Load an XML project
+                {
+                    // Clear all files/arrangers/palettes
+                    FileManager.Instance.ClearAll();
+                    pec.ClearAll();
+
+                    // Add saving for modified viewers here
+                    foreach (Control c in this.Controls)
+                    {
+                        if (c.GetType() == typeof(GraphicsViewerChild))
+                        {
+                            c.Dispose();
+                        }
+                    }
+
+                    // Read new XML file
+                    pec.LoadFromXml(ofd.FileName);
+                }
+                else
+                {
+                    if (!pec.AddFile(ofd.FileName, true))
+                    {
+                        MessageBox.Show("Could not open file " + ofd.FileName);
+                        return;
+                    }
+                }
+            }
         }
     }
 }

@@ -13,10 +13,28 @@ namespace TileShop
 {
     public class GraphicsCodec
     {
-        public static void Decode(Bitmap bmp, GraphicsFormat fmt, int OffsetX, int OffsetY, BinaryReader br, Palette pal)
+        #region Graphics Decoding Functions
+
+        public static void DecodeElement(Bitmap bmp, ArrangerElement el)
+        {
+            GraphicsFormat fmt = FileManager.Instance.GetGraphicsFormat(el.Format);
+            BinaryReader br = new BinaryReader(FileManager.Instance.GetFileStream(el.FileName));
+            br.BaseStream.Seek(el.FileOffset, SeekOrigin.Begin);
+
+            if (fmt.ColorType == "indexed")
+                IndexedDecode(bmp, el.X1, el.Y1, fmt, br, FileManager.Instance.GetPalette(el.Palette));
+            else if (fmt.ColorType == "direct")
+                DirectDecode(bmp, el.X1, el.Y1, fmt, br);
+            else
+                throw new NotSupportedException("GraphicsFormat ColorType " + fmt.ColorType + " is not supported");
+        }
+
+        public static void Decode(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat fmt, BinaryReader br, Palette pal)
         {
             if (fmt.ColorType == "indexed")
-                IndexedDecode(bmp, fmt, OffsetX, OffsetY, br, pal);
+                IndexedDecode(bmp, PixelX, PixelY, fmt, br, pal);
+            else if (fmt.ColorType == "direct")
+                DirectDecode(bmp, PixelX, PixelY, fmt, br);
         }
 
         // Draws a blank background
@@ -30,7 +48,7 @@ namespace TileShop
             g.FillRectangle(b, r);
         }
 
-        public unsafe static void IndexedDecode(Bitmap bmp, GraphicsFormat fmt, int OffsetX, int OffsetY, BinaryReader br, Palette pal)
+        unsafe static void IndexedDecode(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat fmt, BinaryReader br, Palette pal)
         {
             byte[] data = br.ReadBytes(fmt.Size());
             BitStream bs = new BitStream(data, data.Length * 8); // TODO: Add Constructor for BinaryReader, length (optimize copy)
@@ -75,38 +93,79 @@ namespace TileShop
                 fmt.MergedData[pos] = idx;
             }
 
-            DrawBitmap(bmp, fmt, OffsetX, OffsetY, pal);
+            DrawBitmap(bmp, PixelX, PixelY, fmt, pal);
         }
 
-        private static unsafe void DrawBitmap(Bitmap bmp, GraphicsFormat fmt, int OffsetX, int OffsetY, Palette pal)
+        unsafe static void IndexedEncode(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat fmt, BinaryWriter bw, Palette pal)
+        {
+
+        }
+
+        unsafe static void DirectDecode(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat fmt, BinaryReader br)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region Graphics Encoding Functions
+        public unsafe static void EncodeElement(Bitmap bmp, ArrangerElement el)
+        {
+
+        }
+
+        public unsafe static void Encode(Bitmap bmp, GraphicsFormat fmt, int PixelX, int PixelY, BinaryWriter bw, Palette pal)
+        {
+            if (fmt.ColorType == "indexed")
+                IndexedEncode(bmp,PixelX, PixelY, fmt, bw, pal);
+            else if (fmt.ColorType == "direct")
+                DirectEncode(bmp, PixelX, PixelY, fmt, bw);
+        }
+
+        unsafe static void DirectEncode(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat fmt, BinaryWriter bw)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        unsafe static void DrawBitmap(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat fmt, Palette pal)
         {
             Rectangle lockRect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-            BitmapData bd = bmp.LockBits(lockRect, ImageLockMode.WriteOnly, bmp.PixelFormat);
+            BitmapData bd = bmp.LockBits(lockRect, ImageLockMode.ReadOnly, bmp.PixelFormat);
 
             // Draw bitmap
-            uint* dest = (uint*)bd.Scan0;
+            uint* rdsrc = (uint*)bd.Scan0;
             int StrideWidth = bd.Stride - (bmp.Width * 4);
 
-            dest += (bd.Stride / 4) * OffsetY;
+            rdsrc += (bd.Stride / 4) * PixelY; // Seek to scanline PixelY in the bitmap
 
-            fixed(byte* fixedData = fmt.MergedData) // Fix fmt.MergedData in memory so pointers can be used in unsafe code without copying via marshal
+            fixed(byte* fixedData = fmt.MergedData) // Fix fmt.MergedData in memory so unsafe pointers can be used
             {
                 byte* src = fixedData;
                 for (int y = 0; y < fmt.Height; y++)
                 {
-                    dest += OffsetX;
+                    rdsrc += PixelX; // Seek to PixelX in the scanline
                     for (int x = 0; x < fmt.Width; x++)
                     {
-                        *dest = pal[*src];
-                        dest++;
+                        *rdsrc = pal[*src];
+                        rdsrc++;
                         src++;
                     }
-                    dest += (bmp.Width - OffsetX - fmt.Width);
-                    dest += StrideWidth;
+                    rdsrc += (bmp.Width - PixelX - fmt.Width);
+                    rdsrc += StrideWidth;
                 }
             }
 
             bmp.UnlockBits(bd);
+        }
+
+        unsafe static void ReadBitmap(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat fmt, Palette pal)
+        {
+            Rectangle lockRect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+            BitmapData bd = bmp.LockBits(lockRect, ImageLockMode.WriteOnly, bmp.PixelFormat);
+
+
         }
     }
 }

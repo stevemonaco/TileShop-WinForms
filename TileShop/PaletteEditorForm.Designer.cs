@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             gTrackBar.ColorPack colorPack1 = new gTrackBar.ColorPack();
             gTrackBar.ColorPack colorPack2 = new gTrackBar.ColorPack();
             gTrackBar.ColorPack colorPack3 = new gTrackBar.ColorPack();
@@ -70,6 +71,8 @@
             this.label7 = new System.Windows.Forms.Label();
             this.activeColorPanel = new System.Windows.Forms.Panel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.savePaletteButton = new System.Windows.Forms.Button();
+            this.reloadPaletteButton = new System.Windows.Forms.Button();
             this.label10 = new System.Windows.Forms.Label();
             this.nudEntries = new System.Windows.Forms.NumericUpDown();
             this.projectFileBox = new System.Windows.Forms.TextBox();
@@ -77,10 +80,12 @@
             this.colorFormatBox = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.saveColorButton = new System.Windows.Forms.Button();
             this.htmlBox = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.swatchControl = new TileShop.SwatchControl();
+            this.paletteTip = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.nudRed)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudGreen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudBlue)).BeginInit();
@@ -452,6 +457,8 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.savePaletteButton);
+            this.groupBox1.Controls.Add(this.reloadPaletteButton);
             this.groupBox1.Controls.Add(this.label10);
             this.groupBox1.Controls.Add(this.nudEntries);
             this.groupBox1.Controls.Add(this.paletteNameBox);
@@ -465,10 +472,30 @@
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(444, 110);
+            this.groupBox1.Size = new System.Drawing.Size(444, 149);
             this.groupBox1.TabIndex = 26;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Palette Configuration";
+            // 
+            // savePaletteButton
+            // 
+            this.savePaletteButton.Location = new System.Drawing.Point(297, 115);
+            this.savePaletteButton.Name = "savePaletteButton";
+            this.savePaletteButton.Size = new System.Drawing.Size(138, 23);
+            this.savePaletteButton.TabIndex = 32;
+            this.savePaletteButton.Text = "Save Palette To Source";
+            this.savePaletteButton.UseVisualStyleBackColor = true;
+            this.savePaletteButton.Click += new System.EventHandler(this.savePaletteButton_Click);
+            // 
+            // reloadPaletteButton
+            // 
+            this.reloadPaletteButton.Location = new System.Drawing.Point(9, 115);
+            this.reloadPaletteButton.Name = "reloadPaletteButton";
+            this.reloadPaletteButton.Size = new System.Drawing.Size(86, 23);
+            this.reloadPaletteButton.TabIndex = 31;
+            this.reloadPaletteButton.Text = "Reload Palette";
+            this.reloadPaletteButton.UseVisualStyleBackColor = true;
+            this.reloadPaletteButton.Click += new System.EventHandler(this.reloadPaletteButton_Click);
             // 
             // label10
             // 
@@ -539,6 +566,7 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.saveColorButton);
             this.groupBox2.Controls.Add(this.htmlBox);
             this.groupBox2.Controls.Add(this.label9);
             this.groupBox2.Controls.Add(this.label2);
@@ -553,12 +581,22 @@
             this.groupBox2.Controls.Add(this.nudBlue);
             this.groupBox2.Controls.Add(this.sliderBlue);
             this.groupBox2.Controls.Add(this.sliderRed);
-            this.groupBox2.Location = new System.Drawing.Point(12, 131);
+            this.groupBox2.Location = new System.Drawing.Point(12, 167);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(444, 162);
+            this.groupBox2.Size = new System.Drawing.Size(444, 171);
             this.groupBox2.TabIndex = 27;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Color Editor";
+            // 
+            // saveColorButton
+            // 
+            this.saveColorButton.Location = new System.Drawing.Point(297, 139);
+            this.saveColorButton.Name = "saveColorButton";
+            this.saveColorButton.Size = new System.Drawing.Size(138, 23);
+            this.saveColorButton.TabIndex = 25;
+            this.saveColorButton.Text = "Save Color to Palette";
+            this.saveColorButton.UseVisualStyleBackColor = true;
+            this.saveColorButton.Click += new System.EventHandler(this.saveColorButton_Click);
             // 
             // htmlBox
             // 
@@ -589,16 +627,16 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(474, 302);
+            this.panel1.Size = new System.Drawing.Size(474, 348);
             this.panel1.TabIndex = 28;
             // 
             // swatchControl
             // 
             this.swatchControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.swatchControl.Location = new System.Drawing.Point(0, 302);
+            this.swatchControl.Location = new System.Drawing.Point(0, 348);
             this.swatchControl.Name = "swatchControl";
             this.swatchControl.SelectedIndex = 0;
-            this.swatchControl.Size = new System.Drawing.Size(474, 356);
+            this.swatchControl.Size = new System.Drawing.Size(474, 310);
             this.swatchControl.TabIndex = 30;
             this.swatchControl.SelectedIndexChanged += new System.EventHandler<System.EventArgs>(this.swatchControl_SelectedIndexChanged);
             // 
@@ -657,5 +695,9 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.NumericUpDown nudEntries;
         private SwatchControl swatchControl;
+        private System.Windows.Forms.Button savePaletteButton;
+        private System.Windows.Forms.Button reloadPaletteButton;
+        private System.Windows.Forms.Button saveColorButton;
+        private System.Windows.Forms.ToolTip paletteTip;
     }
 }

@@ -57,6 +57,22 @@ namespace TileShop
             swatchControl.SelectedIndex = 0;
         }
 
+        /// <summary>
+        /// Reloads arranger data from underlying source
+        /// </summary>
+        public void ReloadArranger()
+        {
+            if (EditArranger == null)
+                return;
+
+            // Forces the render manager to do a full redraw
+            rm.Invalidate();
+            // Redraw the viewer graphics
+            PixelPanel.Invalidate();
+            // Update palette colors in the swatch
+            swatchControl.Invalidate();
+        }
+
         private void PixelPanel_Paint(object sender, PaintEventArgs e)
         {
             if (EditArranger == null)
@@ -136,7 +152,7 @@ namespace TileShop
 
         private void PixelPanel_MouseDown(object sender, MouseEventArgs e)
         {
-            if (!DisplayRect.Contains(e.Location))
+            if (!DisplayRect.Contains(e.Location) || EditArranger == null)
                 return;
 
             Point unscaledLoc = new Point(); // Location in pixels
@@ -153,13 +169,13 @@ namespace TileShop
             {
                 Color c = rm.GetPixel(unscaledLoc.X, unscaledLoc.Y);
                 Palette pal = FileManager.Instance.GetPalette(EditArranger.GetElement(0, 0).Palette);
-                swatchControl.SelectedIndex = pal.GetIndexByColor(c, true);
+                swatchControl.SelectedIndex = pal.GetIndexByLocalColor(c, true);
             }
         }
 
         private void PixelPanel_MouseMove(object sender, MouseEventArgs e)
         {
-            if (DisplayRect.Contains(e.Location))
+            if (DisplayRect.Contains(e.Location) || EditArranger == null)
             {
                 if (DrawState == PixelDrawState.PencilState)
                     PixelPanel.Cursor = FileManager.Instance.GetCursor("PencilCursor");

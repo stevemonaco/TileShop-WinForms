@@ -139,7 +139,7 @@ namespace TileShop
         {
             if (FileManager.Instance.LoadSequentialArrangerFromFilename(Filename))
             {
-                GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(Filename);
+                GraphicsViewerChild gv = new GraphicsViewerChild(Filename);
                 gv.WindowState = FormWindowState.Maximized;
                 gv.SetZoom(6);
                 gv.Show(tsf.dockPanel, DockState.Document);
@@ -151,7 +151,7 @@ namespace TileShop
 
         public bool ShowScatteredArranger(string ArrangerName)
         {
-            GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(ArrangerName);
+            GraphicsViewerChild gv = new GraphicsViewerChild(ArrangerName);
             gv.WindowState = FormWindowState.Maximized;
             gv.SetZoom(6);
             gv.Show(tsf.dockPanel, DockState.Document);
@@ -165,6 +165,7 @@ namespace TileShop
                 return false;
 
             PaletteEditorForm pef = new PaletteEditorForm(PaletteName);
+            pef.PaletteContentsModified += tsf.paletteContentsModified;
             pef.Show(tsf.dockPanel, DockState.Document);
 
             return true;
