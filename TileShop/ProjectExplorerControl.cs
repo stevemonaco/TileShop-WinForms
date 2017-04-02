@@ -22,6 +22,17 @@ namespace TileShop
         ArrangerFolderNode arrangersNode = new ArrangerFolderNode();
         ContextMenu contextMenu = new ContextMenu();
 
+        /// <summary>
+        /// Gets the state expressing if the project file structure has been modified since last save
+        /// This includes changes to the arrangers but not changes to the underlying source files
+        /// </summary>
+        public bool IsProjectModified
+        {
+            get { return isProjectModified; }
+            private set { isProjectModified = value; }
+        }
+        private bool isProjectModified;
+
         public ProjectExplorerControl(TileShopForm tileShopForm)
         {
             tsf = tileShopForm;
@@ -39,6 +50,13 @@ namespace TileShop
         // Full filename with path
         public bool AddFile(string Filename, bool Show)
         {
+            // Ensure the file has not been previously added
+            foreach(FileNode node in filesNode.Nodes)
+            {
+                if ((string)node.Tag == Filename)
+                    return false;
+            }
+
             FileNode fn = new FileNode();
             fn.Text = Filename;
             fn.Tag = Filename;
@@ -54,6 +72,7 @@ namespace TileShop
                 return ShowSequentialArranger(Filename);
             }
 
+            IsProjectModified = true;
             return true;
         }
 
@@ -69,6 +88,7 @@ namespace TileShop
                 }
             }
 
+            IsProjectModified = true;
             return false;
         }
 
@@ -92,6 +112,7 @@ namespace TileShop
                     throw new NotSupportedException("AddArranger does not support arranger types other than ScatteredArranger");
             }
 
+            IsProjectModified = true;
             return true;
         }
 
@@ -106,6 +127,7 @@ namespace TileShop
                 }
             }
 
+            IsProjectModified = true;
             return false;
         }
 
@@ -118,6 +140,7 @@ namespace TileShop
             palettesNode.Nodes.Add(pn);
             FileManager.Instance.AddPalette(pal.Name, pal);
 
+            IsProjectModified = true;
             return true;
         }
 
@@ -132,6 +155,7 @@ namespace TileShop
                 }
             }
 
+            IsProjectModified = true;
             return false;
         }
 
@@ -171,10 +195,14 @@ namespace TileShop
             return true;
         }
 
+        /// <summary>
+        /// Used to remove all nodes in the project tree and resets the project back to blank
+        /// Sets IsProjectModified to false
+        /// </summary>
+        /// <returns></returns>
         public bool ClearAll()
         {
             projectTreeView.Nodes.Clear();
-
             return true;
         }
 
@@ -215,28 +243,7 @@ namespace TileShop
             foreach (var palette in palettes)
             {
                 Palette pal = new Palette(palette.name);
-                PaletteColorFormat format;
-
-                switch (palette.format)
-                {
-                    case "RGB24":
-                        format = PaletteColorFormat.RGB24;
-                        break;
-                    case "ARGB32":
-                        format = PaletteColorFormat.ARGB32;
-                        break;
-                    case "BGR15":
-                        format = PaletteColorFormat.BGR15;
-                        break;
-                    case "ABGR15":
-                        format = PaletteColorFormat.ABGR16;
-                        break;
-                    case "NES":
-                        format = PaletteColorFormat.NES;
-                        break;
-                    default:
-                        throw new NotImplementedException(palette.format + " is not supported");
-                }
+                PaletteColorFormat format = Palette.StringToColorFormat(palette.format);
 
                 pal.LoadPalette(palette.datafile, palette.fileoffset, format, palette.entries);
                 AddPalette(pal);
@@ -336,7 +343,7 @@ namespace TileShop
                 el.SetAttributeValue("name", pal.Name);
                 el.SetAttributeValue("fileoffset", String.Format("{0:X}", pal.FileOffset));
                 el.SetAttributeValue("datafile", pal.FileName);
-                el.SetAttributeValue("format", pal.ColorFormat.ToString());
+                el.SetAttributeValue("format", Palette.ColorFormatToString(pal.ColorFormat));
                 el.SetAttributeValue("entries", pal.Entries);
                 palettes.Add(el);
             }
@@ -461,10 +468,17 @@ namespace TileShop
     public abstract class ProjectTreeNode : TreeNode
     {
         public abstract void BuildContextMenu(ContextMenu Menu);
+
+        public bool IsModified { get; set; }
     }
 
     public class FileFolderNode : ProjectTreeNode
     {
+        public FileFolderNode()
+        {
+            IsModified = false;
+        }
+
         public override void BuildContextMenu(ContextMenu Menu)
         {
             Menu.MenuItems.Clear();

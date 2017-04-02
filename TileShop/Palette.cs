@@ -16,8 +16,9 @@ namespace TileShop
 
     /// <summary>
     /// Storage source of the palette
+    /// ProjectFile palettes are stored in the XML project file
     /// </summary>
-    public enum PaletteStorageSource { File = 0, XmlConfig }
+    public enum PaletteStorageSource { File = 0, ProjectFile }
 
     /// <summary>
     /// Palette manages the loading of palettes and colors from a variety of color formats
@@ -35,6 +36,12 @@ namespace TileShop
         public bool HasAlpha { get; private set; }
         public bool ZeroIndexTransparent { get; private set; }
         public PaletteStorageSource StorageSource { get; private set; }
+
+        /// <summary>
+        /// Gets the state expressing if palette settings specific to the project structure has been modified since last save
+        /// This only includes the palette colors if they are stored in the project structure file
+        /// </summary>
+        public bool IsProjectModified { get; private set; }
 
         /// <summary>
         /// Gets the internal palette containing local ARGB32 colors
@@ -70,6 +77,7 @@ namespace TileShop
             FileName = null;
             FileOffset = 0;
             ZeroIndexTransparent = true;
+            IsProjectModified = false;
         }
 
         /// <summary>
@@ -491,6 +499,8 @@ namespace TileShop
             if (index >= Entries)
                 throw new ArgumentOutOfRangeException("index", index, "Index is outside the range of number of entries in the palette");
 
+
+
             foreignPalette[index] = foreignColor;
             localPalette[index] = ForeignToLocalArgb(foreignColor, ColorFormat);
         }
@@ -566,11 +576,11 @@ namespace TileShop
         /// <summary>
         /// Gets the string name associated with a PaletteColorFormat object
         /// </summary>
-        /// <param name="PaletteFormat">The specified PaletteColorFormat object</param>
+        /// <param name="colorFormatName">The specified PaletteColorFormat object</param>
         /// <returns>A string name describing the PaletteColorFormat</returns>
-        public static PaletteColorFormat StringToPaletteFormat(string PaletteFormat)
+        public static PaletteColorFormat StringToColorFormat(string colorFormatName)
         {
-            switch(PaletteFormat)
+            switch(colorFormatName)
             {
                 case "RGB24":
                     return PaletteColorFormat.RGB24;
@@ -583,7 +593,26 @@ namespace TileShop
                 case "NES":
                     return PaletteColorFormat.NES;
                 default:
-                    throw new ArgumentException("PaletteColorFormat " + PaletteFormat + " is not supported");
+                    throw new ArgumentException("PaletteColorFormat " + colorFormatName + " is not supported");
+            }
+        }
+
+        public static string ColorFormatToString(PaletteColorFormat colorFormat)
+        {
+            switch (colorFormat)
+            {
+                case PaletteColorFormat.RGB24:
+                    return "RGB24";
+                case PaletteColorFormat.ARGB32:
+                    return "ARGB32";
+                case PaletteColorFormat.BGR15:
+                    return "BGR15";
+                case PaletteColorFormat.ABGR16:
+                    return "ABGR16";
+                case PaletteColorFormat.NES:
+                    return "NES";
+                default:
+                    throw new ArgumentException("PaletteColorFormat " + colorFormat.ToString() + " is not supported");
             }
         }
 

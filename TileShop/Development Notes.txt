@@ -1,8 +1,10 @@
 ﻿TODO:
 Fix focus issue with Dockpanels
 Test NewPaletteForm
-Implement new PaletteColorFormat
+Implement new PaletteColorFormats
+Implement UI features for detecting modifications to arrangers/palettes/etc
+Implement encoding of graphics formats
+Add more tools to the pixel editor
 
 Longer term TODO:
 Implement linear formats
-Begin work on pixel editor

@@ -11,12 +11,25 @@ namespace TileShop
         string CodecDirectoryPath = "D:\\Projects\\TileShop\\codecs\\";
         string PaletteDirectoryPath = "D:\\Projects\\TileShop\\pal\\";
 
+        public string ProjectFileName
+        {
+            get { return projectFileName; }
+            private set
+            {
+                projectFileName = value;
+                RefreshTitle();
+            }
+        }
+        private string projectFileName = "";
+
         ProjectExplorerControl pec;
         PixelEditorForm pef;
 
         public TileShopForm()
         {
             InitializeComponent();
+
+            this.Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
 
             pec = new ProjectExplorerControl(this);
             pec.Show(dockPanel, DockState.DockLeft);
@@ -28,10 +41,12 @@ namespace TileShop
             pef.Show(dockPanel, DockState.DockRight);
         }
 
-        private void newGraphicsProjectMenu_Click(object sender, EventArgs e)
+        public void RefreshTitle()
         {
-            //GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this);
-            //gmc.Show(dockPanel, DockState.Document);
+            if (String.IsNullOrEmpty(ProjectFileName))
+                this.Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
+            else
+                this.Text = "TileShop " + Properties.Settings.Default.Version + " - " + ProjectFileName;
         }
 
         public bool openExistingArranger(string arrangerName)
@@ -133,7 +148,9 @@ namespace TileShop
         {
             WindowState = FormWindowState.Maximized;
 
-            pec.LoadFromXml("D:\\Projects\\ff2.xml");
+            ProjectFileName = "D:\\Projects\\ff2.xml";
+            pec.LoadFromXml(ProjectFileName);
+
             /*GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, "Font");
             gv.WindowState = FormWindowState.Maximized;
             gv.SetZoom(6);
@@ -142,7 +159,17 @@ namespace TileShop
 
         private void saveProjectToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            pec.SaveToXml(@"D:\Projects\ff2test.xml");
+            if(String.IsNullOrEmpty(ProjectFileName)) // First save, need a filename
+            {
+
+            }
+            else
+                pec.SaveToXml(ProjectFileName);
+        }
+
+        private void saveProjectAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
 
         private void newPaletteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -220,7 +247,7 @@ namespace TileShop
                 if (Path.GetExtension(ofd.FileName) == ".xml") // Load an XML project
                 {
                     // Clear all files/arrangers/palettes
-                    FileManager.Instance.ClearAll();
+                    /*FileManager.Instance.ClearAll();
                     pec.ClearAll();
 
                     // Add saving for modified viewers here
@@ -230,10 +257,11 @@ namespace TileShop
                         {
                             c.Dispose();
                         }
-                    }
+                    }*/
 
-                    // Read new XML file
+                    // Load new XML project file
                     pec.LoadFromXml(ofd.FileName);
+                    ProjectFileName = ofd.FileName;
                 }
                 else
                 {
@@ -244,6 +272,43 @@ namespace TileShop
                     }
                 }
             }
+        }
+
+        private void closeProjectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if(pec.IsProjectModified)
+            {
+                DialogResult dr = MessageBox.Show("The project has been modified. Save?", "Save Project", MessageBoxButtons.YesNoCancel);
+                if (dr == DialogResult.Yes && !String.IsNullOrEmpty(ProjectFileName)) // Project has a filename due to being previously saved or opened
+                {
+                    pec.SaveToXml(ProjectFileName);
+                }
+                if(dr == DialogResult.Yes && String.IsNullOrEmpty(ProjectFileName)) // Project has no filename because it has never been saved
+                {
+                    OpenFileDialog ofd = new OpenFileDialog();
+
+                    ofd.AddExtension = true;
+                    ofd.CheckFileExists = true;
+                    ofd.CheckPathExists = true;
+                    ofd.Multiselect = false;
+                    ofd.Title = "File Location";
+
+                    if (ofd.ShowDialog() == DialogResult.OK)
+                    {
+                        pec.SaveToXml(ofd.FileName);
+
+                    }
+                }
+                else if (dr == DialogResult.No)
+                {
+
+                }
+                else if (dr == DialogResult.Cancel)
+                    return;
+            }
+
+            ProjectFileName = "";
+            pec.ClearAll();
         }
     }
 }

@@ -313,4 +313,9 @@ namespace TileShop
         }
     }
 
+    class PaletteModifiedArgs : EventArgs
+    {
+        //bool Memory
+    }
+
 }

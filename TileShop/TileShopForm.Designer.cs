@@ -31,9 +31,9 @@
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.newGraphicsProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.blankArrangerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.closeProjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -76,6 +76,7 @@
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.newToolStripMenuItem,
             this.openToolStripMenuItem,
+            this.closeProjectToolStripMenuItem,
             this.toolStripMenuItem1,
             this.saveToolStripMenuItem,
             this.saveAsToolStripMenuItem,
@@ -91,23 +92,15 @@
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.newGraphicsProjectMenu,
             this.blankArrangerToolStripMenuItem});
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
             this.newToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.newToolStripMenuItem.Text = "New";
             // 
-            // newGraphicsProjectMenu
-            // 
-            this.newGraphicsProjectMenu.Name = "newGraphicsProjectMenu";
-            this.newGraphicsProjectMenu.Size = new System.Drawing.Size(177, 22);
-            this.newGraphicsProjectMenu.Text = "Graphics Descriptor";
-            this.newGraphicsProjectMenu.Click += new System.EventHandler(this.newGraphicsProjectMenu_Click);
-            // 
             // blankArrangerToolStripMenuItem
             // 
             this.blankArrangerToolStripMenuItem.Name = "blankArrangerToolStripMenuItem";
-            this.blankArrangerToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.blankArrangerToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.blankArrangerToolStripMenuItem.Text = "Blank Arranger";
             this.blankArrangerToolStripMenuItem.Click += new System.EventHandler(this.blankArrangerToolStripMenuItem_Click);
             // 
@@ -117,6 +110,13 @@
             this.openToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
+            // 
+            // closeProjectToolStripMenuItem
+            // 
+            this.closeProjectToolStripMenuItem.Name = "closeProjectToolStripMenuItem";
+            this.closeProjectToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.closeProjectToolStripMenuItem.Text = "Close Project";
+            this.closeProjectToolStripMenuItem.Click += new System.EventHandler(this.closeProjectToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
@@ -152,6 +152,7 @@
             this.saveProjectAsToolStripMenuItem.Name = "saveProjectAsToolStripMenuItem";
             this.saveProjectAsToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.saveProjectAsToolStripMenuItem.Text = "Save Project As...";
+            this.saveProjectAsToolStripMenuItem.Click += new System.EventHandler(this.saveProjectAsToolStripMenuItem_Click);
             // 
             // toolStripMenuItem3
             // 
@@ -279,7 +280,6 @@
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripStatusLabel fileOffsetLabel;
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem newGraphicsProjectMenu;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
@@ -298,6 +298,7 @@
         private System.Windows.Forms.ToolStripMenuItem addToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newPaletteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newScatteredArrangerToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem closeProjectToolStripMenuItem;
     }
 }
 
