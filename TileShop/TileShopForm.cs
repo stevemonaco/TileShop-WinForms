@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Drawing;
 using WeifenLuo.WinFormsUI.Docking;
+using System.Collections.Generic;
 
 namespace TileShop
 {
@@ -185,7 +186,7 @@ namespace TileShop
             }
         }
 
-        private void newScatteredArrangerToolStripMenuItem_Click(object sender, EventArgs e)
+        private void NewScatteredArrangerToolStripMenuItem_Click(object sender, EventArgs e)
         {
             NewScatteredArrangerForm nsaf = new NewScatteredArrangerForm();
 
@@ -210,42 +211,58 @@ namespace TileShop
             }
         }
 
-        public void editArrangerChanged(object sender, EventArgs e)
+        public void EditArrangerChanged(object sender, EventArgs e)
         {
+            if (pef.IsClosed)
+            {
+                pef = new PixelEditorForm();
+                pef.Show(dockPanel, DockState.DockRight);
+            }
+
+            if (!pef.Visible)
+                pef.Show();
+
             GraphicsViewerChild gv = (GraphicsViewerChild)sender;
             pef.SetEditArranger(gv.EditArranger);
         }
 
-        public void paletteContentsModified(object sender, EventArgs e)
+        /// <summary>
+        /// Called in the event that a palette subeditor has made changes that must be propagated to sibling subeditors
+        /// Each subeditor must be refreshed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void PaletteContentsModified(object sender, EventArgs e)
         {
             // Minor bug: Can sometimes reload arranger of some DockContents twice
             // Example: A floating GraphicsViewerChild window (with multiple docks?)
-            foreach(DockPane dp in dockPanel.Panes)
+            foreach (DockPane dp in dockPanel.Panes)
             {
-                foreach(DockContent dc in dp.Contents)
+                foreach (DockContent dc in dp.Contents)
                 {
-                    if (dc.GetType() == typeof(GraphicsViewerChild))
-                        ((GraphicsViewerChild)dc).ReloadArranger();
-                    else if (dc.GetType() == typeof(PixelEditorForm))
-                        ((PixelEditorForm)dc).ReloadArranger();
+                    if (dc.GetType().IsSubclassOf(typeof(EditorDockContent)))
+                        ((EditorDockContent)dc).RefreshContent();
                 }
             }
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-
-            ofd.AddExtension = true;
-            ofd.CheckFileExists = true;
-            ofd.CheckPathExists = true;
-            ofd.Multiselect = false;
-            ofd.Title = "File Location";
+            OpenFileDialog ofd = new OpenFileDialog()
+            {
+                AddExtension = true,
+                CheckFileExists = true,
+                CheckPathExists = true,
+                Multiselect = false,
+                Title = "File Location"
+            };
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 if (Path.GetExtension(ofd.FileName) == ".xml") // Load an XML project
                 {
+                    // TODO: Handle opening a new XML project while one is already loaded
+
                     // Clear all files/arrangers/palettes
                     /*FileManager.Instance.ClearAll();
                     pec.ClearAll();
@@ -285,19 +302,19 @@ namespace TileShop
                 }
                 if(dr == DialogResult.Yes && String.IsNullOrEmpty(ProjectFileName)) // Project has no filename because it has never been saved
                 {
-                    OpenFileDialog ofd = new OpenFileDialog();
-
-                    ofd.AddExtension = true;
-                    ofd.CheckFileExists = true;
-                    ofd.CheckPathExists = true;
-                    ofd.Multiselect = false;
-                    ofd.Title = "File Location";
+                    OpenFileDialog ofd = new OpenFileDialog()
+                    {
+                        AddExtension = true,
+                        CheckFileExists = true,
+                        CheckPathExists = true,
+                        Multiselect = false,
+                        Title = "File Location"
+                    };
 
                     if (ofd.ShowDialog() == DialogResult.OK)
-                    {
                         pec.SaveToXml(ofd.FileName);
-
-                    }
+                    else // Cancelled
+                        return;
                 }
                 else if (dr == DialogResult.No)
                 {
@@ -307,8 +324,24 @@ namespace TileShop
                     return;
             }
 
+            List<EditorDockContent> CloseList = new List<EditorDockContent>();
+
+            // Find all EditorDockContents within all Panes and populate the CloseList
+            foreach (DockPane dp in dockPanel.Panes)
+            {
+                foreach (DockContent dc in dp.Contents)
+                {
+                    if (dc.GetType().IsSubclassOf(typeof(EditorDockContent)))
+                        CloseList.Add((EditorDockContent)dc);
+                }
+            }
+
+            foreach (EditorDockContent edc in CloseList)
+                edc.Close();
+
             ProjectFileName = "";
-            pec.ClearAll();
+            pec.CloseProject();
+            LoadPalettes(PaletteDirectoryPath);
         }
     }
 }

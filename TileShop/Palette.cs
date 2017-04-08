@@ -99,6 +99,7 @@ namespace TileShop
             int entrySize = 256;
 
             localPalette = new uint[entrySize];
+            foreignPalette = new uint[entrySize];
 
             BinaryReader br = new BinaryReader(File.OpenRead(filename));
 
@@ -109,8 +110,9 @@ namespace TileShop
 
             for (int idx = 0; idx < numColors; idx++)
             {
-                localPalette[idx] = br.ReadUInt32();
-                localPalette[idx] |= 0xFF000000; // Disable transparency
+                uint foreignColor = br.ReadUInt32();
+                localPalette[idx] = foreignColor | 0xFF000000; // Disable transparency
+                foreignPalette[idx] = foreignColor;
             }
 
             ColorFormat = PaletteColorFormat.ARGB32;
@@ -123,7 +125,7 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Load palette from an already loaded file
+        /// Load palette from a previously opened file
         /// </summary>
         /// <param name="fileId">Id of file in FileManager</param>
         /// <param name="offset">File offset to the beginning of the palette</param>
@@ -133,7 +135,7 @@ namespace TileShop
         public bool LoadPalette(string fileId, long offset, PaletteColorFormat format, int numEntries)
         {
             if (numEntries > 256)
-                throw new ArgumentException("Maximum palette indices must be 256 or less");
+                throw new ArgumentException("Maximum palette size must be 256 entries or less");
 
             localPalette = new UInt32[numEntries];
             foreignPalette = new UInt32[numEntries];
@@ -499,8 +501,6 @@ namespace TileShop
             if (index >= Entries)
                 throw new ArgumentOutOfRangeException("index", index, "Index is outside the range of number of entries in the palette");
 
-
-
             foreignPalette[index] = foreignColor;
             localPalette[index] = ForeignToLocalArgb(foreignColor, ColorFormat);
         }
@@ -619,6 +619,32 @@ namespace TileShop
         public static List<string> GetPaletteColorFormatsNameList()
         {
             return Enum.GetNames(typeof(PaletteColorFormat)).Cast<string>().ToList<string>();
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the palette
+        /// </summary>
+        /// <returns></returns>
+        public Palette Clone()
+        {
+            Palette pal = new Palette(Name)
+            {
+                ColorFormat = ColorFormat,
+                FileOffset = FileOffset,
+                FileName = FileName,
+                Entries = Entries,
+                HasAlpha = HasAlpha,
+                ZeroIndexTransparent = ZeroIndexTransparent,
+                StorageSource = StorageSource,
+                IsProjectModified = IsProjectModified,
+                LocalPalette = new uint[Entries],
+                ForeignPalette = new uint[Entries]
+            };
+
+            Buffer.BlockCopy(LocalPalette, 0, pal.LocalPalette, 0, Entries * sizeof(uint));
+            Buffer.BlockCopy(ForeignPalette, 0, pal.ForeignPalette, 0, Entries * sizeof(uint));
+
+            return pal;
         }
     }
 

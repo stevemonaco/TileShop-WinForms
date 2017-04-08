@@ -80,9 +80,6 @@
             this.colorFormatBox = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.saveColorButton = new System.Windows.Forms.Button();
-            this.htmlBox = new System.Windows.Forms.TextBox();
-            this.label9 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.swatchControl = new TileShop.SwatchControl();
             this.paletteTip = new System.Windows.Forms.ToolTip(this.components);
@@ -479,21 +476,21 @@
             // 
             // savePaletteButton
             // 
-            this.savePaletteButton.Location = new System.Drawing.Point(297, 115);
+            this.savePaletteButton.Location = new System.Drawing.Point(9, 115);
             this.savePaletteButton.Name = "savePaletteButton";
-            this.savePaletteButton.Size = new System.Drawing.Size(138, 23);
+            this.savePaletteButton.Size = new System.Drawing.Size(91, 23);
             this.savePaletteButton.TabIndex = 32;
-            this.savePaletteButton.Text = "Save Palette To Source";
+            this.savePaletteButton.Text = "Save";
             this.savePaletteButton.UseVisualStyleBackColor = true;
             this.savePaletteButton.Click += new System.EventHandler(this.savePaletteButton_Click);
             // 
             // reloadPaletteButton
             // 
-            this.reloadPaletteButton.Location = new System.Drawing.Point(9, 115);
+            this.reloadPaletteButton.Location = new System.Drawing.Point(106, 115);
             this.reloadPaletteButton.Name = "reloadPaletteButton";
-            this.reloadPaletteButton.Size = new System.Drawing.Size(86, 23);
+            this.reloadPaletteButton.Size = new System.Drawing.Size(93, 23);
             this.reloadPaletteButton.TabIndex = 31;
-            this.reloadPaletteButton.Text = "Reload Palette";
+            this.reloadPaletteButton.Text = "Reload";
             this.reloadPaletteButton.UseVisualStyleBackColor = true;
             this.reloadPaletteButton.Click += new System.EventHandler(this.reloadPaletteButton_Click);
             // 
@@ -566,9 +563,6 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.saveColorButton);
-            this.groupBox2.Controls.Add(this.htmlBox);
-            this.groupBox2.Controls.Add(this.label9);
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Controls.Add(this.label3);
             this.groupBox2.Controls.Add(this.sliderAlpha);
@@ -583,42 +577,10 @@
             this.groupBox2.Controls.Add(this.sliderRed);
             this.groupBox2.Location = new System.Drawing.Point(12, 167);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(444, 171);
+            this.groupBox2.Size = new System.Drawing.Size(444, 139);
             this.groupBox2.TabIndex = 27;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Color Editor";
-            // 
-            // saveColorButton
-            // 
-            this.saveColorButton.Location = new System.Drawing.Point(297, 139);
-            this.saveColorButton.Name = "saveColorButton";
-            this.saveColorButton.Size = new System.Drawing.Size(138, 23);
-            this.saveColorButton.TabIndex = 25;
-            this.saveColorButton.Text = "Save Color to Palette";
-            this.saveColorButton.UseVisualStyleBackColor = true;
-            this.saveColorButton.Click += new System.EventHandler(this.saveColorButton_Click);
-            // 
-            // htmlBox
-            // 
-            this.htmlBox.Location = new System.Drawing.Point(50, 135);
-            this.htmlBox.MaxLength = 6;
-            this.htmlBox.Name = "htmlBox";
-            this.htmlBox.Size = new System.Drawing.Size(77, 20);
-            this.htmlBox.TabIndex = 24;
-            this.htmlBox.Text = "000000";
-            this.htmlBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.htmlBox.TextChanged += new System.EventHandler(this.htmlBox_TextChanged);
-            this.htmlBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.htmlBox_KeyDown);
-            this.htmlBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.htmlBox_KeyPress);
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(6, 139);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(40, 13);
-            this.label9.TabIndex = 23;
-            this.label9.Text = "HTML:";
             // 
             // panel1
             // 
@@ -687,8 +649,6 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.ComboBox colorFormatBox;
-        private System.Windows.Forms.TextBox htmlBox;
-        private System.Windows.Forms.Label label9;
         private IntegerTextBox paletteOffsetBox;
         private System.Windows.Forms.TextBox projectFileBox;
         private System.Windows.Forms.Panel panel1;
@@ -697,7 +657,6 @@
         private SwatchControl swatchControl;
         private System.Windows.Forms.Button savePaletteButton;
         private System.Windows.Forms.Button reloadPaletteButton;
-        private System.Windows.Forms.Button saveColorButton;
         private System.Windows.Forms.ToolTip paletteTip;
     }
 }

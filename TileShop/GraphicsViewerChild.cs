@@ -13,7 +13,7 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace TileShop
 {
-    public partial class GraphicsViewerChild : DockContent
+    public partial class GraphicsViewerChild : EditorDockContent
     {
         int prevFormatIndex = -1;
 
@@ -25,10 +25,10 @@ namespace TileShop
         Rectangle DisplayRect; // The zoomed pixel size of the entire display
         RenderManager rm = new RenderManager();
         public Arranger arranger { get; private set; }
-        public Arranger EditArranger { get; private set; }
+        public Arranger EditArranger { get; private set; } // The subarranger associated with the pixel editor
         ArrangerSelectionData selectionData;
 
-        // Selection
+        // Selection in zoomed pixels
         Rectangle ViewSelectionRect = new Rectangle(0, 0, 0, 0);
 
         //public GraphicsFormat graphicsFormat = null; // Sequential format only
@@ -38,7 +38,6 @@ namespace TileShop
         Pen EditSelectionPen = new Pen(Brushes.Green);
         Brush EditSelectionBrush = new SolidBrush(Color.FromArgb(200, 0, 200, 0));
 
-        //Color[] pal = new Color[] { Color.Black, Color.Blue, Color.Red, Color.Green };
         TileCache cache = new TileCache();
 
         // UI Events
@@ -50,6 +49,12 @@ namespace TileShop
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.NonPublic, 
                 null, RenderPanel, new object[] { true }); // Enable double buffering of the RenderPanel
 
+            this.GotFocus += GraphicsViewerChild_GotFocus;
+
+            SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
+            MoveSelectionPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+            MoveSelectionPen.Width = (float)Zoom;
+
             // Setup arranger variables
             arranger = FileManager.Instance.GetArranger(ArrangerName);
             EditArranger = null;
@@ -57,6 +62,11 @@ namespace TileShop
             ElementSize = arranger.ElementPixelSize;
             this.Text = arranger.Name;
             selectionData = new ArrangerSelectionData(arranger.Name);
+            zoomSelectBox.SelectedIndex = 0;
+            selectionData.Zoom = 1;
+            ContentSourceName = ArrangerName;
+            ContainsModifiedContent = false;
+            DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
 
             if (arranger.Mode == ArrangerMode.SequentialArranger)
             {
@@ -65,28 +75,67 @@ namespace TileShop
                 editModeButton.Checked = false; // Do not allow edits directly to a sequential arranger
                 editModeButton.Visible = false;
 
+                SaveButton.Visible = false;
+                ReloadButton.Visible = false;
+
                 // Initialize the codec select box
                 List<string> formatList = FileManager.Instance.GetGraphicsFormatsNameList();
                 foreach (string s in formatList)
                 {
-                    formatSelectBox.Items.Add(s);
+                    FormatSelectBox.Items.Add(s);
                 }
 
-                formatSelectBox.SelectedIndex = formatSelectBox.Items.IndexOf(graphicsFormat.Name);
+                FormatSelectBox.SelectedIndex = FormatSelectBox.Items.IndexOf(graphicsFormat.Name);
             }
             else
             {
                 toolStripSeparator1.Visible = false;
-                formatSelectBox.Visible = false;
+                FormatSelectBox.Visible = false;
                 offsetLabel.Visible = false;
             }
+        }
 
-            SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
-            MoveSelectionPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
-            MoveSelectionPen.Width = (float)Zoom;
-            zoomSelectBox.SelectedIndex = 0;
-            selectionData.Zoom = 1;
+        public override bool ReloadContent()
+        {
+            MessageBox.Show("ReloadContent");
+
+            arranger = FileManager.Instance.ReloadArranger(arranger.Name);
+            EditArranger = null;
+            DisplayElements = arranger.ArrangerElementSize;
+            ElementSize = arranger.ElementPixelSize;
+            this.Text = arranger.Name;
+            selectionData = new ArrangerSelectionData(arranger.Name);
+            selectionData.Zoom = Zoom;
+            ContentSourceName = arranger.Name;
             DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
+
+            // Forces the render manager to do a full redraw
+            rm.Invalidate();
+            // Redraw the viewer graphics
+            RenderPanel.Invalidate();
+
+            ContainsModifiedContent = false;
+            return true;
+        }
+
+        public override bool SaveContent()
+        {
+            MessageBox.Show("SaveContent");
+
+            FileManager.Instance.SaveArranger(arranger.Name);
+
+            ContainsModifiedContent = false;
+            return true;
+        }
+
+        public override bool RefreshContent()
+        {
+            // Forces the render manager to do a full redraw
+            rm.Invalidate();
+            // Redraw the viewer graphics
+            RenderPanel.Invalidate();
+
+            return true;
         }
 
         /// <summary>
@@ -223,7 +272,6 @@ namespace TileShop
             else if (keyData == Keys.Escape) // Cancel selection
             {
                 CancelSelection();
-                selectionData.ClearSelection();
                 RenderPanel.Cursor = Cursors.Arrow;
                 RenderPanel.Invalidate();
                 return true;
@@ -274,17 +322,17 @@ namespace TileShop
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
-        private void formatSelectBox_SelectedIndexChanged(object sender, EventArgs e)
+        private void FormatSelectBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (arranger.Mode != ArrangerMode.SequentialArranger)
                 return;
 
-            int index = formatSelectBox.SelectedIndex;
+            int index = FormatSelectBox.SelectedIndex;
 
             if (index == prevFormatIndex) // No need to change formats and clear cache
                 return;
 
-            arranger.SetGraphicsFormat((string)formatSelectBox.SelectedItem);
+            arranger.SetGraphicsFormat((string)FormatSelectBox.SelectedItem);
 
             UpdateOffsetLabel();
             prevFormatIndex = index;
@@ -312,29 +360,24 @@ namespace TileShop
         {
             if (showGridlines)
             {
-                for (int y = 0; y < DisplayElements.Height; y++) // Draw horizontal lines
-                    g.DrawLine(Pens.White, 0, y * ElementSize.Height * Zoom, DisplayElements.Width * ElementSize.Width * Zoom, y * ElementSize.Height * Zoom);
+                for (int y = 0; y <= DisplayElements.Height; y++) // Draw horizontal lines
+                    g.DrawLine(Pens.White, 0, y * ElementSize.Height * Zoom + 1, DisplayElements.Width * ElementSize.Width * Zoom, y * ElementSize.Height * Zoom + 1);
 
-                for (int x = 0; x < DisplayElements.Width; x++) // Draw vertical lines
-                    g.DrawLine(Pens.White, x * ElementSize.Width * Zoom, 0, x * ElementSize.Width * Zoom, DisplayElements.Height * ElementSize.Height * Zoom);
+                for (int x = 0; x <= DisplayElements.Width; x++) // Draw vertical lines
+                    g.DrawLine(Pens.White, x * ElementSize.Width * Zoom + 1, 0, x * ElementSize.Width * Zoom + 1, DisplayElements.Height * ElementSize.Height * Zoom);
             }
         }
 
         private void DrawSelection(Graphics g)
         {
             // Paint selection
+
             if (selectionData.HasSelection)
             {
                 if (editModeButton.Checked) // Selection Edit mode
-                {
-                    g.DrawRectangle(EditSelectionPen, ViewSelectionRect);
                     g.FillRectangle(EditSelectionBrush, ViewSelectionRect);
-                }
                 else // Selection Movement mode
-                {
-                    g.DrawRectangle(MoveSelectionPen, ViewSelectionRect);
                     g.FillRectangle(MoveSelectionBrush, ViewSelectionRect);
-                }
             }
         }
 
@@ -385,7 +428,7 @@ namespace TileShop
             e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
             e.Graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy; // No transparency
             e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
-            //e.Graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
+            //e.Graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver; // Transparency
 
             Rectangle src = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width, arranger.ArrangerPixelSize.Height);
             Rectangle dest = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
@@ -393,8 +436,9 @@ namespace TileShop
             e.Graphics.DrawImage(rm.Image, dest, src, GraphicsUnit.Pixel);
 
             // Paint overlays
-            DrawGridlines(e.Graphics);
+            e.Graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver; // Enable transparency for overlays
             DrawSelection(e.Graphics);
+            DrawGridlines(e.Graphics); // Draw gridlines last so the selection overlays appear to fit cleanly into the grid
         }
 
         private void RenderPanel_MouseDown(object sender, MouseEventArgs e)
@@ -482,7 +526,12 @@ namespace TileShop
             if (!e.Data.GetDataPresent(typeof(ArrangerSelectionData)))
                 return;
 
+            Point ElementLocation = selectionData.PointToElementLocation(LocalLocation);
             ArrangerSelectionData sel = (ArrangerSelectionData)e.Data.GetData(typeof(ArrangerSelectionData));
+
+            if (ElementLocation.X + sel.SelectionSize.Width > arranger.ArrangerElementSize.Width || ElementLocation.Y + sel.SelectionSize.Height > arranger.ArrangerElementSize.Height)
+                return;
+
             sel.EndDragDrop();
             sel.PopulateData();
 
@@ -493,8 +542,6 @@ namespace TileShop
             else if(arranger.Mode == ArrangerMode.ScatteredArranger)
             {
                 // Copy element data only into arranger from sel
-                Point ElementLocation = selectionData.PointToElementLocation(LocalLocation);
-
                 for (int ysrc = 0, ydest = ElementLocation.Y; ysrc < sel.SelectionSize.Height; ysrc++, ydest++)
                 {
                     for (int xsrc = 0, xdest = ElementLocation.X; xsrc < sel.SelectionSize.Width; xsrc++, xdest++)
@@ -517,7 +564,7 @@ namespace TileShop
 
         private void RenderPanel_DragEnter(object sender, DragEventArgs e)
         {
-            Point LocalLocation = PointToClient(new Point(e.X, e.Y));
+            Point LocalLocation = RenderPanel.PointToClient(new Point(e.X, e.Y));
 
             if (e.Data.GetDataPresent(typeof(ArrangerSelectionData)))
                 e.Effect = DragDropEffects.Copy;
@@ -532,7 +579,7 @@ namespace TileShop
 
         private void RenderPanel_DragOver(object sender, DragEventArgs e)
         {
-            Point LocalLocation = PointToClient(new Point(e.X, e.Y));
+            Point LocalLocation = RenderPanel.PointToClient(new Point(e.X, e.Y));
             if (e.Data.GetDataPresent(typeof(ArrangerSelectionData)) && DisplayRect.Contains(LocalLocation))
                 e.Effect = DragDropEffects.Copy;
             else
@@ -551,18 +598,21 @@ namespace TileShop
             RenderPanel.Invalidate();
         }
 
-        /*private Cursor GetCursor(string cursorName)
+        private void GraphicsViewerChild_GotFocus(object sender, EventArgs e)
         {
-            var buffer = Properties.Resources.ResourceManager.GetObject(cursorName) as byte[];
+            if(EditArranger != null)
+                EditArrangerChanged?.Invoke(this, null);
+        }
 
-            using (var m = new MemoryStream(buffer))
-            {
-                return new Cursor(m);
-            }
+        private void ReloadButton_Click(object sender, EventArgs e)
+        {
+            ReloadContent();
+        }
 
-            System.IO.MemoryStream cursorMemoryStream = new System.IO.MemoryStream(TileShop.Properties.Resources.myCursorFile);
-        }*/
-
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+            SaveContent();
+        }
     }
 
     // Class to store a selection of arranger data

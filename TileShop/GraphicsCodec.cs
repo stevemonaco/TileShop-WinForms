@@ -15,6 +15,7 @@ namespace TileShop
     {
         #region Graphics Decoding Functions
 
+        /*
         public static void DecodeElement(Bitmap bmp, ArrangerElement el)
         {
             GraphicsFormat fmt = FileManager.Instance.GetGraphicsFormat(el.Format);
@@ -28,19 +29,34 @@ namespace TileShop
             else
                 throw new NotSupportedException("GraphicsFormat ColorType " + fmt.ColorType + " is not supported");
         }
+        */
 
-        public static void Decode(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat fmt, BinaryReader br, Palette pal)
+        /// <summary>
+        /// General-purpose routine to decode a single graphical element
+        /// </summary>
+        /// <param name="bmp">Bitmap to draw onto</param>
+        /// <param name="PixelX">Upper left x-coordinate to begin drawing</param>
+        /// <param name="PixelY">Upper left y-coordinate to begin drawing</param>
+        /// <param name="format">Graphics format to decode</param>
+        /// <param name="br">Binary reader seeked to the source of the graphic offset</param>
+        /// <param name="pal">Palette to use for indexed color decodes</param>
+        public static void Decode(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat format, BinaryReader br, Palette pal)
         {
-            if (fmt.ColorType == "indexed")
-                IndexedDecode(bmp, PixelX, PixelY, fmt, br, pal);
-            else if (fmt.ColorType == "direct")
-                DirectDecode(bmp, PixelX, PixelY, fmt, br);
+            if (format.ColorType == "indexed")
+                IndexedDecode(bmp, PixelX, PixelY, format, br, pal);
+            else if (format.ColorType == "direct")
+                DirectDecode(bmp, PixelX, PixelY, format, br);
         }
 
-        // Draws a blank background
+        /// <summary>
+        /// Draws a blank element
+        /// Used for when an arranger does not have a graphic assigned to every element
+        /// </summary>
+        /// <param name="bmp">Bitmap to draw onto</param>
+        /// <param name="el">Element with specified coordinates</param>
         public static void DecodeBlank(Bitmap bmp, ArrangerElement el)
         {
-            Color c = Color.FromArgb(el.Palette[0]);
+            Color c = Color.FromArgb(el.PaletteName[0]);
             Brush b = new SolidBrush(c);
             Rectangle r = new Rectangle(el.X1, el.Y1, (el.X2 - el.X1) + 1, (el.Y2 - el.Y1) + 1);
 
@@ -50,8 +66,7 @@ namespace TileShop
 
         unsafe static void IndexedDecode(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat fmt, BinaryReader br, Palette pal)
         {
-            byte[] data = br.ReadBytes(fmt.Size());
-            BitStream bs = new BitStream(data, data.Length * 8); // TODO: Add Constructor for BinaryReader, length (optimize copy)
+            BitStream bs = new BitStream(br, fmt.Size() * 8, 8);
 
             int plane = 0;
             int pos = 0;

@@ -36,6 +36,10 @@ namespace TileShop
         public string ColorType; // "indexed" or "direct"
         public int Stride;
 
+        /// <summary>
+        /// Size of an element in bytes
+        /// </summary>
+        /// <returns></returns>
         public int Size() { return (Width + Stride) * Height * ColorDepth / 8; }
 
         public List<ImageProperty> ImagePropertyList = new List<ImageProperty>();

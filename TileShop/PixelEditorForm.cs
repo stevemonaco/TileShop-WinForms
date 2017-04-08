@@ -17,7 +17,7 @@ namespace TileShop
 {
     public enum PixelDrawState { PencilState = 0, PickerState };
 
-    public partial class PixelEditorForm : DockContent
+    public partial class PixelEditorForm : EditorDockContent
     {
         Arranger EditArranger = null;
         RenderManager rm = null;
@@ -29,6 +29,16 @@ namespace TileShop
         PixelDrawState DrawState = PixelDrawState.PencilState;
         bool RenderTransparency = true;
         bool showGridlines = false;
+
+        /// <summary>
+        /// Gets whether the form has closed
+        /// </summary>
+        public bool IsClosed
+        {
+            get { return isClosed; }
+            set { isClosed = value; }
+        }
+        private bool isClosed = false;
 
         public PixelEditorForm()
         {
@@ -44,16 +54,47 @@ namespace TileShop
             SetDrawState(PixelDrawState.PencilState);
         }
 
+        public override bool ReloadContent()
+        {
+            if (EditArranger == null)
+                return false;
+
+            DisplayRect.Size = new Size(EditArranger.ArrangerPixelSize.Width * Zoom, EditArranger.ArrangerPixelSize.Height * Zoom);
+            PixelPanel.Height = EditArranger.ArrangerPixelSize.Height * Zoom + PixelMargin.Height;
+            rm.Invalidate();
+            PixelPanel.Invalidate();
+
+            string palName = EditArranger.GetElement(0, 0).PaletteName;
+            string formatName = EditArranger.GetElement(0, 0).Format;
+            swatchControl.ShowPalette(FileManager.Instance.GetPalette(palName), (int)Math.Pow(2, FileManager.Instance.GetGraphicsFormat(formatName).ColorDepth));
+            swatchControl.SelectedIndex = 0;
+            swatchControl.Invalidate();
+
+            return true;
+        }
+
+        public override bool SaveContent()
+        {
+            return false;
+        }
+
+        public override bool RefreshContent()
+        {
+            return false;
+        }
+
         public void SetEditArranger(Arranger arr)
         {
             EditArranger = arr;
             rm = new RenderManager();
 
             DisplayRect.Size = new Size(EditArranger.ArrangerPixelSize.Width * Zoom, EditArranger.ArrangerPixelSize.Height * Zoom);
-            PixelPanel.Height = arr.ArrangerPixelSize.Height * Zoom + PixelMargin.Height;
+            PixelPanel.Height = EditArranger.ArrangerPixelSize.Height * Zoom + PixelMargin.Height;
             PixelPanel.Invalidate();
 
-            swatchControl.SetPaletteName(EditArranger.GetElement(0, 0).Palette);
+            string palName = EditArranger.GetElement(0, 0).PaletteName;
+            string formatName = EditArranger.GetElement(0, 0).Format;
+            swatchControl.ShowPalette(FileManager.Instance.GetPalette(palName), (int) Math.Pow(2, FileManager.Instance.GetGraphicsFormat(formatName).ColorDepth));
             swatchControl.SelectedIndex = 0;
         }
 
@@ -161,14 +202,14 @@ namespace TileShop
 
             if(DrawState == PixelDrawState.PencilState)
             {
-                Palette pal = FileManager.Instance.GetPalette(EditArranger.GetElement(0, 0).Palette);
+                Palette pal = FileManager.Instance.GetPalette(EditArranger.GetElement(0, 0).PaletteName);
                 rm.SetPixel(unscaledLoc.X, unscaledLoc.Y, Color.FromArgb((int)pal[swatchControl.SelectedIndex]));
                 PixelPanel.Invalidate();
             }
             else if(DrawState == PixelDrawState.PickerState)
             {
                 Color c = rm.GetPixel(unscaledLoc.X, unscaledLoc.Y);
-                Palette pal = FileManager.Instance.GetPalette(EditArranger.GetElement(0, 0).Palette);
+                Palette pal = FileManager.Instance.GetPalette(EditArranger.GetElement(0, 0).PaletteName);
                 swatchControl.SelectedIndex = pal.GetIndexByLocalColor(c, true);
             }
         }
@@ -184,6 +225,21 @@ namespace TileShop
             }
             else
                 PixelPanel.Cursor = Cursors.Arrow;
+        }
+
+        private void PixelEditorForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            IsClosed = true;
+        }
+
+        private void ReloadButton_Click(object sender, EventArgs e)
+        {
+            ReloadContent();
+        }
+
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+            SaveContent();
         }
     }
 }

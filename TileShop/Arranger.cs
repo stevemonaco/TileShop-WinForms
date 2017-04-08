@@ -3,23 +3,89 @@ using System.Drawing;
 
 namespace TileShop
 {
+    /// <summary>
+    /// Arranger mode for the arranger.
+    /// Sequential arrangers are for sequential file access
+    /// Scattered arrangers are for accessing many files and file offsets in a single arranger
+    /// Memory arrangers are used as a scratchpad
+    /// </summary>
     public enum ArrangerMode { SequentialArranger = 0, ScatteredArranger, MemoryArranger };
+
+    /// <summary>
+    /// Move operations for sequential arrangers
+    /// </summary>
     public enum ArrangerMoveType { ByteDown = 0, ByteUp, RowDown, RowUp, ColRight, ColLeft, PageDown, PageUp, Home, End, Absolute };
 
     public class Arranger
     {
         // General Arranger variables
+
+        /// <summary>
+        /// Gets individual elements from the arranger
+        /// </summary>
         public ArrangerElement[,] ElementList { get; private set; }
-        public Size ArrangerElementSize { get; private set; } // Size of the entire arranger in elements
-        public Size ArrangerPixelSize { get; private set; } // Size of the entire arranger in pixels
-        public Size ElementPixelSize { get; private set; } // Size of each individual element in pixels
+
+        /// <summary>
+        /// Gets the Size of the entire arranger in elements
+        /// </summary>
+        public Size ArrangerElementSize { get; private set; }
+
+        /// <summary>
+        /// Gets the Size of the entire arranger in unzoomed pixels
+        /// </summary>
+        public Size ArrangerPixelSize { get; private set; }
+
+        /// <summary>
+        /// Gets the Size of an individual element in unzoomed pixels
+        /// </summary>
+        public Size ElementPixelSize { get; private set; }
+
+        /// <summary>
+        /// Gets the Mode of the arranger
+        /// </summary>
         public ArrangerMode Mode { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the name of the arranger
+        /// </summary>
         public string Name { get; set; }
 
-        // Sequential Arranger variables
+        /// <summary>
+        /// Gets whether the arranger mode is sequential or not
+        /// </summary>
         public bool IsSequential { get; private set; }
-        public long FileSize { get; private set; }
-        public long ArrangerByteSize { get; private set; } // Number of bytes required to be read from file sequentially
+
+        /// <summary>
+        /// Gets the filesize of the file associated with a sequential arranger
+        /// </summary>
+        public long FileSize
+        {
+            get
+            {
+                if (Mode != ArrangerMode.SequentialArranger)
+                    throw new InvalidOperationException("Cannot retrieve the FileSize for an arranger that is not a SequentialArranger");
+                else
+                    return fileSize;
+            }
+            private set { fileSize = value; }
+        }
+        private long fileSize;
+
+        /// <summary>
+        /// Number of bytes required to be read from file sequentially
+        /// </summary>
+        public long ArrangerByteSize
+        {
+            get
+            {
+                if (Mode != ArrangerMode.SequentialArranger)
+                    throw new InvalidOperationException("Cannot retrieve the ArrangerByteSize for an arranger that is not a SequentialArranger");
+                else
+                    return arrangerByteSize;
+            }
+            private set { arrangerByteSize = value; }
+        }
+        private long arrangerByteSize;
 
         // Scattered Arranger variables
         //public string DefaultCodec { get; private set; }
@@ -65,14 +131,23 @@ namespace TileShop
             ArrangerPixelSize = new Size(LastElem.X2, LastElem.Y2);
         }*/
 
+        /// <summary>
+        /// Creates a new instance of an arranger in sequential reading mode
+        /// </summary>
+        /// <param name="ElementsX">Number of elements in the horizontal direction</param>
+        /// <param name="ElementsY">Number of elements in the vertical direction</param>
+        /// <param name="Filename">Filename of a file already loaded into the FileManager</param>
+        /// <param name="format">Graphics format of the element</param>
+        /// <returns></returns>
         public static Arranger NewSequentialArranger(int ElementsX, int ElementsY, string Filename, GraphicsFormat format)
         {
-            Arranger arr = new Arranger();
-            arr.Mode = ArrangerMode.SequentialArranger;
-            arr.IsSequential = true;
-            arr.FileSize = FileManager.Instance.GetFileStream(Filename).Length;
-            arr.Name = Filename;
-
+            Arranger arr = new Arranger()
+            {
+                Mode = ArrangerMode.SequentialArranger,
+                IsSequential = true,
+                FileSize = FileManager.Instance.GetFileStream(Filename).Length,
+                Name = Filename
+            };
             arr.ResizeSequentialArranger(ElementsX, ElementsY, Filename, format);
 
             return arr;
@@ -95,25 +170,25 @@ namespace TileShop
                 x = 0;
                 for (int j = 0; j < ElementsX; j++)
                 {
-                    ArrangerElement el = new ArrangerElement();
-                    el.FileOffset = offset;
+                    ArrangerElement el = new ArrangerElement()
+                    {
+                        FileOffset = offset,
+                        X1 = x,
+                        Y1 = y,
+                        X2 = x + format.Width - 1,
+                        Y2 = y + format.Height - 1,
+                        Width = format.Width,
+                        Height = format.Height,
+                        FileName = Filename,
+                        Format = format.Name,
+                        PaletteName = "Default"
+                    };
+                    ElementList[j, i] = el;
 
                     if (format.ImageType == "tiled")
                         offset += format.Size();
                     else // Linear
                         offset += (format.Width + format.Stride) * format.ColorDepth / 4;
-
-                    el.X1 = x;
-                    el.Y1 = y;
-                    el.X2 = x + format.Width - 1;
-                    el.Y2 = y + format.Height - 1;
-                    el.Width = format.Width;
-                    el.Height = format.Height;
-                    el.FileName = Filename;
-                    el.Format = format.Name;
-                    el.Palette = "Default";
-
-                    ElementList[j, i] = el;
 
                     x += format.Width;
                 }
@@ -155,17 +230,19 @@ namespace TileShop
                 x = 0;
                 for (int j = 0; j < ElementsX; j++)
                 {
-                    ArrangerElement el = new ArrangerElement();
-                    el.FileName = "";
-                    el.FileOffset = 0;
-                    el.X1 = x;
-                    el.Y1 = y;
-                    el.X2 = x + Width - 1;
-                    el.Y2 = y + Height - 1;
-                    el.Width = Width;
-                    el.Height = Height;
-                    el.Format = "";
-                    el.Palette = "Default";
+                    ArrangerElement el = new ArrangerElement()
+                    {
+                        FileName = "",
+                        FileOffset = 0,
+                        X1 = x,
+                        Y1 = y,
+                        X2 = x + Width - 1,
+                        Y2 = y + Height - 1,
+                        Width = Width,
+                        Height = Height,
+                        Format = "",
+                        PaletteName = "Default"
+                    };
                     arr.ElementList[j, i] = el;
 
                     x += Width;
@@ -184,13 +261,15 @@ namespace TileShop
         // Creates a new arranger based on a selection
         public Arranger CreateSubArranger(string ArrangerName, int ArrangerPosX, int ArrangerPosY, int ElementsX, int ElementsY)
         {
-            Arranger arr = new Arranger();
-            arr.Mode = ArrangerMode.ScatteredArranger; // Default to scattered arranger due to selections not being the full width of the parent arranger
-            arr.Name = ArrangerName;
-            arr.ElementList = new ArrangerElement[ElementsX, ElementsY];
-            arr.ArrangerElementSize = new Size(ElementsX, ElementsY);
-            arr.ElementPixelSize = ElementPixelSize;
-            arr.ArrangerPixelSize = new Size(ElementPixelSize.Width * ElementsX, ElementPixelSize.Height * ElementsY);
+            Arranger arr = new Arranger()
+            {
+                Mode = ArrangerMode.ScatteredArranger, // Default to scattered arranger due to selections not being the full width of the parent arranger
+                Name = ArrangerName,
+                ElementList = new ArrangerElement[ElementsX, ElementsY],
+                ArrangerElementSize = new Size(ElementsX, ElementsY),
+                ElementPixelSize = ElementPixelSize,
+                ArrangerPixelSize = new Size(ElementPixelSize.Width * ElementsX, ElementPixelSize.Height * ElementsY)
+            };
 
             if (Mode == ArrangerMode.SequentialArranger)
             {
@@ -214,6 +293,12 @@ namespace TileShop
             return arr;
         }
 
+        /// <summary>
+        /// Sets element to a position in the element array using a shallow copy
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="posx"></param>
+        /// <param name="posy"></param>
         public void SetElement(ArrangerElement element, int posx, int posy)
         {
             if (ElementList == null)
@@ -418,6 +503,36 @@ namespace TileShop
 
             return true;
         }
+
+        /// <summary>
+        /// Creates a deep clone of the Arranger
+        /// </summary>
+        /// <returns></returns>
+        public Arranger Clone()
+        {
+            Arranger arr = new Arranger()
+            {
+                ElementList = new ArrangerElement[ArrangerElementSize.Width, ArrangerElementSize.Height],
+                ArrangerElementSize = ArrangerElementSize,
+                ElementPixelSize = ElementPixelSize,
+                ArrangerPixelSize = ArrangerPixelSize,
+                Mode = Mode,
+                Name = Name,
+                IsSequential = IsSequential
+            };
+
+            for (int y = 0; y < ArrangerElementSize.Height; y++)
+                for (int x = 0; x < ArrangerElementSize.Width; x++)
+                    arr.SetElement(ElementList[x, y], x, y);
+
+            if (IsSequential)
+            {
+                arr.FileSize = fileSize;
+                arr.ArrangerByteSize = arrangerByteSize;
+            }
+
+            return arr;
+        }
     }
 
     [Serializable]
@@ -428,7 +543,7 @@ namespace TileShop
         public string Format { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
-        public string Palette { get; set; }
+        public string PaletteName { get; set; }
         public int X1 { get; set; } // Locations in unzoomed coordinates
         public int Y1 { get; set; }
         public int X2 { get; set; }
@@ -441,28 +556,32 @@ namespace TileShop
             Format = "";
             Width = 0;
             Height = 0;
-            Palette = "Default";
+            PaletteName = "Default";
             X1 = 0;
             X2 = 0;
             Y1 = 0;
             Y2 = 0;
         }
 
+        /// <summary>
+        /// Creates a deep clone
+        /// </summary>
+        /// <returns></returns>
         public ArrangerElement Clone()
         {
-            ArrangerElement el = new ArrangerElement();
-
-            el.FileName = FileName;
-            el.FileOffset = FileOffset;
-            el.Format = Format;
-            el.Width = Width;
-            el.Height = Height;
-            el.Palette = Palette;
-            el.X1 = X1;
-            el.Y1 = Y1;
-            el.X2 = X2;
-            el.Y2 = Y2;
-
+            ArrangerElement el = new ArrangerElement()
+            {
+                FileName = FileName,
+                FileOffset = FileOffset,
+                Format = Format,
+                Width = Width,
+                Height = Height,
+                PaletteName = PaletteName,
+                X1 = X1,
+                Y1 = Y1,
+                X2 = X2,
+                Y2 = Y2
+            };
             return el;
         }
     }

@@ -186,7 +186,7 @@
             this.newScatteredArrangerToolStripMenuItem.Name = "newScatteredArrangerToolStripMenuItem";
             this.newScatteredArrangerToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
             this.newScatteredArrangerToolStripMenuItem.Text = "New Scattered Arranger...";
-            this.newScatteredArrangerToolStripMenuItem.Click += new System.EventHandler(this.newScatteredArrangerToolStripMenuItem_Click);
+            this.newScatteredArrangerToolStripMenuItem.Click += new System.EventHandler(this.NewScatteredArrangerToolStripMenuItem_Click);
             // 
             // debugToolStripMenuItem
             // 

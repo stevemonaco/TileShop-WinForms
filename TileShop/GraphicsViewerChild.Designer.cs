@@ -30,13 +30,16 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GraphicsViewerChild));
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.formatSelectBox = new System.Windows.Forms.ToolStripComboBox();
+            this.FormatSelectBox = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.zoomSelectBox = new System.Windows.Forms.ToolStripComboBox();
             this.showGridlinesButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.offsetLabel = new System.Windows.Forms.ToolStripLabel();
             this.editModeButton = new System.Windows.Forms.ToolStripButton();
+            this.ReloadButton = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.SaveButton = new System.Windows.Forms.ToolStripButton();
             this.RenderPanel = new System.Windows.Forms.Panel();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -45,13 +48,16 @@
             // 
             this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.formatSelectBox,
+            this.FormatSelectBox,
             this.toolStripSeparator1,
             this.zoomSelectBox,
             this.showGridlinesButton,
             this.toolStripSeparator2,
             this.offsetLabel,
-            this.editModeButton});
+            this.editModeButton,
+            this.ReloadButton,
+            this.toolStripSeparator3,
+            this.SaveButton});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(3, 0, 0, 0);
@@ -60,12 +66,12 @@
             this.toolStrip1.TabIndex = 4;
             this.toolStrip1.Text = "toolStrip1";
             // 
-            // formatSelectBox
+            // FormatSelectBox
             // 
-            this.formatSelectBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.formatSelectBox.Name = "formatSelectBox";
-            this.formatSelectBox.Size = new System.Drawing.Size(121, 25);
-            this.formatSelectBox.SelectedIndexChanged += new System.EventHandler(this.formatSelectBox_SelectedIndexChanged);
+            this.FormatSelectBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.FormatSelectBox.Name = "FormatSelectBox";
+            this.FormatSelectBox.Size = new System.Drawing.Size(121, 25);
+            this.FormatSelectBox.SelectedIndexChanged += new System.EventHandler(this.FormatSelectBox_SelectedIndexChanged);
             // 
             // toolStripSeparator1
             // 
@@ -121,8 +127,39 @@
             this.editModeButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.editModeButton.Name = "editModeButton";
             this.editModeButton.Size = new System.Drawing.Size(23, 22);
-            this.editModeButton.Text = "toolStripButton1";
+            this.editModeButton.Text = "Enable/Disable Edit Mode";
+            this.editModeButton.ToolTipText = "Enable/Disable Edit Mode";
             this.editModeButton.Click += new System.EventHandler(this.editModeButton_Click);
+            // 
+            // ReloadButton
+            // 
+            this.ReloadButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.ReloadButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.ReloadButton.Image = ((System.Drawing.Image)(resources.GetObject("ReloadButton.Image")));
+            this.ReloadButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ReloadButton.Name = "ReloadButton";
+            this.ReloadButton.Size = new System.Drawing.Size(47, 22);
+            this.ReloadButton.Text = "Reload";
+            this.ReloadButton.ToolTipText = "Reload arranger from underlying source";
+            this.ReloadButton.Click += new System.EventHandler(this.ReloadButton_Click);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
+            // SaveButton
+            // 
+            this.SaveButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.SaveButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.SaveButton.Image = ((System.Drawing.Image)(resources.GetObject("SaveButton.Image")));
+            this.SaveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.SaveButton.Name = "SaveButton";
+            this.SaveButton.Size = new System.Drawing.Size(35, 22);
+            this.SaveButton.Text = "Save";
+            this.SaveButton.ToolTipText = "Save arranger to underlying source";
+            this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
             // 
             // RenderPanel
             // 
@@ -142,7 +179,7 @@
             this.RenderPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.RenderPanel_MouseMove);
             this.RenderPanel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.RenderPanel_MouseUp);
             // 
-            // GraphicsViewerMdiChild
+            // GraphicsViewerChild
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -154,7 +191,7 @@
             this.Controls.Add(this.toolStrip1);
             this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Name = "GraphicsViewerMdiChild";
+            this.Name = "GraphicsViewerChild";
             this.Text = "GraphicsMdiChild";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.GraphicsViewerMdiChild_FormClosing);
             this.toolStrip1.ResumeLayout(false);
@@ -166,7 +203,7 @@
 
         #endregion
         private System.Windows.Forms.ToolStrip toolStrip1;
-        private System.Windows.Forms.ToolStripComboBox formatSelectBox;
+        private System.Windows.Forms.ToolStripComboBox FormatSelectBox;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripComboBox zoomSelectBox;
         private System.Windows.Forms.ToolStripButton showGridlinesButton;
@@ -174,5 +211,8 @@
         private System.Windows.Forms.ToolStripLabel offsetLabel;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripButton editModeButton;
+        private System.Windows.Forms.ToolStripButton SaveButton;
+        private System.Windows.Forms.ToolStripButton ReloadButton;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
     }
 }

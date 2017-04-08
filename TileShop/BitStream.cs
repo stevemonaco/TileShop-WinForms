@@ -24,16 +24,17 @@ namespace TileShop
             idx = 1;
         }
 
-        public BitStream(BinaryReader br, int Offset, int DataBits, int FirstByteBits)
+        public BitStream(BinaryReader br, int DataBits, int FirstByteBits)
         {
-            int ReadLength = (DataBits + (8 - FirstByteBits)) / 8;
+            int ReadLength = (int)Math.Ceiling((DataBits + (8 - FirstByteBits)) / 8.0);
             data = br.ReadBytes(ReadLength);
             byte mask = (byte)((1 << FirstByteBits) - 1);
             data[0] = (byte)(data[0] & mask);
 
             bitnumber = FirstByteBits;
             bitsremaining = DataBits;
-
+            workingbyte = data[0];
+            idx = 1;
         }
 
         public int ReadBit()

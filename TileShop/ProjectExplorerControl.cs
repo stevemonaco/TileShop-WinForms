@@ -35,7 +35,8 @@ namespace TileShop
 
         public ProjectExplorerControl(TileShopForm tileShopForm)
         {
-            tsf = tileShopForm;
+            tsf = tileShopForm ?? throw new ArgumentNullException();
+
             InitializeComponent();
 
             filesNode.Text = "Files";
@@ -57,10 +58,11 @@ namespace TileShop
                     return false;
             }
 
-            FileNode fn = new FileNode();
-            fn.Text = Filename;
-            fn.Tag = Filename;
-
+            FileNode fn = new FileNode()
+            {
+                Text = Filename,
+                Tag = Filename
+            };
             if (!FileManager.Instance.LoadFile(Filename))
                 return false;
 
@@ -94,10 +96,11 @@ namespace TileShop
 
         public bool AddArranger(Arranger arr, bool Show)
         {
-            ArrangerNode an = new ArrangerNode();
-            an.Text = arr.Name;
-            an.Tag = arr.Name;
-
+            ArrangerNode an = new ArrangerNode()
+            {
+                Text = arr.Name,
+                Tag = arr.Name
+            };
             arrangersNode.Nodes.Add(an);
 
             FileManager.Instance.AddArranger(arr);
@@ -138,7 +141,7 @@ namespace TileShop
             pn.Tag = pal.Name;
 
             palettesNode.Nodes.Add(pn);
-            FileManager.Instance.AddPalette(pal.Name, pal);
+            FileManager.Instance.AddPalette(pal);
 
             IsProjectModified = true;
             return true;
@@ -177,9 +180,10 @@ namespace TileShop
         {
             GraphicsViewerChild gv = new GraphicsViewerChild(ArrangerName);
             gv.WindowState = FormWindowState.Maximized;
+
             gv.SetZoom(6);
             gv.Show(tsf.dockPanel, DockState.Document);
-            gv.EditArrangerChanged += tsf.editArrangerChanged;
+            gv.EditArrangerChanged += tsf.EditArrangerChanged;
             return true;
         }
 
@@ -189,20 +193,24 @@ namespace TileShop
                 return false;
 
             PaletteEditorForm pef = new PaletteEditorForm(PaletteName);
-            pef.PaletteContentsModified += tsf.paletteContentsModified;
+            pef.PaletteContentsModified += tsf.PaletteContentsModified;
             pef.Show(tsf.dockPanel, DockState.Document);
 
             return true;
         }
 
         /// <summary>
-        /// Used to remove all nodes in the project tree and resets the project back to blank
+        /// Used to remove all nodes in the project tree and removes everything loaded into the FileManager
         /// Sets IsProjectModified to false
         /// </summary>
         /// <returns></returns>
-        public bool ClearAll()
+        public bool CloseProject()
         {
-            projectTreeView.Nodes.Clear();
+            //projectTreeView.Nodes.Clear();
+            filesNode.Nodes.Clear();
+            palettesNode.Nodes.Clear();
+            arrangersNode.Nodes.Clear();
+            FileManager.Instance.CloseProject();
             return true;
         }
 
@@ -281,16 +289,10 @@ namespace TileShop
                 foreach (var graphic in graphics)
                 {
                     ArrangerElement el = arr.GetElement(graphic.posx, graphic.posy);
-                    el.FileName = arranger.defaultfile;
-                    el.Palette = arranger.defaultpalette;
-                    el.Format = arranger.defaultformat;
 
-                    if (graphic.file != null)
-                        el.FileName = graphic.file.Value;
-                    if (graphic.palette != null)
-                        el.Palette = graphic.palette.Value;
-                    if (graphic.format != null)
-                        el.Format = graphic.format.Value;
+                    el.FileName = graphic.file?.Value ?? arranger.defaultfile;
+                    el.PaletteName = graphic.palette?.Value ?? arranger.defaultpalette;
+                    el.Format = graphic.format?.Value ?? arranger.defaultformat;
 
                     el.FileOffset = graphic.fileoffset;
                     el.Height = arranger.height;
@@ -385,8 +387,8 @@ namespace TileShop
                             graphic.SetAttributeValue("format", arrel.Format);
                         if (arrel.FileName != DefaultFile)
                             graphic.SetAttributeValue("file", arrel.FileName);
-                        if (arrel.Palette != DefaultPalette)
-                            graphic.SetAttributeValue("palette", arrel.Palette);
+                        if (arrel.PaletteName != DefaultPalette)
+                            graphic.SetAttributeValue("palette", arrel.PaletteName);
 
                         el.Add(graphic);
                     }

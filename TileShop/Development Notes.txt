@@ -5,6 +5,9 @@ Implement new PaletteColorFormats
 Implement UI features for detecting modifications to arrangers/palettes/etc
 Implement encoding of graphics formats
 Add more tools to the pixel editor
+Support for palettes with scattered color locations
+Add support to attach palettes to tiles in the arranger
+Add support for palettes in pixel editor (gray out pixels that cannot be edited using the current palette)
 
 Longer term TODO:
 Implement linear formats
