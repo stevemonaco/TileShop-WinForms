@@ -16,8 +16,6 @@ namespace TileShop
     {
         Palette pal;
 
-        public event EventHandler<EventArgs> PaletteContentsModified = null;
-
         public Color ActiveColor
         {
             get { return activeColor; }
@@ -39,10 +37,10 @@ namespace TileShop
 
                 foreignRed = value;
 
-                if (sliderRed.Value != foreignRed) // Test so the controls don't eventlock
-                    sliderRed.Value = foreignRed;
-                if (nudRed.Value != foreignRed)
-                    nudRed.Value = foreignRed;
+                if (SliderRed.Value != foreignRed) // Test so the controls don't eventlock
+                    SliderRed.Value = foreignRed;
+                if (NudRed.Value != foreignRed)
+                    NudRed.Value = foreignRed;
 
                 ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorFormat));
                 SavePaletteColors();
@@ -59,10 +57,10 @@ namespace TileShop
                     return;
 
                 foreignGreen = value;
-                if (sliderGreen.Value != foreignGreen) // Test so the controls don't eventlock
-                    sliderGreen.Value = foreignGreen;
-                if (nudGreen.Value != foreignGreen)
-                    nudGreen.Value = foreignGreen;
+                if (SliderGreen.Value != foreignGreen) // Test so the controls don't eventlock
+                    SliderGreen.Value = foreignGreen;
+                if (NudGreen.Value != foreignGreen)
+                    NudGreen.Value = foreignGreen;
 
                 ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorFormat));
                 SavePaletteColors();
@@ -79,10 +77,10 @@ namespace TileShop
                     return;
 
                 foreignBlue = value;
-                if (sliderBlue.Value != foreignBlue) // Test so the controls don't eventlock
-                    sliderBlue.Value = foreignBlue;
-                if (nudBlue.Value != foreignBlue)
-                    nudBlue.Value = foreignBlue;
+                if (SliderBlue.Value != foreignBlue) // Test so the controls don't eventlock
+                    SliderBlue.Value = foreignBlue;
+                if (NudBlue.Value != foreignBlue)
+                    NudBlue.Value = foreignBlue;
 
                 ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorFormat));
                 SavePaletteColors();
@@ -99,10 +97,10 @@ namespace TileShop
                     return;
 
                 foreignAlpha = value;
-                if (sliderAlpha.Value != foreignAlpha) // Test so the controls don't eventlock
-                    sliderAlpha.Value = foreignAlpha;
-                if (nudAlpha.Value != foreignAlpha)
-                    nudAlpha.Value = foreignAlpha;
+                if (SliderAlpha.Value != foreignAlpha) // Test so the controls don't eventlock
+                    SliderAlpha.Value = foreignAlpha;
+                if (NudAlpha.Value != foreignAlpha)
+                    NudAlpha.Value = foreignAlpha;
 
                 ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorFormat));
                 SavePaletteColors();
@@ -116,19 +114,19 @@ namespace TileShop
 
             pal = FileManager.Instance.GetPalette(PaletteName);
 
-            colorFormatBox.Enabled = false;
+            ColorFormatBox.Enabled = false;
             List<string> colorList = Palette.GetPaletteColorFormatsNameList();
             foreach (string s in colorList)
-                colorFormatBox.Items.Add(s);
-            colorFormatBox.Enabled = true;
+                ColorFormatBox.Items.Add(s);
+            ColorFormatBox.Enabled = true;
 
-            paletteNameBox.Text = pal.Name;
-            projectFileBox.Text = pal.FileName;
-            paletteOffsetBox.Text = pal.FileOffset.ToString();
-            nudEntries.Value = pal.Entries;
+            PaletteNameBox.Text = pal.Name;
+            ProjectFileBox.Text = pal.FileName;
+            PaletteOffsetBox.Text = pal.FileOffset.ToString();
+            NudEntries.Value = pal.Entries;
             SetColorFormatBox(pal.ColorFormat);
 
-            swatchControl.ShowPalette(FileManager.Instance.GetPalette(PaletteName));
+            SwatchControl.ShowPalette(FileManager.Instance.GetPalette(PaletteName));
 
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.NonPublic, null,
                 activeColorPanel, new object[] { true }); // Enable double buffering
@@ -139,22 +137,40 @@ namespace TileShop
             ForeignGreen = G;
             ForeignBlue = B;
 
-            //ActiveColor = pal.GetLocalColor(0);
+            ContentSourceName = pal.Name;
 
             paletteTip.InitialDelay = 1000;
             paletteTip.ReshowDelay = 500;
-            paletteTip.SetToolTip(savePaletteButton, "Permanently saves the palette in memory to underlying source");
-            paletteTip.SetToolTip(reloadPaletteButton, "Reloads palette in memory from underlying source");
+            paletteTip.SetToolTip(SavePaletteButton, "Permanently saves the palette in memory to underlying source");
+            paletteTip.SetToolTip(ReloadPaletteButton, "Reloads palette in memory from underlying source");
         }
 
         public override bool ReloadContent()
         {
-            return false;
+            pal.Reload();
+            SwatchControl.SelectedIndex = 0;
+            SwatchControl.Invalidate();
+            ActiveColor = pal.GetLocalColor(0);
+
+            (byte A, byte R, byte G, byte B) = pal.SplitForeignColor(SwatchControl.SelectedIndex);
+
+            ForeignAlpha = A;
+            ForeignRed = R;
+            ForeignGreen = G;
+            ForeignBlue = B;
+
+            ContainsModifiedContent = false;
+            OnContentModified(EventArgs.Empty);
+
+            return true;
         }
 
         public override bool SaveContent()
         {
-            return false;
+            pal.SavePalette();
+            ContainsModifiedContent = false;
+
+            return true;
         }
 
         public override bool RefreshContent()
@@ -175,11 +191,11 @@ namespace TileShop
         private void SetColorFormatBox(PaletteColorFormat format)
         {
             int idx = 0;
-            foreach(string s in colorFormatBox.Items)
+            foreach(string s in ColorFormatBox.Items)
             {
                 if (s == format.ToString())
                 {
-                    colorFormatBox.SelectedIndex = idx;
+                    ColorFormatBox.SelectedIndex = idx;
                     return;
                 }
                 idx++;
@@ -193,18 +209,18 @@ namespace TileShop
             switch(palFormat)
             {
                 case PaletteColorFormat.BGR15:
-                    sliderAlpha.Visible = false;
-                    nudAlpha.Enabled = false;
+                    SliderAlpha.Visible = false;
+                    NudAlpha.Enabled = false;
                     SetPaletteNumericBounds(0, 31, 0, 31, 0, 31, 0, 31);
                     break;
                 case PaletteColorFormat.RGB24:
-                    sliderAlpha.Visible = false;
-                    nudAlpha.Enabled = false;
+                    SliderAlpha.Visible = false;
+                    NudAlpha.Enabled = false;
                     SetPaletteNumericBounds(0, 255, 0, 255, 0, 255, 0, 255);
                     break;
                 case PaletteColorFormat.ARGB32:
-                    sliderAlpha.Visible = true;
-                    nudAlpha.Enabled = true;
+                    SliderAlpha.Visible = true;
+                    NudAlpha.Enabled = true;
                     SetPaletteNumericBounds(0, 255, 0, 255, 0, 255, 0, 255);
                     break;
                 default:
@@ -214,90 +230,86 @@ namespace TileShop
 
         private void SetPaletteNumericBounds(int Rmin, int Rmax, int Gmin, int Gmax, int Bmin, int Bmax, int Amin, int Amax)
         {
-            sliderRed.MinValue = Rmin;
-            sliderRed.MaxValue = Rmax;
-            nudRed.Minimum = Rmin;
-            nudRed.Maximum = Rmax;
+            SliderRed.MinValue = Rmin;
+            SliderRed.MaxValue = Rmax;
+            NudRed.Minimum = Rmin;
+            NudRed.Maximum = Rmax;
 
-            sliderGreen.MinValue = Gmin;
-            sliderGreen.MaxValue = Gmax;
-            nudGreen.Minimum = Gmin;
-            nudGreen.Maximum = Gmax;
+            SliderGreen.MinValue = Gmin;
+            SliderGreen.MaxValue = Gmax;
+            NudGreen.Minimum = Gmin;
+            NudGreen.Maximum = Gmax;
 
-            sliderBlue.MinValue = Bmin;
-            sliderBlue.MaxValue = Bmax;
-            nudBlue.Minimum = Bmin;
-            nudBlue.Maximum = Bmax;
+            SliderBlue.MinValue = Bmin;
+            SliderBlue.MaxValue = Bmax;
+            NudBlue.Minimum = Bmin;
+            NudBlue.Maximum = Bmax;
 
-            sliderAlpha.MinValue = Amin;
-            sliderAlpha.MaxValue = Amax;
-            nudAlpha.Minimum = Amin;
-            nudAlpha.Maximum = Amax;
+            SliderAlpha.MinValue = Amin;
+            SliderAlpha.MaxValue = Amax;
+            NudAlpha.Minimum = Amin;
+            NudAlpha.Maximum = Amax;
         }
 
-        private void sliderRed_ValueChanged(object sender, EventArgs e)
+        private void SliderRed_ValueChanged(object sender, EventArgs e)
         {
-            ForeignRed = (byte)sliderRed.Value;
+            ForeignRed = (byte)SliderRed.Value;
         }
 
-        private void sliderGreen_ValueChanged(object sender, EventArgs e)
+        private void SliderGreen_ValueChanged(object sender, EventArgs e)
         {
-            ForeignGreen = (byte)sliderGreen.Value;
+            ForeignGreen = (byte)SliderGreen.Value;
         }
 
-        private void sliderBlue_ValueChanged(object sender, EventArgs e)
+        private void SliderBlue_ValueChanged(object sender, EventArgs e)
         {
-            ForeignBlue = (byte)sliderBlue.Value;
+            ForeignBlue = (byte)SliderBlue.Value;
         }
 
-        private void sliderAlpha_ValueChanged(object sender, EventArgs e)
+        private void SliderAlpha_ValueChanged(object sender, EventArgs e)
         {
-            ForeignAlpha = (byte)sliderAlpha.Value;
+            ForeignAlpha = (byte)SliderAlpha.Value;
         }
 
-        private void nudRed_ValueChanged(object sender, EventArgs e)
+        private void NudRed_ValueChanged(object sender, EventArgs e)
         {
-            ForeignRed = (byte)nudRed.Value;
+            ForeignRed = (byte)NudRed.Value;
         }
 
-        private void nudGreen_ValueChanged(object sender, EventArgs e)
+        private void NudGreen_ValueChanged(object sender, EventArgs e)
         {
-            ForeignGreen = (byte)nudGreen.Value;
+            ForeignGreen = (byte)NudGreen.Value;
         }
 
-        private void nudBlue_ValueChanged(object sender, EventArgs e)
+        private void NudBlue_ValueChanged(object sender, EventArgs e)
         {
-            ForeignBlue = (byte)nudBlue.Value;
+            ForeignBlue = (byte)NudBlue.Value;
         }
 
-        private void nudAlpha_ValueChanged(object sender, EventArgs e)
+        private void NudAlpha_ValueChanged(object sender, EventArgs e)
         {
-            ForeignAlpha = (byte)nudAlpha.Value;
+            ForeignAlpha = (byte)NudAlpha.Value;
         }
 
-        private void paletteNameBox_TextChanged(object sender, EventArgs e)
+        private void PaletteNameBox_TextChanged(object sender, EventArgs e)
         {
-            Text = paletteNameBox.Text; // Update form title
         }
 
-        private void colorFormatBox_SelectedIndexChanged(object sender, EventArgs e)
+        private void ColorFormatBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            PaletteColorFormat format = (PaletteColorFormat)Enum.Parse(typeof(PaletteColorFormat), (string)colorFormatBox.SelectedItem);
+            PaletteColorFormat format = (PaletteColorFormat)Enum.Parse(typeof(PaletteColorFormat), (string)ColorFormatBox.SelectedItem);
 
             SetPaletteNumericBounds(format);
 
             pal.LoadPalette(pal.FileName, pal.FileOffset, format, pal.Entries);
-            swatchControl.Invalidate();
+            SwatchControl.Invalidate();
         }
 
-        private void nudEntries_ValueChanged(object sender, EventArgs e)
+        private void NudEntries_ValueChanged(object sender, EventArgs e)
         {
-            //pal.LoadPalette(pal.FileName, pal.FileOffset, pal.ColorFormat, (int)nudEntries.Value);
-
-            //swatchControl.Invalidate();
         }
 
-        private void activeColorPanel_Paint(object sender, PaintEventArgs e)
+        private void ActiveColorPanel_Paint(object sender, PaintEventArgs e)
         {
             using (Brush b = new SolidBrush(ActiveColor))
             {
@@ -310,10 +322,10 @@ namespace TileShop
             }
         }
 
-        private void swatchControl_SelectedIndexChanged(object sender, EventArgs e)
+        private void SwatchControl_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ActiveColor = pal.GetLocalColor(swatchControl.SelectedIndex);
-            (byte A, byte R, byte G, byte B) = pal.SplitForeignColor(swatchControl.SelectedIndex);
+            ActiveColor = pal.GetLocalColor(SwatchControl.SelectedIndex);
+            (byte A, byte R, byte G, byte B) = pal.SplitForeignColor(SwatchControl.SelectedIndex);
 
             ForeignAlpha = A;
             ForeignRed = R;
@@ -321,41 +333,28 @@ namespace TileShop
             ForeignBlue = B;
         }
 
-        private void reloadPaletteButton_Click(object sender, EventArgs e)
+        private void ReloadPaletteButton_Click(object sender, EventArgs e)
         {
-            pal.Reload();
-            swatchControl.SelectedIndex = 0;
-            swatchControl.Invalidate();
-            ActiveColor = pal.GetLocalColor(0);
+            ReloadContent();
+        }
 
-            (byte A, byte R, byte G, byte B) = pal.SplitForeignColor(swatchControl.SelectedIndex);
-
-            ForeignAlpha = A;
-            ForeignRed = R;
-            ForeignGreen = G;
-            ForeignBlue = B;
-
-            PaletteContentsModified?.Invoke(this, null);
+        private void SavePaletteButton_Click(object sender, EventArgs e)
+        {
+            SaveContent();
+            // PaletteContentsModified?.Invoke(this, null); // Not necessary?
         }
 
         /// <summary>
         /// Save palette colors to memory
+        /// Used for temporary saving / previewing
         /// </summary>
         private void SavePaletteColors()
         {
-            pal.SetPaletteForeignColor(swatchControl.SelectedIndex, (byte)sliderAlpha.Value, (byte)sliderRed.Value, (byte)sliderGreen.Value, (byte)sliderBlue.Value);
-            swatchControl.Invalidate();
+            pal.SetPaletteForeignColor(SwatchControl.SelectedIndex, (byte)SliderAlpha.Value, (byte)SliderRed.Value, (byte)SliderGreen.Value, (byte)SliderBlue.Value);
+            SwatchControl.Invalidate();
 
             ContainsModifiedContent = true;
-
-            PaletteContentsModified?.Invoke(this, null);
-        }
-
-        private void savePaletteButton_Click(object sender, EventArgs e)
-        {
-            pal.SavePalette();
-
-            // PaletteContentsModified?.Invoke(this, null); // Not necessary?
+            OnContentModified(EventArgs.Empty);
         }
     }
 

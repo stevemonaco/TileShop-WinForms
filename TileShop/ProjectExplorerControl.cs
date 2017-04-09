@@ -43,9 +43,9 @@ namespace TileShop
             palettesNode.Text = "Palettes";
             arrangersNode.Text = "Arrangers";
 
-            projectTreeView.Nodes.Add(filesNode);
-            projectTreeView.Nodes.Add(palettesNode);
-            projectTreeView.Nodes.Add(arrangersNode);
+            ProjectTreeView.Nodes.Add(filesNode);
+            ProjectTreeView.Nodes.Add(palettesNode);
+            ProjectTreeView.Nodes.Add(arrangersNode);
         }
 
         // Full filename with path
@@ -70,11 +70,10 @@ namespace TileShop
 
             if (Show)
             {
-                projectTreeView.SelectedNode = fn;
+                ProjectTreeView.SelectedNode = fn;
                 return ShowSequentialArranger(Filename);
             }
 
-            IsProjectModified = true;
             return true;
         }
 
@@ -90,7 +89,6 @@ namespace TileShop
                 }
             }
 
-            IsProjectModified = true;
             return false;
         }
 
@@ -115,7 +113,6 @@ namespace TileShop
                     throw new NotSupportedException("AddArranger does not support arranger types other than ScatteredArranger");
             }
 
-            IsProjectModified = true;
             return true;
         }
 
@@ -130,7 +127,6 @@ namespace TileShop
                 }
             }
 
-            IsProjectModified = true;
             return false;
         }
 
@@ -143,7 +139,6 @@ namespace TileShop
             palettesNode.Nodes.Add(pn);
             FileManager.Instance.AddPalette(pal);
 
-            IsProjectModified = true;
             return true;
         }
 
@@ -158,7 +153,6 @@ namespace TileShop
                 }
             }
 
-            IsProjectModified = true;
             return false;
         }
 
@@ -169,7 +163,7 @@ namespace TileShop
                 GraphicsViewerChild gv = new GraphicsViewerChild(Filename);
                 gv.WindowState = FormWindowState.Maximized;
                 gv.SetZoom(6);
-                gv.Show(tsf.dockPanel, DockState.Document);
+                gv.Show(tsf.DockPanel, DockState.Document);
                 return true;
             }
             else
@@ -182,8 +176,11 @@ namespace TileShop
             gv.WindowState = FormWindowState.Maximized;
 
             gv.SetZoom(6);
-            gv.Show(tsf.dockPanel, DockState.Document);
+            gv.Show(tsf.DockPanel, DockState.Document);
+            gv.ContentModified += tsf.ContentModified;
+            gv.ContentSaved += tsf.ContentSaved;
             gv.EditArrangerChanged += tsf.EditArrangerChanged;
+
             return true;
         }
 
@@ -193,8 +190,9 @@ namespace TileShop
                 return false;
 
             PaletteEditorForm pef = new PaletteEditorForm(PaletteName);
-            pef.PaletteContentsModified += tsf.PaletteContentsModified;
-            pef.Show(tsf.dockPanel, DockState.Document);
+            pef.ContentModified += tsf.ContentModified;
+            pef.ContentSaved += tsf.ContentSaved;
+            pef.Show(tsf.DockPanel, DockState.Document);
 
             return true;
         }
@@ -211,11 +209,18 @@ namespace TileShop
             palettesNode.Nodes.Clear();
             arrangersNode.Nodes.Clear();
             FileManager.Instance.CloseProject();
+
             return true;
         }
 
-        // Loads data files, palettes, and arrangers from XML
-        public bool LoadFromXml(string XmlFileName)
+        /// <summary>
+        /// Loads data files, palettes, and arrangers from XML
+        /// Sets up the nodes in the project tree
+        /// The project should be previously cleared before calling
+        /// </summary>
+        /// <param name="XmlFileName"></param>
+        /// <returns></returns>
+        public bool LoadProject(string XmlFileName)
         {
             XElement xe = XElement.Load(XmlFileName);
 
@@ -311,7 +316,12 @@ namespace TileShop
             return true;
         }
 
-        public bool SaveToXml(string XmlFileName)
+        /// <summary>
+        /// Iterates over tree nodes and saves project settings to XML
+        /// </summary>
+        /// <param name="XmlFileName"></param>
+        /// <returns></returns>
+        public bool SaveProject(string XmlFileName)
         {
             XElement root = new XElement("gdf");
 
@@ -340,7 +350,7 @@ namespace TileShop
 
             foreach(PaletteNode pn in palettesNode.Nodes)
             {
-                Palette pal = FileManager.Instance.GetPalette(pn.Text);
+                Palette pal = FileManager.Instance.GetPersistentPalette(pn.Text);
                 XElement el = new XElement("palette");
                 el.SetAttributeValue("name", pal.Name);
                 el.SetAttributeValue("fileoffset", String.Format("{0:X}", pal.FileOffset));
@@ -357,7 +367,7 @@ namespace TileShop
             
             foreach(ArrangerNode an in arrangersNode.Nodes)
             {
-                Arranger arr = FileManager.Instance.GetArranger(an.Text);
+                Arranger arr = FileManager.Instance.GetPersistentArranger(an.Text);
                 XElement el = new XElement("arranger");
                 el.SetAttributeValue("name", arr.Name);
                 el.SetAttributeValue("elementsx", arr.ArrangerElementSize.Width);
@@ -439,7 +449,7 @@ namespace TileShop
             return list;
         }
 
-        private void projectTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
+        private void ProjectTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             //tsf.openExistingArranger(e.Node.Text);
             if(e.Node.GetType() == typeof(FileNode))
@@ -456,13 +466,13 @@ namespace TileShop
             }
         }
 
-        private void projectTreeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        private void ProjectTreeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             if(e.Button == MouseButtons.Right) // Show context menu
             {
                 ProjectTreeNode ptn = (ProjectTreeNode) e.Node;
                 ptn.BuildContextMenu(contextMenu);
-                contextMenu.Show(projectTreeView, e.Location);
+                contextMenu.Show(ProjectTreeView, e.Location);
             }
         }
     }

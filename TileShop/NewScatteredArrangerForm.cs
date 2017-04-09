@@ -22,15 +22,15 @@ namespace TileShop
             ArrangerName = "";
             SetDefaults(8, 8, 16, 8);
 
-            ActiveControl = nameTextBox;
+            ActiveControl = NameTextBox;
         }
 
         public void SetDefaults(int TileWidth, int TileHeight, int ArrangerTilesX, int ArrangerTilesY)
         {
-            tileWidthBox.Text = TileWidth.ToString();
-            tileHeightBox.Text = TileHeight.ToString();
-            tilesXBox.Text = ArrangerTilesX.ToString();
-            tilesYBox.Text = ArrangerTilesY.ToString();
+            TileWidthBox.Text = TileWidth.ToString();
+            TileHeightBox.Text = TileHeight.ToString();
+            TilesXBox.Text = ArrangerTilesX.ToString();
+            TilesYBox.Text = ArrangerTilesY.ToString();
 
             ArrangerSize = new Size(ArrangerTilesX, ArrangerTilesY);
             TileSize = new Size(TileWidth, TileHeight);
@@ -39,42 +39,44 @@ namespace TileShop
         public Size GetTileSize()
         {
             Size s = new Size();
-            s.Width = int.Parse(tileWidthBox.Text);
-            s.Height = int.Parse(tileHeightBox.Text);
+            s.Width = int.Parse(TileWidthBox.Text);
+            s.Height = int.Parse(TileHeightBox.Text);
             return s;
         }
 
         public Size GetArrangerSize()
         {
-            Size s = new Size();
-            s.Width = int.Parse(tilesXBox.Text);
-            s.Height = int.Parse(tilesYBox.Text);
+            Size s = new Size()
+            {
+                Width = int.Parse(TilesXBox.Text),
+                Height = int.Parse(TilesYBox.Text)
+            };
             return s;
         }
 
         public string GetArrangerName()
         {
-            return nameTextBox.Text;
+            return NameTextBox.Text;
         }
 
-        private void createButton_Click(object sender, EventArgs e)
+        private void CreateButton_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.None;
 
-            if (nameTextBox.Text == "" || tilesXBox.Text == "" || tilesYBox.Text == "" || tileHeightBox.Text == "" || tileWidthBox.Text == "")
+            if (NameTextBox.Text == "" || TilesXBox.Text == "" || TilesYBox.Text == "" || TileHeightBox.Text == "" || TileWidthBox.Text == "")
             {
                 MessageBox.Show("All fields must be completed before adding an arranger to the project");
                 return;
             }
-            if (FileManager.Instance.HasArranger(nameTextBox.Text))
+            if (FileManager.Instance.HasArranger(NameTextBox.Text))
             {
-                MessageBox.Show("Arranger " + nameTextBox.Text + " already exists. Please choose an alternate name.");
+                MessageBox.Show("Arranger " + NameTextBox.Text + " already exists. Please choose an alternate name.");
                 return;
             }
 
-            ArrangerName = nameTextBox.Text;
-            ArrangerSize = new Size(int.Parse(tilesXBox.Text), int.Parse(tilesYBox.Text));
-            TileSize = new Size(int.Parse(tileWidthBox.Text), int.Parse(tileHeightBox.Text));
+            ArrangerName = NameTextBox.Text;
+            ArrangerSize = new Size(int.Parse(TilesXBox.Text), int.Parse(TilesYBox.Text));
+            TileSize = new Size(int.Parse(TileWidthBox.Text), int.Parse(TileHeightBox.Text));
 
             if(TileSize.Width == 0 || TileSize.Height == 0 || ArrangerSize.Width == 0 || ArrangerSize.Height == 0)
             {

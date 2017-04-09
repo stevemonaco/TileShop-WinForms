@@ -28,7 +28,8 @@ namespace TileShop
         int Zoom = 24;
         PixelDrawState DrawState = PixelDrawState.PencilState;
         bool RenderTransparency = true;
-        bool showGridlines = false;
+        bool ShowGridlines = false;
+        bool PencilDragActive = false;
 
         /// <summary>
         /// Gets whether the form has closed
@@ -52,6 +53,7 @@ namespace TileShop
             TransparentBrush = new TextureBrush(Properties.Resources.TransparentBrushPattern);
 
             SetDrawState(PixelDrawState.PencilState);
+            ContentSourceName = "Pixel Editor";
         }
 
         public override bool ReloadContent()
@@ -66,16 +68,22 @@ namespace TileShop
 
             string palName = EditArranger.GetElement(0, 0).PaletteName;
             string formatName = EditArranger.GetElement(0, 0).Format;
-            swatchControl.ShowPalette(FileManager.Instance.GetPalette(palName), (int)Math.Pow(2, FileManager.Instance.GetGraphicsFormat(formatName).ColorDepth));
-            swatchControl.SelectedIndex = 0;
-            swatchControl.Invalidate();
+            SwatchControl.ShowPalette(FileManager.Instance.GetPalette(palName), (int)Math.Pow(2, FileManager.Instance.GetGraphicsFormat(formatName).ColorDepth));
+            SwatchControl.SelectedIndex = 0;
+            SwatchControl.Invalidate();
 
+            ContainsModifiedContent = false;
             return true;
         }
 
         public override bool SaveContent()
         {
-            return false;
+            if (EditArranger == null)
+                return false;
+
+            rm.SaveImage(EditArranger);
+            ContainsModifiedContent = false;
+            return true;
         }
 
         public override bool RefreshContent()
@@ -94,24 +102,8 @@ namespace TileShop
 
             string palName = EditArranger.GetElement(0, 0).PaletteName;
             string formatName = EditArranger.GetElement(0, 0).Format;
-            swatchControl.ShowPalette(FileManager.Instance.GetPalette(palName), (int) Math.Pow(2, FileManager.Instance.GetGraphicsFormat(formatName).ColorDepth));
-            swatchControl.SelectedIndex = 0;
-        }
-
-        /// <summary>
-        /// Reloads arranger data from underlying source
-        /// </summary>
-        public void ReloadArranger()
-        {
-            if (EditArranger == null)
-                return;
-
-            // Forces the render manager to do a full redraw
-            rm.Invalidate();
-            // Redraw the viewer graphics
-            PixelPanel.Invalidate();
-            // Update palette colors in the swatch
-            swatchControl.Invalidate();
+            SwatchControl.ShowPalette(FileManager.Instance.GetPalette(palName), (int) Math.Pow(2, FileManager.Instance.GetGraphicsFormat(formatName).ColorDepth));
+            SwatchControl.SelectedIndex = 0;
         }
 
         private void PixelPanel_Paint(object sender, PaintEventArgs e)
@@ -138,7 +130,7 @@ namespace TileShop
             e.Graphics.FillRectangle(TransparentBrush, DisplayRect);
             e.Graphics.DrawImage(rm.Image, dest, src, GraphicsUnit.Pixel);
 
-            if(showGridlines)
+            if(ShowGridlines)
                 DrawPixelGridlines(e.Graphics);
         }
 
@@ -157,37 +149,37 @@ namespace TileShop
         private void SetDrawState(PixelDrawState state)
         {
             // Reset buttons
-            pencilButton.Checked = false;
-            pickerButton.Checked = false;
+            PencilButton.Checked = false;
+            PickerButton.Checked = false;
 
             DrawState = state;
 
             switch(state)
             {
                 case PixelDrawState.PencilState:
-                    pencilButton.Checked = true;
+                    PencilButton.Checked = true;
                     PixelPanel.Cursor = FileManager.Instance.GetCursor("PencilCursor");
                     break;
                 case PixelDrawState.PickerState:
-                    pickerButton.Checked = true;
+                    PickerButton.Checked = true;
                     PixelPanel.Cursor = FileManager.Instance.GetCursor("PickerCursor");
                     break;
             }
         }
 
-        private void pencilButton_Click(object sender, EventArgs e)
+        private void PencilButton_Click(object sender, EventArgs e)
         {
             SetDrawState(PixelDrawState.PencilState);
         }
 
-        private void pickerButton_Click(object sender, EventArgs e)
+        private void PickerButton_Click(object sender, EventArgs e)
         {
             SetDrawState(PixelDrawState.PickerState);
         }
 
-        private void gridlinesButton_Click(object sender, EventArgs e)
+        private void GridlinesButton_Click(object sender, EventArgs e)
         {
-            showGridlines ^= true;
+            ShowGridlines ^= true;
             PixelPanel.Invalidate();
         }
 
@@ -203,28 +195,53 @@ namespace TileShop
             if(DrawState == PixelDrawState.PencilState)
             {
                 Palette pal = FileManager.Instance.GetPalette(EditArranger.GetElement(0, 0).PaletteName);
-                rm.SetPixel(unscaledLoc.X, unscaledLoc.Y, Color.FromArgb((int)pal[swatchControl.SelectedIndex]));
-                PixelPanel.Invalidate();
+                SetPixel(unscaledLoc.X, unscaledLoc.Y, Color.FromArgb((int)pal[SwatchControl.SelectedIndex]));
+
+                PencilDragActive = true;
             }
             else if(DrawState == PixelDrawState.PickerState)
             {
                 Color c = rm.GetPixel(unscaledLoc.X, unscaledLoc.Y);
                 Palette pal = FileManager.Instance.GetPalette(EditArranger.GetElement(0, 0).PaletteName);
-                swatchControl.SelectedIndex = pal.GetIndexByLocalColor(c, true);
+                SwatchControl.SelectedIndex = pal.GetIndexByLocalColor(c, true);
             }
         }
 
         private void PixelPanel_MouseMove(object sender, MouseEventArgs e)
         {
-            if (DisplayRect.Contains(e.Location) || EditArranger == null)
+            if (DisplayRect.Contains(e.Location) && EditArranger != null) // TODO: Optimize so the cursor isn't set on every move
             {
                 if (DrawState == PixelDrawState.PencilState)
+                {
                     PixelPanel.Cursor = FileManager.Instance.GetCursor("PencilCursor");
+                    if(PencilDragActive)
+                    {
+                        Point unscaledLoc = new Point(); // Location in pixels
+                        unscaledLoc.X = (e.Location.X - PixelMargin.Width) / Zoom;
+                        unscaledLoc.Y = (e.Location.Y - PixelMargin.Height) / Zoom;
+
+                        Palette pal = FileManager.Instance.GetPalette(EditArranger.GetElement(0, 0).PaletteName);
+                        SetPixel(unscaledLoc.X, unscaledLoc.Y, Color.FromArgb((int)pal[SwatchControl.SelectedIndex]));
+                    }
+
+                }
                 else if (DrawState == PixelDrawState.PickerState)
                     PixelPanel.Cursor = FileManager.Instance.GetCursor("PickerCursor");
             }
             else
                 PixelPanel.Cursor = Cursors.Arrow;
+        }
+
+        private void SetPixel(int X, int Y, Color color)
+        {
+            Palette pal = FileManager.Instance.GetPalette(EditArranger.GetElement(0, 0).PaletteName);
+            Color col = Color.FromArgb((int)pal[SwatchControl.SelectedIndex]);
+            if (rm.GetPixel(X, Y) != col)
+            {
+                rm.SetPixel(X, Y, Color.FromArgb((int)pal[SwatchControl.SelectedIndex]));
+                ContainsModifiedContent = true;
+                PixelPanel.Invalidate();
+            }
         }
 
         private void PixelEditorForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -240,6 +257,12 @@ namespace TileShop
         private void SaveButton_Click(object sender, EventArgs e)
         {
             SaveContent();
+        }
+
+        private void PixelPanel_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (PencilDragActive)
+                PencilDragActive = false;
         }
     }
 }

@@ -32,11 +32,11 @@
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.FormatSelectBox = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.zoomSelectBox = new System.Windows.Forms.ToolStripComboBox();
-            this.showGridlinesButton = new System.Windows.Forms.ToolStripButton();
+            this.ZoomSelectBox = new System.Windows.Forms.ToolStripComboBox();
+            this.ShowGridlinesButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.offsetLabel = new System.Windows.Forms.ToolStripLabel();
-            this.editModeButton = new System.Windows.Forms.ToolStripButton();
+            this.EditModeButton = new System.Windows.Forms.ToolStripButton();
             this.ReloadButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.SaveButton = new System.Windows.Forms.ToolStripButton();
@@ -50,11 +50,11 @@
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.FormatSelectBox,
             this.toolStripSeparator1,
-            this.zoomSelectBox,
-            this.showGridlinesButton,
+            this.ZoomSelectBox,
+            this.ShowGridlinesButton,
             this.toolStripSeparator2,
             this.offsetLabel,
-            this.editModeButton,
+            this.EditModeButton,
             this.ReloadButton,
             this.toolStripSeparator3,
             this.SaveButton});
@@ -78,10 +78,10 @@
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
             // 
-            // zoomSelectBox
+            // ZoomSelectBox
             // 
-            this.zoomSelectBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.zoomSelectBox.Items.AddRange(new object[] {
+            this.ZoomSelectBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ZoomSelectBox.Items.AddRange(new object[] {
             "Zoom 100%",
             "Zoom 200%",
             "Zoom 300%",
@@ -90,22 +90,22 @@
             "Zoom 600%",
             "Zoom 700%",
             "Zoom 800%"});
-            this.zoomSelectBox.Name = "zoomSelectBox";
-            this.zoomSelectBox.Size = new System.Drawing.Size(121, 25);
-            this.zoomSelectBox.SelectedIndexChanged += new System.EventHandler(this.zoomSelectBox_SelectedIndexChanged);
+            this.ZoomSelectBox.Name = "ZoomSelectBox";
+            this.ZoomSelectBox.Size = new System.Drawing.Size(121, 25);
+            this.ZoomSelectBox.SelectedIndexChanged += new System.EventHandler(this.ZoomSelectBox_SelectedIndexChanged);
             // 
-            // showGridlinesButton
+            // ShowGridlinesButton
             // 
-            this.showGridlinesButton.Checked = true;
-            this.showGridlinesButton.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.showGridlinesButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.showGridlinesButton.Image = global::TileShop.Properties.Resources.gridlines;
-            this.showGridlinesButton.ImageTransparentColor = System.Drawing.Color.White;
-            this.showGridlinesButton.Name = "showGridlinesButton";
-            this.showGridlinesButton.Size = new System.Drawing.Size(23, 22);
-            this.showGridlinesButton.Text = "Show Gridlines";
-            this.showGridlinesButton.ToolTipText = "Show Gridlines";
-            this.showGridlinesButton.Click += new System.EventHandler(this.showGridlinesButton_Click);
+            this.ShowGridlinesButton.Checked = true;
+            this.ShowGridlinesButton.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ShowGridlinesButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ShowGridlinesButton.Image = global::TileShop.Properties.Resources.gridlines;
+            this.ShowGridlinesButton.ImageTransparentColor = System.Drawing.Color.White;
+            this.ShowGridlinesButton.Name = "ShowGridlinesButton";
+            this.ShowGridlinesButton.Size = new System.Drawing.Size(23, 22);
+            this.ShowGridlinesButton.Text = "Show Gridlines";
+            this.ShowGridlinesButton.ToolTipText = "Show Gridlines";
+            this.ShowGridlinesButton.Click += new System.EventHandler(this.ShowGridlinesButton_Click);
             // 
             // toolStripSeparator2
             // 
@@ -118,18 +118,18 @@
             this.offsetLabel.Name = "offsetLabel";
             this.offsetLabel.Size = new System.Drawing.Size(0, 22);
             // 
-            // editModeButton
+            // EditModeButton
             // 
-            this.editModeButton.Checked = true;
-            this.editModeButton.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.editModeButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.editModeButton.Image = global::TileShop.Properties.Resources.EditModeTemp;
-            this.editModeButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.editModeButton.Name = "editModeButton";
-            this.editModeButton.Size = new System.Drawing.Size(23, 22);
-            this.editModeButton.Text = "Enable/Disable Edit Mode";
-            this.editModeButton.ToolTipText = "Enable/Disable Edit Mode";
-            this.editModeButton.Click += new System.EventHandler(this.editModeButton_Click);
+            this.EditModeButton.Checked = true;
+            this.EditModeButton.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.EditModeButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.EditModeButton.Image = global::TileShop.Properties.Resources.EditModeTemp;
+            this.EditModeButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.EditModeButton.Name = "EditModeButton";
+            this.EditModeButton.Size = new System.Drawing.Size(23, 22);
+            this.EditModeButton.Text = "Enable/Disable Edit Mode";
+            this.EditModeButton.ToolTipText = "Enable/Disable Edit Mode";
+            this.EditModeButton.Click += new System.EventHandler(this.EditModeButton_Click);
             // 
             // ReloadButton
             // 
@@ -205,12 +205,12 @@
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripComboBox FormatSelectBox;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripComboBox zoomSelectBox;
-        private System.Windows.Forms.ToolStripButton showGridlinesButton;
+        private System.Windows.Forms.ToolStripComboBox ZoomSelectBox;
+        private System.Windows.Forms.ToolStripButton ShowGridlinesButton;
         private System.Windows.Forms.Panel RenderPanel;
         private System.Windows.Forms.ToolStripLabel offsetLabel;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripButton editModeButton;
+        private System.Windows.Forms.ToolStripButton EditModeButton;
         private System.Windows.Forms.ToolStripButton SaveButton;
         private System.Windows.Forms.ToolStripButton ReloadButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;

@@ -81,6 +81,52 @@ namespace TileShop
         }
 
         /// <summary>
+        /// Saves the currently edited image to the underlying source using the specified arranger for placement and encoding
+        /// </summary>
+        /// <param name="arranger"></param>
+        /// <returns></returns>
+        public bool SaveImage(Arranger arranger)
+        {
+            if (arranger == null)
+                throw new ArgumentNullException();
+
+            if (arranger.ArrangerPixelSize.Width <= 0 || arranger.ArrangerPixelSize.Height <= 0 || arranger.Mode == ArrangerMode.SequentialArranger)
+                throw new ArgumentException();
+
+            if (Image == null || arranger.ArrangerPixelSize.Width != Image.Width || arranger.ArrangerPixelSize.Height != Image.Height)
+                throw new InvalidOperationException();
+
+            if (Image == null)
+                throw new NullReferenceException();
+
+            BinaryWriter bw = null;
+            string PrevFileName = "";
+
+            for (int i = 0; i < arranger.ArrangerElementSize.Height; i++)
+            {
+                for (int j = 0; j < arranger.ArrangerElementSize.Width; j++)
+                {
+                    ArrangerElement el = arranger.ElementList[j, i];
+                    if (!arranger.IsSequential) // Non-sequential requires a seek for each element rendered
+                    {
+                        if (el.Format == "") // Empty format means a blank tile
+                            continue;
+
+                        if (PrevFileName != el.FileName) // Only create a new binary reader when necessary
+                            bw = new BinaryWriter(FileManager.Instance.GetFileStream(el.FileName));
+
+                        bw.BaseStream.Seek(el.FileOffset, SeekOrigin.Begin);
+                        PrevFileName = el.FileName;
+                    }
+
+                    GraphicsCodec.Encode(Image, el.X1, el.Y1, FileManager.Instance.GetGraphicsFormat(el.Format), bw, FileManager.Instance.GetPalette(el.PaletteName));
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Forces a redraw for next Render call
         /// </summary>
         public void Invalidate()

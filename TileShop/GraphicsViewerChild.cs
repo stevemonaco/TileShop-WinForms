@@ -62,7 +62,7 @@ namespace TileShop
             ElementSize = arranger.ElementPixelSize;
             this.Text = arranger.Name;
             selectionData = new ArrangerSelectionData(arranger.Name);
-            zoomSelectBox.SelectedIndex = 0;
+            ZoomSelectBox.SelectedIndex = 0;
             selectionData.Zoom = 1;
             ContentSourceName = ArrangerName;
             ContainsModifiedContent = false;
@@ -72,8 +72,8 @@ namespace TileShop
             {
                 GraphicsFormat graphicsFormat = FileManager.Instance.GetGraphicsFormat(arranger.GetSequentialGraphicsFormat());
 
-                editModeButton.Checked = false; // Do not allow edits directly to a sequential arranger
-                editModeButton.Visible = false;
+                EditModeButton.Checked = false; // Do not allow edits directly to a sequential arranger
+                EditModeButton.Visible = false;
 
                 SaveButton.Visible = false;
                 ReloadButton.Visible = false;
@@ -97,8 +97,6 @@ namespace TileShop
 
         public override bool ReloadContent()
         {
-            MessageBox.Show("ReloadContent");
-
             arranger = FileManager.Instance.ReloadArranger(arranger.Name);
             EditArranger = null;
             DisplayElements = arranger.ArrangerElementSize;
@@ -374,7 +372,7 @@ namespace TileShop
 
             if (selectionData.HasSelection)
             {
-                if (editModeButton.Checked) // Selection Edit mode
+                if (EditModeButton.Checked) // Selection Edit mode
                     g.FillRectangle(EditSelectionBrush, ViewSelectionRect);
                 else // Selection Movement mode
                     g.FillRectangle(MoveSelectionBrush, ViewSelectionRect);
@@ -389,25 +387,25 @@ namespace TileShop
 
         public void SetZoom(int ZoomLevel)
         {
-            zoomSelectBox.SelectedIndex = ZoomLevel - 1;
+            ZoomSelectBox.SelectedIndex = ZoomLevel - 1;
         }
 
-        private void zoomSelectBox_SelectedIndexChanged(object sender, EventArgs e)
+        private void ZoomSelectBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Zoom = zoomSelectBox.SelectedIndex + 1;
+            Zoom = ZoomSelectBox.SelectedIndex + 1;
             selectionData.Zoom = Zoom;
             DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
             CancelSelection();
             RenderPanel.Invalidate();
         }
 
-        private void showGridlinesButton_Click(object sender, EventArgs e)
+        private void ShowGridlinesButton_Click(object sender, EventArgs e)
         {
             showGridlines ^= true;
             if (showGridlines)
-                showGridlinesButton.Checked = true;
+                ShowGridlinesButton.Checked = true;
             else
-                showGridlinesButton.Checked = false;
+                ShowGridlinesButton.Checked = false;
             RenderPanel.Invalidate();
         }
 
@@ -477,7 +475,7 @@ namespace TileShop
                 else if (selectionData.InSelection)
                 {
                     selectionData.EndSelection();
-                    if (editModeButton.Checked) // Edit mode deselects on MouseUp and pushes a subarranger to the pixel editor
+                    if (EditModeButton.Checked) // Edit mode deselects on MouseUp and pushes a subarranger to the pixel editor
                     {
                         selectionData.EndSelection();
                         if (selectionData.HasSelection)
@@ -558,6 +556,7 @@ namespace TileShop
                 }
             }
 
+            ContainsModifiedContent = true;
             rm.Invalidate();
             RenderPanel.Invalidate();
         }
@@ -591,10 +590,10 @@ namespace TileShop
             e.Action = DragAction.Continue;
         }
 
-        private void editModeButton_Click(object sender, EventArgs e)
+        private void EditModeButton_Click(object sender, EventArgs e)
         {
             CancelSelection();
-            editModeButton.Checked ^= true;
+            EditModeButton.Checked ^= true;
             RenderPanel.Invalidate();
         }
 
@@ -616,8 +615,6 @@ namespace TileShop
     }
 
     // Class to store a selection of arranger data
-
-    [Serializable]
     public class ArrangerSelectionData
     {
         public string ArrangerName { get; private set; } // Name of the Arranger which holds the data to be copied

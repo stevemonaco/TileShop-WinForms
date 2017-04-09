@@ -304,7 +304,7 @@ namespace TileShop
         /// <param name="color">Local color to search for</param>
         /// <param name="exactColorOnly">true to return only an exactly matched color; false to match the closest color</param>
         /// <returns>A palette index matching the specified color</returns>
-        public int GetIndexByLocalColor(Color color, bool exactColorOnly)
+        public byte GetIndexByLocalColor(Color color, bool exactColorOnly)
         {
             uint c = ColorToUint(color);
 
@@ -317,29 +317,29 @@ namespace TileShop
         /// <param name="color">ARGB32 value to search for</param>
         /// <param name="exactColorOnly">true to return only exactly matched colors; false to match the closest color</param>
         /// <returns>A palette index matching the specified colort</returns>
-        public int GetIndexByColor(uint color, bool exactColorOnly)
+        public byte GetIndexByColor(uint color, bool exactColorOnly)
         {
             if (exactColorOnly)
             {
-                for (int i = 0; i < Entries; i++)
+                for (byte i = 0; i < Entries; i++)
                 {
                     if (localPalette[i] == color)
                         return i;
                 }
-            }
 
-            if (exactColorOnly) // Do not pick closest color in palette
-                return -1;
+                // Failed to find the exact color in the palette
+                throw new Exception();
+            }
 
             // Color matching involves converting colors to hue-saturation-luminance and comparing
             var c1 = new ColorMine.ColorSpaces.Rgb { R = RFromARGB(color), G = GFromARGB(color), B = BFromARGB(color) };
             var h1 = c1.To<ColorMine.ColorSpaces.Hsl>();
 
             double MinDistance = double.MaxValue;
-            int MinIndex = -1;
+            byte MinIndex = 0;
             Cie94Comparison comparator = new Cie94Comparison(Cie94Comparison.Application.GraphicArts);
 
-            for(int i = 0; i < Entries; i++)
+            for(byte i = 0; i < Entries; i++)
             {
                 var c2 = new ColorMine.ColorSpaces.Rgb { R = RFromARGB(localPalette[i]), G = GFromARGB(localPalette[i]), B = BFromARGB(localPalette[i]) };
                 var h2 = c2.To<ColorMine.ColorSpaces.Hsl>();

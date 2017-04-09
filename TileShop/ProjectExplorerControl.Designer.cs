@@ -30,7 +30,7 @@
         {
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.projectTabPage = new System.Windows.Forms.TabPage();
-            this.projectTreeView = new System.Windows.Forms.TreeView();
+            this.ProjectTreeView = new System.Windows.Forms.TreeView();
             this.tabControl1.SuspendLayout();
             this.projectTabPage.SuspendLayout();
             this.SuspendLayout();
@@ -49,7 +49,7 @@
             // 
             // projectTabPage
             // 
-            this.projectTabPage.Controls.Add(this.projectTreeView);
+            this.projectTabPage.Controls.Add(this.ProjectTreeView);
             this.projectTabPage.Location = new System.Drawing.Point(4, 4);
             this.projectTabPage.Name = "projectTabPage";
             this.projectTabPage.Size = new System.Drawing.Size(261, 347);
@@ -57,15 +57,15 @@
             this.projectTabPage.Text = "Project";
             this.projectTabPage.UseVisualStyleBackColor = true;
             // 
-            // projectTreeView
+            // ProjectTreeView
             // 
-            this.projectTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.projectTreeView.Location = new System.Drawing.Point(0, 0);
-            this.projectTreeView.Name = "projectTreeView";
-            this.projectTreeView.Size = new System.Drawing.Size(261, 347);
-            this.projectTreeView.TabIndex = 0;
-            this.projectTreeView.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.projectTreeView_NodeMouseClick);
-            this.projectTreeView.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.projectTreeView_NodeMouseDoubleClick);
+            this.ProjectTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ProjectTreeView.Location = new System.Drawing.Point(0, 0);
+            this.ProjectTreeView.Name = "ProjectTreeView";
+            this.ProjectTreeView.Size = new System.Drawing.Size(261, 347);
+            this.ProjectTreeView.TabIndex = 0;
+            this.ProjectTreeView.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.ProjectTreeView_NodeMouseClick);
+            this.ProjectTreeView.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.ProjectTreeView_NodeMouseDoubleClick);
             // 
             // ProjectExplorerControl
             // 
@@ -86,6 +86,6 @@
 
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage projectTabPage;
-        private System.Windows.Forms.TreeView projectTreeView;
+        private System.Windows.Forms.TreeView ProjectTreeView;
     }
 }

@@ -10,6 +10,9 @@ namespace TileShop
 {
     public class EditorDockContent : DockContent
     {
+        public event EventHandler<EventArgs> ContentModified = null;
+        public event EventHandler<EventArgs> ContentSaved = null;
+
         public EditorDockContent()
         {
             this.FormClosing += EditorDockContent_FormClosing;
@@ -32,20 +35,28 @@ namespace TileShop
             }
         }
 
+        protected virtual void OnContentModified(EventArgs e)
+        {
+            EventHandler<EventArgs> ModifiedHandler = ContentModified;
+            ModifiedHandler?.Invoke(this, e);
+        }
+
+        protected virtual void OnContentSaved(EventArgs e)
+        {
+            EventHandler<EventArgs> SavedHandler = ContentSaved;
+            SavedHandler?.Invoke(this, e);
+        }
+
         /// <summary>
         /// Returns true if the content has been modified since last save or false if it has not been modified
         /// </summary>
         public bool ContainsModifiedContent
         {
-            get
-            {
-                return containsModifiedContent;
-            }
-
+            get => containsModifiedContent;
             protected set
             {
                 containsModifiedContent = value;
-                if (containsModifiedContent == true)
+                if (containsModifiedContent)
                     Text = ContentSourceName + "*";
                 else
                     Text = ContentSourceName;
@@ -56,7 +67,19 @@ namespace TileShop
         /// <summary>
         /// Returns the name of the content source
         /// </summary>
-        public string ContentSourceName { get; protected set; }
+        public string ContentSourceName
+        {
+            get => contentSourceName;
+            protected set
+            {
+                contentSourceName = value;
+                if (containsModifiedContent)
+                    Text = contentSourceName + "*";
+                else
+                    Text = contentSourceName;
+            }
+        }
+        protected string contentSourceName;
 
         /// <summary>
         /// Saves content to underlying source

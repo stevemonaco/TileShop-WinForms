@@ -126,10 +126,36 @@ namespace TileShop
         /// <returns></returns>
         public Arranger GetArranger(string ArrangerName)
         {
-            if (HasArranger(ArrangerName))
+            if (ArrangerList.ContainsKey(ArrangerName))
                 return ArrangerList[ArrangerName];
             else
                 throw new KeyNotFoundException(String.Format("Arranger {0} was not found in the ArrangerList", ArrangerName));
+        }
+
+        /// <summary>
+        /// Gets the persistent palette associated with the specified name
+        /// </summary>
+        /// <param name="PaletteName"></param>
+        /// <returns></returns>
+        public Palette GetPersistentPalette(string PaletteName)
+        {
+            if (PersistentPaletteList.ContainsKey(PaletteName))
+                return PersistentPaletteList[PaletteName];
+            else
+                throw new KeyNotFoundException(String.Format("Palette {0} was not found in the PersistentPaletteList", PaletteName));
+        }
+
+        /// <summary>
+        /// Gets the persistent arranger associated with the specified name
+        /// </summary>
+        /// <param name="ArrangerName"></param>
+        /// <returns></returns>
+        public Arranger GetPersistentArranger(string ArrangerName)
+        {
+            if (PersistentArrangerList.ContainsKey(ArrangerName))
+                return PersistentArrangerList[ArrangerName];
+            else
+                throw new KeyNotFoundException(String.Format("Arranger {0} was not found in the PersistentArrangerList", ArrangerName));
         }
 
         public bool HasFile(string Filename)

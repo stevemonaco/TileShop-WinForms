@@ -8,6 +8,7 @@ Add more tools to the pixel editor
 Support for palettes with scattered color locations
 Add support to attach palettes to tiles in the arranger
 Add support for palettes in pixel editor (gray out pixels that cannot be edited using the current palette)
+For drag+drop of elements from a ScatteredArranger->SequentialArranger, create a new temp Arranger with adjusted addresses, render, and save
 
 Longer term TODO:
 Implement linear formats

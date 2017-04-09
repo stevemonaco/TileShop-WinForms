@@ -60,8 +60,8 @@ namespace TileShop
                 data2[i] = data[j];
             }
 
-            BitStream bs1 = new BitStream(data1, data1.Length * 8);
-            BitStream bs2 = new BitStream(data2, data2.Length * 8);
+            BitStream bs1 = BitStream.OpenRead(data1, data1.Length * 8);
+            BitStream bs2 = BitStream.OpenRead(data2, data2.Length * 8);
 
             for (int y = 0; y < fmt.Height; y++)
             {
@@ -93,8 +93,8 @@ namespace TileShop
                 data2[i] = data[i * 2 + 1];
             }
 
-            BitStream bs1 = new BitStream(data1, data1.Length * 8);
-            BitStream bs2 = new BitStream(data2, data2.Length * 8);
+            BitStream bs1 = BitStream.OpenRead(data1, data1.Length * 8);
+            BitStream bs2 = BitStream.OpenRead(data2, data2.Length * 8);
 
             for (int y = 0; y < fmt.Height; y++)
             {
@@ -128,8 +128,8 @@ namespace TileShop
                 data2[i] = data[j];
             }
 
-            BitStream bs1 = new BitStream(data1, data1.Length * 8);
-            BitStream bs2 = new BitStream(data2, data2.Length * 8);
+            BitStream bs1 = BitStream.OpenRead(data1, data1.Length * 8);
+            BitStream bs2 = BitStream.OpenRead(data2, data2.Length * 8);
 
             int idx = 0;
             int* dest = (int*)(void*)bd.Scan0;
@@ -172,8 +172,8 @@ namespace TileShop
                 data2[i] = data[i * 2 + 1];
             }
 
-            BitStream bs1 = new BitStream(data1, data1.Length * 8);
-            BitStream bs2 = new BitStream(data2, data2.Length * 8);
+            BitStream bs1 = BitStream.OpenRead(data1, data1.Length * 8);
+            BitStream bs2 = BitStream.OpenRead(data2, data2.Length * 8);
 
             int idx = 0;
             int* dest = (int*)(void*)bd.Scan0;

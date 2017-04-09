@@ -33,13 +33,13 @@ namespace TileShop
             this.Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
 
             pec = new ProjectExplorerControl(this);
-            pec.Show(dockPanel, DockState.DockLeft);
+            pec.Show(DockPanel, DockState.DockLeft);
             LoadCodecs(CodecDirectoryPath);
             LoadPalettes(PaletteDirectoryPath);
             LoadCursors();
 
             pef = new PixelEditorForm();
-            pef.Show(dockPanel, DockState.DockRight);
+            pef.Show(DockPanel, DockState.DockRight);
         }
 
         public void RefreshTitle()
@@ -50,29 +50,29 @@ namespace TileShop
                 this.Text = "TileShop " + Properties.Settings.Default.Version + " - " + ProjectFileName;
         }
 
-        public bool openExistingArranger(string arrangerName)
+        public bool OpenExistingArranger(string arrangerName)
         {
             // Check if the arranger is already an opened Document
-            foreach(Control c in dockPanel.Documents)
+            foreach(Control c in DockPanel.Documents)
             {
                 if (c.Text == arrangerName)
                     return false;
             }
 
             GraphicsViewerChild gv = new GraphicsViewerChild(arrangerName);
-            gv.Show(dockPanel, DockState.Document);
+            gv.Show(DockPanel, DockState.Document);
 
             return true;
         }
 
-        public void updateOffsetLabel(string offset)
+        public void UpdateOffsetLabel(string offset)
         {
-            fileOffsetLabel.Text = offset;
+            FileOffsetLabel.Text = offset;
         }
 
-        public void updateSelectionLabel(string text)
+        public void UpdateSelectionLabel(string text)
         {
-            selectionLabel.Text = text;
+            SelectionLabel.Text = text;
         }
 
         private void LoadCodecs(string path)
@@ -106,7 +106,7 @@ namespace TileShop
             FileManager.Instance.AddCursor("PickerCursor", PickerCursor);
         }
 
-        private void debugToolStripMenuItem_Click(object sender, EventArgs e)
+        private void DebugToolStripMenuItem_Click(object sender, EventArgs e)
         {
             WindowState = FormWindowState.Maximized;
 
@@ -116,7 +116,7 @@ namespace TileShop
                 MessageBox.Show("Could not open file " + s);
         }
 
-        private void blankArrangerToolStripMenuItem_Click(object sender, EventArgs e)
+        private void BlankArrangerToolStripMenuItem_Click(object sender, EventArgs e)
         {
             NewTileArrangerForm ntaf = new NewTileArrangerForm();
 
@@ -145,12 +145,12 @@ namespace TileShop
             }
         }
 
-        private void debugXmlToolStripMenuItem_Click(object sender, EventArgs e)
+        private void DebugXmlToolStripMenuItem_Click(object sender, EventArgs e)
         {
             WindowState = FormWindowState.Maximized;
 
             ProjectFileName = "D:\\Projects\\ff2.xml";
-            pec.LoadFromXml(ProjectFileName);
+            pec.LoadProject(ProjectFileName);
 
             /*GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, "Font");
             gv.WindowState = FormWindowState.Maximized;
@@ -158,22 +158,22 @@ namespace TileShop
             gv.Show(dockPanel, DockState.Document);*/
         }
 
-        private void saveProjectToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SaveProjectToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if(String.IsNullOrEmpty(ProjectFileName)) // First save, need a filename
             {
 
             }
             else
-                pec.SaveToXml(ProjectFileName);
+                pec.SaveProject(ProjectFileName);
         }
 
-        private void saveProjectAsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SaveProjectAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
         }
 
-        private void newPaletteToolStripMenuItem_Click(object sender, EventArgs e)
+        private void NewPaletteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             NewPaletteForm npf = new NewPaletteForm();
             npf.AddFileNames(pec.GetFileNameList());
@@ -216,7 +216,7 @@ namespace TileShop
             if (pef.IsClosed)
             {
                 pef = new PixelEditorForm();
-                pef.Show(dockPanel, DockState.DockRight);
+                pef.Show(DockPanel, DockState.DockRight);
             }
 
             if (!pef.Visible)
@@ -236,7 +236,7 @@ namespace TileShop
         {
             // Minor bug: Can sometimes reload arranger of some DockContents twice
             // Example: A floating GraphicsViewerChild window (with multiple docks?)
-            foreach (DockPane dp in dockPanel.Panes)
+            foreach (DockPane dp in DockPanel.Panes)
             {
                 foreach (DockContent dc in dp.Contents)
                 {
@@ -246,7 +246,45 @@ namespace TileShop
             }
         }
 
-        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Called upon an editor having its content modified
+        /// </summary>
+        /// <param name="sender">Editor which invoked the event</param>
+        /// <param name="e"></param>
+        public void ContentModified(object sender, EventArgs e)
+        {
+            // Minor bug: Can sometimes refresh some DockContents twice
+            // Example: A floating GraphicsViewerChild window (with multiple docks?)
+            foreach (DockPane dp in DockPanel.Panes)
+            {
+                foreach (DockContent dc in dp.Contents)
+                {
+                    if (dc.GetType().IsSubclassOf(typeof(EditorDockContent)) && dc != sender)
+                        ((EditorDockContent)dc).RefreshContent();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called upon an editor having its content saved
+        /// </summary>
+        /// <param name="sender">Editor which invoked the event</param>
+        /// <param name="e"></param>
+        public void ContentSaved(object sender, EventArgs e)
+        {
+            // Minor bug: Can sometimes refresh some DockContents twice
+            // Example: A floating GraphicsViewerChild window (with multiple docks?)
+            foreach (DockPane dp in DockPanel.Panes)
+            {
+                foreach (DockContent dc in dp.Contents)
+                {
+                    if (dc.GetType().IsSubclassOf(typeof(EditorDockContent)) && dc != sender)
+                        ((EditorDockContent)dc).ReloadContent();
+                }
+            }
+        }
+
+        private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog()
             {
@@ -277,7 +315,7 @@ namespace TileShop
                     }*/
 
                     // Load new XML project file
-                    pec.LoadFromXml(ofd.FileName);
+                    pec.LoadProject(ofd.FileName);
                     ProjectFileName = ofd.FileName;
                 }
                 else
@@ -291,14 +329,14 @@ namespace TileShop
             }
         }
 
-        private void closeProjectToolStripMenuItem_Click(object sender, EventArgs e)
+        private void CloseProjectToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if(pec.IsProjectModified)
             {
                 DialogResult dr = MessageBox.Show("The project has been modified. Save?", "Save Project", MessageBoxButtons.YesNoCancel);
                 if (dr == DialogResult.Yes && !String.IsNullOrEmpty(ProjectFileName)) // Project has a filename due to being previously saved or opened
                 {
-                    pec.SaveToXml(ProjectFileName);
+                    pec.SaveProject(ProjectFileName);
                 }
                 if(dr == DialogResult.Yes && String.IsNullOrEmpty(ProjectFileName)) // Project has no filename because it has never been saved
                 {
@@ -312,7 +350,7 @@ namespace TileShop
                     };
 
                     if (ofd.ShowDialog() == DialogResult.OK)
-                        pec.SaveToXml(ofd.FileName);
+                        pec.SaveProject(ofd.FileName);
                     else // Cancelled
                         return;
                 }
@@ -327,7 +365,7 @@ namespace TileShop
             List<EditorDockContent> CloseList = new List<EditorDockContent>();
 
             // Find all EditorDockContents within all Panes and populate the CloseList
-            foreach (DockPane dp in dockPanel.Panes)
+            foreach (DockPane dp in DockPanel.Panes)
             {
                 foreach (DockContent dc in dp.Contents)
                 {
