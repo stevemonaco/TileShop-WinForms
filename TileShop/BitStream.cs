@@ -9,9 +9,31 @@ namespace TileShop
 {
     public enum BitStreamAccess { Read, Write, ReadWrite };
 
+    /// <summary>
+    /// Struct used to store a file address that does not start on a byte-aligned address
+    /// </summary>
+    struct FileBitAddress
+    {
+        public FileBitAddress(long fileOffset, int bitOffset)
+        {
+            FileOffset = fileOffset;
+            BitOffset = bitOffset;
+        }
+
+        /// <summary>
+        /// File offset in bytes
+        /// </summary>
+        long FileOffset;
+
+        /// <summary>
+        /// Number of bits to skip after FileOffset
+        /// Valid range is 0-7 inclusive
+        /// </summary>
+        int BitOffset;
+    }
+
     class BitStream
     {
-        private byte workingbyte; // Current byte being read
         private int bitnumber; // Current bit to read
         private int idx; // Index into data array, next byte to read
         private int bitsremaining;
@@ -39,8 +61,7 @@ namespace TileShop
             bs.Data = ReadData;
             bs.bitsremaining = DataBits;
             bs.bitnumber = 8;
-            bs.workingbyte = bs.Data[0];
-            bs.idx = 1;
+            bs.idx = 0;
             bs.Access = BitStreamAccess.Read;
 
             return bs;
@@ -57,8 +78,7 @@ namespace TileShop
 
             bs.bitnumber = FirstByteBits;
             bs.bitsremaining = DataBits;
-            bs.workingbyte = bs.Data[0];
-            bs.idx = 1;
+            bs.idx = 0;
             bs.Access = BitStreamAccess.Read;
 
             return bs;
@@ -88,15 +108,14 @@ namespace TileShop
 
             if (bitnumber == 0)
             {
+                idx++;
                 if (idx == Data.Length)
                     throw new EndOfStreamException();
 
-                workingbyte = Data[idx];
-                idx++;
                 bitnumber = 8;
             }
 
-            int bit = (workingbyte >> (bitnumber - 1)) & 1;
+            int bit = (Data[idx] >> (bitnumber - 1)) & 1;
             bitsremaining--;
             bitnumber--;
 

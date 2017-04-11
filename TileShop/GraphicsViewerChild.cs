@@ -409,11 +409,6 @@ namespace TileShop
             RenderPanel.Invalidate();
         }
 
-        private void GraphicsViewerMdiChild_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            
-        }
-
         private void RenderPanel_Paint(object sender, PaintEventArgs e)
         {
             if (arranger == null)
