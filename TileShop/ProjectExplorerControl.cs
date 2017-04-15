@@ -180,6 +180,7 @@ namespace TileShop
             gv.ContentModified += tsf.ContentModified;
             gv.ContentSaved += tsf.ContentSaved;
             gv.EditArrangerChanged += tsf.EditArrangerChanged;
+            gv.ClearEditArranger();
 
             return true;
         }
@@ -248,17 +249,26 @@ namespace TileShop
                 {
                     name = e.Attribute("name").Value,
                     fileoffset = long.Parse(e.Attribute("fileoffset").Value, System.Globalization.NumberStyles.HexNumber),
+                    bitoffset = e.Attribute("bitoffset"),
                     datafile = e.Attribute("datafile").Value,
                     entries = int.Parse(e.Attribute("entries").Value),
                     format = e.Attribute("format").Value
                 });
 
+
+
             foreach (var palette in palettes)
             {
                 Palette pal = new Palette(palette.name);
                 PaletteColorFormat format = Palette.StringToColorFormat(palette.format);
+                FileBitAddress address = new FileBitAddress();
+                address.FileOffset = palette.fileoffset;
+                if (palette.bitoffset != null)
+                    address.BitOffset = int.Parse(palette.bitoffset.Value);
+                else
+                    address.BitOffset = 0;
 
-                pal.LoadPalette(palette.datafile, palette.fileoffset, format, palette.entries);
+                pal.LoadPalette(palette.datafile, address, format, palette.entries);
                 AddPalette(pal);
             }
 
@@ -284,6 +294,7 @@ namespace TileShop
                 var graphics = arranger.graphiclist.Select(e => new
                 {
                     fileoffset = long.Parse(e.Attribute("fileoffset").Value, System.Globalization.NumberStyles.HexNumber),
+                    bitoffset = e.Attribute("bitoffset"),
                     posx = int.Parse(e.Attribute("posx").Value),
                     posy = int.Parse(e.Attribute("posy").Value),
                     format = e.Attribute("format"),
@@ -300,6 +311,12 @@ namespace TileShop
                     el.Format = graphic.format?.Value ?? arranger.defaultformat;
 
                     el.FileOffset = graphic.fileoffset;
+
+                    if (graphic.bitoffset != null)
+                        el.FileAddress = new FileBitAddress(graphic.fileoffset, int.Parse(graphic.bitoffset.Value));
+                    else
+                        el.FileAddress = new FileBitAddress(graphic.fileoffset, 0);
+
                     el.Height = arranger.height;
                     el.Width = arranger.width;
                     el.X1 = graphic.posx * el.Width;
@@ -353,7 +370,8 @@ namespace TileShop
                 Palette pal = FileManager.Instance.GetPersistentPalette(pn.Text);
                 XElement el = new XElement("palette");
                 el.SetAttributeValue("name", pal.Name);
-                el.SetAttributeValue("fileoffset", String.Format("{0:X}", pal.FileOffset));
+                el.SetAttributeValue("fileoffset", String.Format("{0:X}", pal.FileAddress.FileOffset));
+                el.SetAttributeValue("bitoffset", String.Format("{0:X}", pal.FileAddress.BitOffset));
                 el.SetAttributeValue("datafile", pal.FileName);
                 el.SetAttributeValue("format", Palette.ColorFormatToString(pal.ColorFormat));
                 el.SetAttributeValue("entries", pal.Entries);

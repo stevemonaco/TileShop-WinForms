@@ -539,6 +539,7 @@ namespace TileShop
     public class ArrangerElement
     {
         public string FileName { get; set; }
+        public FileBitAddress FileAddress { get; set; }
         public long FileOffset { get; set; }
         public string Format { get; set; }
         public int Width { get; set; }
@@ -552,6 +553,7 @@ namespace TileShop
         public ArrangerElement()
         {
             FileName = "";
+            FileAddress = new FileBitAddress(0, 0);
             FileOffset = 0;
             Format = "";
             Width = 0;
@@ -573,6 +575,7 @@ namespace TileShop
             {
                 FileName = FileName,
                 FileOffset = FileOffset,
+                FileAddress = FileAddress,
                 Format = Format,
                 Width = Width,
                 Height = Height,

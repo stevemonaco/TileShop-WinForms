@@ -7,15 +7,16 @@ using System.IO;
 
 namespace TileShop
 {
-    public enum BitStreamAccess { Read, Write, ReadWrite };
-
     /// <summary>
     /// Struct used to store a file address that does not start on a byte-aligned address
     /// </summary>
-    struct FileBitAddress
+    public struct FileBitAddress
     {
         public FileBitAddress(long fileOffset, int bitOffset)
         {
+            if (bitOffset > 7)
+                throw new ArgumentOutOfRangeException();
+
             FileOffset = fileOffset;
             BitOffset = bitOffset;
         }
@@ -23,20 +24,100 @@ namespace TileShop
         /// <summary>
         /// File offset in bytes
         /// </summary>
-        long FileOffset;
+        public long FileOffset;
 
         /// <summary>
         /// Number of bits to skip after FileOffset
         /// Valid range is 0-7 inclusive
         /// </summary>
-        int BitOffset;
+        public int BitOffset;
+
+        /*public static implicit operator FileBitAddress(long Address)
+        {
+            return new FileBitAddress(Address, 0);
+        }*/
+
+        public static FileBitAddress operator+(FileBitAddress Address1, FileBitAddress Address2)
+        {
+            return new FileBitAddress(Address1.FileOffset + Address2.FileOffset + (Address1.BitOffset + Address2.BitOffset) / 8, (Address1.BitOffset + Address2.BitOffset) % 8);
+        }
+
+        /// <summary>
+        /// Advance the address by the specified number of bits
+        /// </summary>
+        /// <param name="Address"></param>
+        /// <param name="Offset">Number of bits to advance the address</param>
+        /// <returns></returns>
+        public static FileBitAddress operator +(FileBitAddress Address, long Offset)
+        {
+            FileBitAddress Address2 = new FileBitAddress(Offset / 8, (int)Offset % 8);
+            return Address + Address2;
+        }
     }
 
-    class BitStream
+    public static class FileExtensionMethods
     {
-        private int bitnumber; // Current bit to read
-        private int idx; // Index into data array, next byte to read
+        public static byte[] ReadUnshifted(this FileStream file, FileBitAddress address, int numBits, bool Seek)
+        {
+            if(Seek)
+                file.Seek(address.FileOffset, SeekOrigin.Begin);
+
+            using (BinaryReader br = new BinaryReader(file, new UTF8Encoding(), true))
+            {
+                if (address.BitOffset == 0 && (numBits % 8 == 0)) // Byte-aligned, whole-byte read
+                    return br.ReadBytes(numBits / 8);
+                else if (address.BitOffset != 0) // Byte-unaligned read
+                {
+                    int numBytes = (numBits + address.BitOffset + 7) / 8; // Add 7 to take advantage of integer truncation instead of using doubles and Math.Ceiling
+
+                    byte[] retArray = br.ReadBytes(numBytes);
+                    byte premaskbits = (byte)((1 << (8 - address.BitOffset)) - 1);
+                    retArray[0] &= premaskbits;
+                    byte postmaskbits = (byte)(premaskbits ^ 0xFF);
+                    retArray[numBytes - 1] &= postmaskbits;
+
+                    return br.ReadBytes(numBytes);
+                }
+                else
+                    throw new Exception();
+            }
+        }
+
+        /*public static byte[] ReadShifted(this FileStream file, FileBitAddress address, int numBits, bool Seek)
+        {
+            if(Seek)
+                file.Seek(address.FileOffset, SeekOrigin.Begin);
+
+            using (BinaryReader br = new BinaryReader(file, new UTF8Encoding(), true))
+            {
+                if (address.BitOffset == 0) // Byte-aligned, whole-byte read
+                    return br.ReadBytes(numBits / 8);
+            }
+        } */
+    }
+
+    public class BitStream
+    {
+        private enum BitStreamAccess { Read, Write, ReadWrite };
+
+        /// <summary>
+        /// Current working bit index
+        /// </summary>
+        private int bitindex;
+
+        /// <summary>
+        ///  Current working index into data array where bits are read/written to
+        /// </summary>
+        private int index;
+
+        /// <summary>
+        /// Bits remaining in the stream
+        /// </summary>
         private int bitsremaining;
+
+        /// <summary>
+        /// Type of access to the stream
+        /// </summary>
         private BitStreamAccess Access;
 
         public byte[] Data
@@ -49,7 +130,7 @@ namespace TileShop
         private BitStream() { }
 
         /// <summary>
-        /// Opens an array for bit reading
+        /// Creates a new Bitstream with the specified array for bit reading
         /// </summary>
         /// <param name="ReadData">Data to be read</param>
         /// <param name="DataBits">Number of valid bits to read in the array</param>
@@ -60,13 +141,20 @@ namespace TileShop
 
             bs.Data = ReadData;
             bs.bitsremaining = DataBits;
-            bs.bitnumber = 8;
-            bs.idx = 0;
+            bs.bitindex = 8;
+            bs.index = 0;
             bs.Access = BitStreamAccess.Read;
 
             return bs;
         }
 
+        /// <summary>
+        /// Creates a new BitStream with its own array from a BinaryReader for bit reading
+        /// </summary>
+        /// <param name="br">Underlying binary reader for the stream</param>
+        /// <param name="DataBits"></param>
+        /// <param name="FirstByteBits"></param>
+        /// <returns>A readable BitStream instance</returns>
         public static BitStream OpenRead(BinaryReader br, int DataBits, int FirstByteBits)
         {
             BitStream bs = new BitStream();
@@ -76,14 +164,46 @@ namespace TileShop
             byte mask = (byte)((1 << FirstByteBits) - 1);
             bs.Data[0] = (byte)(bs.Data[0] & mask);
 
-            bs.bitnumber = FirstByteBits;
+            bs.bitindex = FirstByteBits;
             bs.bitsremaining = DataBits;
-            bs.idx = 0;
+            bs.index = 0;
             bs.Access = BitStreamAccess.Read;
 
             return bs;
         }
 
+        /// <summary>
+        /// Creates a new BitStream with its own array from a Stream for bit reading
+        /// </summary>
+        /// <param name="br">Underlying stream</param>
+        /// <param name="DataBits"></param>
+        /// <param name="FirstByteBits"></param>
+        /// <returns>A readable BitStream instance</returns>
+        public static BitStream OpenRead(Stream stream, int DataBits, int FirstByteBits)
+        {
+            BitStream bs = new BitStream();
+
+            BinaryReader br = new BinaryReader(stream);
+
+            int ReadLength = (int)Math.Ceiling((DataBits + (8 - FirstByteBits)) / 8.0);
+            bs.Data = br.ReadBytes(ReadLength);
+            byte mask = (byte)((1 << FirstByteBits) - 1);
+            bs.Data[0] = (byte)(bs.Data[0] & mask);
+
+            bs.bitindex = FirstByteBits;
+            bs.bitsremaining = DataBits;
+            bs.index = 0;
+            bs.Access = BitStreamAccess.Read;
+
+            return bs;
+        }
+
+        /// <summary>
+        /// Creates a new BitStream for writing bits to an array
+        /// </summary>
+        /// <param name="DataBits">Size of writable array in bits</param>
+        /// <param name="FirstByteBits">Number of bits available for writing in the first byte</param>
+        /// <returns>A writable BitStream instance</returns>
         public static BitStream OpenWrite(int DataBits, int FirstByteBits)
         {
             BitStream bs = new BitStream();
@@ -91,14 +211,18 @@ namespace TileShop
             int BufferLength = (int)Math.Ceiling((DataBits + (8 - FirstByteBits)) / 8.0);
             bs.Data = new byte[BufferLength];
 
-            bs.bitnumber = FirstByteBits;
+            bs.bitindex = FirstByteBits;
             bs.bitsremaining = DataBits;
-            bs.idx = 0;
+            bs.index = 0;
             bs.Access = BitStreamAccess.Write;
 
             return bs;
         }
 
+        /// <summary>
+        /// Reads a single bit from the underlying array
+        /// </summary>
+        /// <returns></returns>
         public int ReadBit()
         {
             if (Access != BitStreamAccess.Read && Access != BitStreamAccess.ReadWrite)
@@ -106,20 +230,82 @@ namespace TileShop
             if (bitsremaining == 0)
                 throw new EndOfStreamException();
 
-            if (bitnumber == 0)
+            if (bitindex == 0)
             {
-                idx++;
-                if (idx == Data.Length)
+                index++;
+                if (index == Data.Length)
                     throw new EndOfStreamException();
 
-                bitnumber = 8;
+                bitindex = 8;
             }
 
-            int bit = (Data[idx] >> (bitnumber - 1)) & 1;
+            int bit = (Data[index] >> (bitindex - 1)) & 1;
             bitsremaining--;
-            bitnumber--;
+            bitindex--;
 
             return bit;
+        }
+
+        public byte ReadByte()
+        {
+            if (bitsremaining < 8)
+                throw new EndOfStreamException();
+
+            return (byte)ReadBits(8);
+        }
+
+        /// <summary>
+        /// Reads the specified number of bits from the stream
+        /// </summary>
+        /// <param name="numBits">Number of bits to read between 1 and 32</param>
+        /// <returns></returns>
+        public int ReadBits(int numBits)
+        {
+            if (numBits > 32 || numBits < 1)
+                throw new ArgumentOutOfRangeException();
+
+            if (numBits > bitsremaining)
+                throw new EndOfStreamException();
+
+            int numCycles;
+
+            if (bitsremaining >= numBits)
+                numCycles = 1;
+            else
+                numCycles = 1 + (numBits - bitsremaining + 7) / 8;
+
+            int bitsRead = 0; // Number of bits read so far
+            int ret = 0; // Value to be returned
+
+            for(int i = 0; i < numCycles; i++)
+            {
+                if (bitsRead + bitindex > numBits) // Do a partial read
+                {
+                    int bitsToRead = numBits - bitsRead;
+
+                    int mask = ((1 << bitsToRead) - 1); // Make mask for bits to read
+                    mask <<= (bitindex - bitsToRead); // Shift mask to the bit index
+
+                    ret <<= bitsToRead;
+                    ret |= (Data[index] & mask);
+
+                    index++;
+                    bitsremaining -= bitsToRead;
+                    bitindex = 8;
+                }
+                else // Read entirety of remaining byte
+                {
+                    int mask = (1 << bitindex) - 1;
+                    ret <<= bitindex;
+                    ret |= (Data[index] & mask);
+
+                    index++;
+                    bitsremaining -= bitindex;
+                    bitindex = 8;
+                }
+            }
+
+            return ret;
         }
 
         public void WriteBit(byte bit)
@@ -131,23 +317,28 @@ namespace TileShop
             if (bitsremaining == 0)
                 throw new EndOfStreamException();
 
-            if(bitnumber == 0)
+            if(bitindex == 0)
             {
-                if (idx == Data.Length)
+                if (index == Data.Length)
                     throw new EndOfStreamException();
 
-                idx++;
-                bitnumber = 8;
+                index++;
+                bitindex = 8;
             }
 
-            Data[idx] |= (byte)(bit << (bitnumber - 1));
+            Data[index] |= (byte)(bit << (bitindex - 1));
             bitsremaining--;
-            bitnumber--;
+            bitindex--;
+        }
+
+        public void WriteBits(int val, int numBits)
+        {
+            throw new NotImplementedException();
         }
 
         public void FlushWrites()
         {
-            if(bitnumber != 8) // Some work has been done
+            if(bitindex != 8) // Some work has been done
             {
 
             }

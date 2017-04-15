@@ -147,6 +147,12 @@ namespace TileShop
             RenderPanel.Invalidate();
         }
 
+        public void ClearEditArranger()
+        {
+            EditArranger = null;
+            EditArrangerChanged?.Invoke(this, EventArgs.Empty);
+        }
+
         /*public bool OpenFile(string InputFilename)
         {
             if (InputFilename == null)
@@ -442,19 +448,16 @@ namespace TileShop
                 {
                     selectionData.BeginDragDrop();
                     DoDragDrop(selectionData, DragDropEffects.Copy);
-                    return;
                 }
                 else // New selection or single drop-and-drag
                 {
                     selectionData.BeginSelection(e.Location, e.Location);
                     ViewSelectionRect = selectionData.SelectedClientRect;
                     RenderPanel.Invalidate();
-                    return;
                 }
             }
-            DockPanel.Focus();
-            RenderPanel.Focus();
-            base.OnMouseDown(e);
+
+            Parent.Focus(); // Fixes the tab highlighting issues with the Documents view not getting focus
         }
 
         private void RenderPanel_MouseUp(object sender, MouseEventArgs e)
@@ -594,8 +597,7 @@ namespace TileShop
 
         private void GraphicsViewerChild_GotFocus(object sender, EventArgs e)
         {
-            if(EditArranger != null)
-                EditArrangerChanged?.Invoke(this, null);
+            EditArrangerChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void ReloadButton_Click(object sender, EventArgs e)

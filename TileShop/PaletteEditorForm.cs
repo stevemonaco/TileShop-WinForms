@@ -122,7 +122,7 @@ namespace TileShop
 
             PaletteNameBox.Text = pal.Name;
             ProjectFileBox.Text = pal.FileName;
-            PaletteOffsetBox.Text = pal.FileOffset.ToString();
+            PaletteOffsetBox.Text = pal.FileAddress.FileOffset.ToString(); // TODO: Refactor for new FileBitAddress
             NudEntries.Value = pal.Entries;
             SetColorFormatBox(pal.ColorFormat);
 
@@ -301,7 +301,7 @@ namespace TileShop
 
             SetPaletteNumericBounds(format);
 
-            pal.LoadPalette(pal.FileName, pal.FileOffset, format, pal.Entries);
+            pal.LoadPalette(pal.FileName, pal.FileAddress, format, pal.Entries);
             SwatchControl.Invalidate();
         }
 

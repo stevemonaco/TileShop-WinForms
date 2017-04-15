@@ -30,7 +30,8 @@ namespace TileShop
     {
         public string Name { get; private set; }
         public PaletteColorFormat ColorFormat { get; private set; }
-        public long FileOffset { get; private set; }
+        public FileBitAddress FileAddress { get; private set; }
+        //public long FileOffset { get; private set; }
         public string FileName { get; private set; }
         public int Entries { get; private set; }
         public bool HasAlpha { get; private set; }
@@ -75,7 +76,7 @@ namespace TileShop
             HasAlpha = false;
             Entries = 0;
             FileName = null;
-            FileOffset = 0;
+            //FileOffset = 0;
             ZeroIndexTransparent = true;
             IsProjectModified = false;
         }
@@ -86,7 +87,7 @@ namespace TileShop
         /// <returns></returns>
         public bool Reload()
         {
-            return LoadPalette(FileName, FileOffset, ColorFormat, Entries);
+            return LoadPalette(FileName, FileAddress, ColorFormat, Entries);
         }
 
         /// <summary>
@@ -116,7 +117,8 @@ namespace TileShop
             }
 
             ColorFormat = PaletteColorFormat.ARGB32;
-            FileOffset = 0;
+            FileAddress = new FileBitAddress(0, 0);
+            //FileOffset = 0;
             FileName = filename;
             Entries = entrySize;
             StorageSource = PaletteStorageSource.File;
@@ -132,7 +134,8 @@ namespace TileShop
         /// <param name="format">Color format of the palette</param>
         /// <param name="numEntries">Number of entries the palette contains</param>
         /// <returns>Success value</returns>
-        public bool LoadPalette(string fileId, long offset, PaletteColorFormat format, int numEntries)
+        //public bool LoadPalette(string fileId, long offset, PaletteColorFormat format, int numEntries)
+        public bool LoadPalette(string fileId, FileBitAddress address, PaletteColorFormat format, int numEntries)
         {
             if (numEntries > 256)
                 throw new ArgumentException("Maximum palette size must be 256 entries or less");
@@ -141,9 +144,7 @@ namespace TileShop
             foreignPalette = new UInt32[numEntries];
 
             FileStream fs = FileManager.Instance.GetFileStream(fileId);
-            BinaryReader br = new BinaryReader(fs);
-
-            fs.Seek(offset, SeekOrigin.Begin);
+            //BinaryReader br = new BinaryReader(fs);
 
             int readSize;
 
@@ -169,22 +170,34 @@ namespace TileShop
                     throw new NotSupportedException("An unsupported palette format was attempted to be read");
             }
 
-            for(int i = 0; i < numEntries; i++)
+            byte[] tempPalette = fs.ReadUnshifted(address, readSize * 8 * numEntries, true);
+            BitStream bs = BitStream.OpenRead(tempPalette, readSize * 8 * numEntries);
+            //fs.Seek(offset, SeekOrigin.Begin);
+
+            for (int i = 0; i < numEntries; i++)
             {
                 uint foreignColor;
 
                 if (readSize == 1)
-                    foreignColor = br.ReadByte();
+                    foreignColor = bs.ReadByte();
                 else if (readSize == 2)
-                    foreignColor = br.ReadUInt16();
+                {
+                    foreignColor = bs.ReadByte();
+                    foreignColor |= ((uint)bs.ReadByte()) << 8;
+                }
                 else if (readSize == 3)
                 {
-                    foreignColor = ((uint)br.ReadByte());
-                    foreignColor |= ((uint)br.ReadByte()) << 8;
-                    foreignColor |= ((uint)br.ReadByte()) << 16;
+                    foreignColor = bs.ReadByte();
+                    foreignColor |= ((uint)bs.ReadByte()) << 8;
+                    foreignColor |= ((uint)bs.ReadByte()) << 16;
                 }
                 else if (readSize == 4)
-                    foreignColor = br.ReadUInt32();
+                {
+                    foreignColor = bs.ReadByte();
+                    foreignColor |= ((uint)bs.ReadByte()) << 8;
+                    foreignColor |= ((uint)bs.ReadByte()) << 16;
+                    foreignColor |= ((uint)bs.ReadByte()) << 24;
+                }
                 else
                     throw new NotSupportedException("Palette formats with entry sizes larger than 4 bytes are not supported");
 
@@ -198,7 +211,8 @@ namespace TileShop
             }
 
             ColorFormat = format;
-            FileOffset = offset;
+            FileAddress = address;
+            //FileOffset = offset;
             FileName = fileId;
             Entries = numEntries;
             StorageSource = PaletteStorageSource.File;
@@ -552,7 +566,7 @@ namespace TileShop
                 FileStream fs = FileManager.Instance.GetFileStream(FileName);
                 BinaryWriter bw = new BinaryWriter(fs);
 
-                fs.Seek(FileOffset, SeekOrigin.Begin);
+                fs.Seek(FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Recode this for bitwise writing
 
                 for (int i = 0; i < Entries; i++)
                 {
@@ -630,7 +644,8 @@ namespace TileShop
             Palette pal = new Palette(Name)
             {
                 ColorFormat = ColorFormat,
-                FileOffset = FileOffset,
+                FileAddress = FileAddress,
+                //FileOffset = FileOffset,
                 FileName = FileName,
                 Entries = Entries,
                 HasAlpha = HasAlpha,

@@ -30,16 +30,17 @@ namespace TileShop
         {
             InitializeComponent();
 
-            this.Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
-
-            pec = new ProjectExplorerControl(this);
-            pec.Show(DockPanel, DockState.DockLeft);
             LoadCodecs(CodecDirectoryPath);
             LoadPalettes(PaletteDirectoryPath);
             LoadCursors();
 
+            this.Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
+
+            pec = new ProjectExplorerControl(this);
             pef = new PixelEditorForm();
+
             pef.Show(DockPanel, DockState.DockRight);
+            pec.Show(DockPanel, DockState.DockLeft); // Showing this last makes the ProjectExplorerControl focused upon launch
         }
 
         public void RefreshTitle()
@@ -181,7 +182,7 @@ namespace TileShop
             if(DialogResult.OK == npf.ShowDialog())
             {
                 Palette pal = new Palette(npf.PaletteName);
-                pal.LoadPalette(npf.FileName, npf.FileOffset, npf.ColorFormat, npf.Entries);
+                pal.LoadPalette(npf.FileName, new FileBitAddress(npf.FileOffset, 0), npf.ColorFormat, npf.Entries); // TODO: Refactor for new FileBitAddress
                 pec.AddPalette(pal);
             }
         }

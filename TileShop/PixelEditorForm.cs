@@ -54,6 +54,7 @@ namespace TileShop
 
             SetDrawState(PixelDrawState.PencilState);
             ContentSourceName = "Pixel Editor";
+            SwatchControl.Hide();
         }
 
         public override bool ReloadContent()
@@ -70,10 +71,22 @@ namespace TileShop
             string formatName = EditArranger.GetElement(0, 0).Format;
             SwatchControl.ShowPalette(FileManager.Instance.GetPalette(palName), (int)Math.Pow(2, FileManager.Instance.GetGraphicsFormat(formatName).ColorDepth));
             SwatchControl.SelectedIndex = 0;
+            SwatchControl.Show();
             SwatchControl.Invalidate();
 
             ContainsModifiedContent = false;
             return true;
+        }
+
+        public void ClearArranger()
+        {
+            EditArranger = null;
+            rm = null;
+            DisplayRect = new Rectangle(new Point(PixelMargin.Width, PixelMargin.Height), new Size(0, 0));
+
+            SwatchControl.Hide();
+
+            ContentSourceName = "Pixel Editor";
         }
 
         public override bool SaveContent()
@@ -96,6 +109,13 @@ namespace TileShop
             EditArranger = arr;
             rm = new RenderManager();
 
+            if(EditArranger == null)
+            {
+                ClearArranger();
+                PixelPanel.Invalidate();
+                return;
+            }
+
             DisplayRect.Size = new Size(EditArranger.ArrangerPixelSize.Width * Zoom, EditArranger.ArrangerPixelSize.Height * Zoom);
             PixelPanel.Height = EditArranger.ArrangerPixelSize.Height * Zoom + PixelMargin.Height;
             PixelPanel.Invalidate();
@@ -104,12 +124,16 @@ namespace TileShop
             string formatName = EditArranger.GetElement(0, 0).Format;
             SwatchControl.ShowPalette(FileManager.Instance.GetPalette(palName), (int) Math.Pow(2, FileManager.Instance.GetGraphicsFormat(formatName).ColorDepth));
             SwatchControl.SelectedIndex = 0;
+            SwatchControl.Show();
         }
 
         private void PixelPanel_Paint(object sender, PaintEventArgs e)
         {
             if (EditArranger == null)
+            {
+                base.OnPaint(e);
                 return;
+            }
 
             rm.Render(EditArranger);
 
