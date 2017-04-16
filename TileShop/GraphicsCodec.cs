@@ -43,21 +43,124 @@ namespace TileShop
         }
         */
 
+
         /// <summary>
         /// General-purpose routine to decode a single graphical element
         /// </summary>
         /// <param name="bmp">Bitmap to draw onto</param>
-        /// <param name="PixelX">Upper left x-coordinate to begin drawing</param>
-        /// <param name="PixelY">Upper left y-coordinate to begin drawing</param>
-        /// <param name="format">Graphics format to decode</param>
-        /// <param name="br">Binary reader seeked to the source of the graphic offset</param>
-        /// <param name="pal">Palette to use for indexed color decodes</param>
-        public static void Decode(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat format, BinaryReader br, Palette pal)
+        /// <param name="el">ArrangerElement to decode</param>
+        public static void Decode(Bitmap bmp, ArrangerElement el)
         {
+            GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
+
             if (format.ColorType == "indexed")
-                IndexedDecode(bmp, PixelX, PixelY, format, br, pal);
+                IndexedDecode(bmp, el);
             else if (format.ColorType == "direct")
-                DirectDecode(bmp, PixelX, PixelY, format, br);
+                DirectDecode(bmp, el);
+        }
+
+        /// <summary>
+        /// Decoding routine to decode indexed (palette-based) graphics
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <param name="el"></param>
+        unsafe static void IndexedDecode(Bitmap bmp, ArrangerElement el)
+        {
+            FileStream fs = FileManager.Instance.GetFileStream(el.FileName);
+            GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
+
+            byte[] Data = fs.ReadUnshifted(el.FileAddress, format.Size(), true);
+            BitStream bs = BitStream.OpenRead(Data, format.Size()); // TODO: Change to account for first bit alignment
+
+            int plane = 0;
+            int pos = 0;
+
+            // Deinterlace into separate bitplanes
+            foreach (ImageProperty ip in format.ImagePropertyList)
+            {
+                pos = 0;
+                if (ip.RowInterlace)
+                {
+                    for (int y = 0; y < format.Height; y++)
+                    {
+                        for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
+                        {
+                            pos = y * format.Height;
+                            for (int x = 0; x < format.Width; x++, pos++)
+                                el.TileData[curPlane][pos] = (byte)bs.ReadBit();
+                        }
+                    }
+                }
+                else
+                {
+                    for (int y = 0; y < format.Height; y++)
+                        for (int x = 0; x < format.Width; x++, pos++)
+                            for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
+                                el.TileData[curPlane][pos] = (byte)bs.ReadBit();
+                }
+
+                plane += ip.ColorDepth;
+            }
+
+            // Merge into foreign colors
+            byte foreignColor = 0;
+
+            for (pos = 0; pos < el.MergedData.Length; pos++)
+            {
+                foreignColor = 0;
+                for (int i = 0; i < format.ColorDepth; i++)
+                    foreignColor |= (byte)(el.TileData[i][pos] << i);
+                el.MergedData[pos] = foreignColor;
+            }
+
+            // Translate foreign colors to local colors and draw to bitmap
+            DrawBitmap(bmp, el);
+        }
+
+        public static void DirectDecode(Bitmap bmp, ArrangerElement el)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Draws an element onto an ARGB32 Bitmap at the specified location
+        /// </summary>
+        /// <param name="bmp">Destination bitmap</param>
+        /// <param name="el">ArrangerElement to render</param>
+        unsafe static void DrawBitmap(Bitmap bmp, ArrangerElement el)
+        {
+            Rectangle lockRect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+            BitmapData bd = bmp.LockBits(lockRect, ImageLockMode.ReadOnly, bmp.PixelFormat);
+
+            // Draw bitmap
+            uint* dest = (uint*)bd.Scan0;
+            int StrideWidth = bd.Stride - (bmp.Width * 4);
+
+            dest += (bd.Stride / 4) * el.Y1; // Seek to the appropriate vertical scanline in the bitmap
+
+            fixed (byte* fixedData = el.MergedData) // Fix fmt.MergedData in memory so unsafe pointers can be used
+            {
+                byte* src = fixedData;
+
+                int Height = el.Y2 - el.Y1 + 1;
+                int Width = el.X2 - el.X1 + 1;
+                Palette pal = FileManager.Instance.GetPalette(el.PaletteName);
+
+                for (int y = 0; y < Height; y++)
+                {
+                    dest += el.X1; // Seek to PixelX in the scanline
+                    for (int x = 0; x < Width; x++)
+                    {
+                        *dest = pal[*src];
+                        dest++;
+                        src++;
+                    }
+                    dest += (bmp.Width - el.X1 - Width);
+                    dest += StrideWidth;
+                }
+            }
+
+            bmp.UnlockBits(bd);
         }
 
         /// <summary>
@@ -76,77 +179,130 @@ namespace TileShop
             g.FillRectangle(b, r);
         }
 
-        unsafe static void IndexedDecode(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat fmt, BinaryReader br, Palette pal)
+        #endregion
+
+        #region Graphics Encoding Functions
+        public unsafe static void Encode(Bitmap bmp, ArrangerElement el)
         {
-            BitStream bs = BitStream.OpenRead(br, fmt.Size() * 8, 8);
+            GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
 
-            int plane = 0;
-            int pos = 0;
+            if (format.ColorType == "indexed")
+                IndexedEncode(bmp, el);
+            else if (format.ColorType == "direct")
+                DirectEncode(bmp, el);
+        }
 
-            // Deinterlace into separate bitplanes
-            foreach (ImageProperty ip in fmt.ImagePropertyList)
+        unsafe static void IndexedEncode(Bitmap bmp, ArrangerElement el)
+        {
+            // ReadBitmap for local->foreign color conversion into fmt.MergedData
+            ReadBitmap(bmp, el);
+
+            FileStream fs = FileManager.Instance.GetFileStream(el.FileName);
+            GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
+
+            // Loop over MergedData to split foreign colors into bit planes in fmt.TileData
+            for (int pos = 0; pos < el.MergedData.Length; pos++)
             {
-                pos = 0;
+                for (int i = 0; i < format.ColorDepth; i++)
+                    el.TileData[i][pos] = (byte)((el.MergedData[pos] >> i) & 0x1);
+            }
+
+            // Loop over planes and putbit to data buffer with proper interlacing
+            BitStream bs = BitStream.OpenWrite(format.Size(), 8);
+            int plane = 0;
+
+
+            foreach (ImageProperty ip in format.ImagePropertyList)
+            {
+                int pos = 0;
+
                 if (ip.RowInterlace)
                 {
-                    for (int y = 0; y < fmt.Height; y++)
+                    for (int y = 0; y < format.Height; y++)
                     {
                         for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
                         {
-                            pos = y * fmt.Height;
-                            for (int x = 0; x < fmt.Width; x++, pos++)
-                                fmt.TileData[curPlane][pos] = (byte)bs.ReadBit();
+                            pos = y * format.Height;
+                            for (int x = 0; x < format.Width; x++, pos++)
+                                bs.WriteBit(el.TileData[curPlane][pos]);
                         }
                     }
                 }
                 else
                 {
-                    for (int y = 0; y < fmt.Height; y++)
-                        for (int x = 0; x < fmt.Width; x++, pos++)
+                    for (int y = 0; y < format.Height; y++)
+                    {
+                        for (int x = 0; x < format.Width; x++, pos++)
                             for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
-                                fmt.TileData[curPlane][pos] = (byte)bs.ReadBit();
+                                bs.WriteBit(el.TileData[curPlane][pos]);
+                    }
                 }
 
                 plane += ip.ColorDepth;
             }
 
-            // Merge into foreign colors
-            byte foreignColor = 0;
-
-            for(pos = 0; pos < fmt.MergedData.Length; pos++)
-            {
-                foreignColor = 0;
-                for (int i = 0; i < fmt.ColorDepth; i++)
-                    foreignColor |= (byte)(fmt.TileData[i][pos] << i);
-                fmt.MergedData[pos] = foreignColor;
-            }
-
-            // Translate foreign colors to local colors and draw to bitmap
-            DrawBitmap(bmp, PixelX, PixelY, fmt, pal);
+            BinaryWriter bw = new BinaryWriter(fs);
+            bw.Write(bs.Data, 0, bs.Data.Length); // TODO: Fix with a shifted, merged write
         }
 
-
-
-        unsafe static void DirectDecode(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat fmt, BinaryReader br)
+        unsafe static void DirectEncode(Bitmap bmp, ArrangerElement el)
         {
             throw new NotImplementedException();
         }
 
-        #endregion
-
-        #region Graphics Encoding Functions
-        public unsafe static void EncodeElement(Bitmap bmp, ArrangerElement el)
+        /// <summary>
+        /// Reads an element at a specified location on a ARGB32 Bitmap
+        /// </summary>
+        /// <param name="bmp">Source bitmap</param>
+        /// <param name="el">Destination arranger</param>
+        unsafe static void ReadBitmap(Bitmap bmp, ArrangerElement el)
         {
+            Rectangle lockRect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+            BitmapData bd = bmp.LockBits(lockRect, ImageLockMode.WriteOnly, bmp.PixelFormat);
 
+            // Read from bitmap
+            uint* src = (uint*)bd.Scan0;
+            int StrideWidth = bd.Stride - (bmp.Width * 4);
+
+            src += (bd.Stride / 4) * el.Y1; // Seek to scanline PixelY in the bitmap
+
+            fixed (byte* fixedData = el.MergedData)  // Fix fmt.MergedData in memory so unsafe pointers can be used
+            {
+                byte* dest = fixedData;
+
+                int Height = el.Y2 - el.Y1 + 1;
+                int Width = el.X2 - el.X1 + 1;
+                Palette pal = FileManager.Instance.GetPalette(el.PaletteName);
+
+                for (int y = 0; y < Height; y++)
+                {
+                    src += el.X1; // Seek to PixelX in the scanline
+                    for (int x = 0; x < Width; x++)
+                    {
+                        *dest = pal.GetIndexByColor(*src, true);
+                        dest++;
+                        src++;
+                    }
+                    src += (bmp.Width - el.X1 - Width);
+                    src += StrideWidth;
+                }
+            }
+
+            bmp.UnlockBits(bd);
         }
 
-        public unsafe static void Encode(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat fmt, BinaryWriter bw, Palette pal)
+
+
+
+
+
+        /*public unsafe static void Encode(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat fmt, BinaryWriter bw, Palette pal)
         {
             if (fmt.ColorType == "indexed")
                 IndexedEncode(bmp, PixelX, PixelY, fmt, bw, pal);
             else if (fmt.ColorType == "direct")
                 DirectEncode(bmp, PixelX, PixelY, fmt, bw);
-        }
+        }*/
 
         unsafe static void IndexedEncode(Bitmap bmp, int PixelX, int PixelY, GraphicsFormat fmt, BinaryWriter bw, Palette pal)
         {
@@ -161,7 +317,7 @@ namespace TileShop
             }
 
             // Loop over planes and putbit to data buffer with proper interlacing
-            BitStream bs = BitStream.OpenWrite(fmt.Size() * 8, 8);
+            BitStream bs = BitStream.OpenWrite(fmt.Size(), 8);
             int plane = 0;
 
 

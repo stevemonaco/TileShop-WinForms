@@ -37,10 +37,10 @@ namespace TileShop
         public int Stride;
 
         /// <summary>
-        /// Size of an element in bytes
+        /// Size of an element in bits
         /// </summary>
         /// <returns></returns>
-        public int Size() { return (Width + Stride) * Height * ColorDepth / 8; }
+        public int Size() { return (Width + Stride) * Height * ColorDepth; }
 
         public List<ImageProperty> ImagePropertyList = new List<ImageProperty>();
 

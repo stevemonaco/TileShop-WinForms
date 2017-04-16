@@ -47,7 +47,7 @@ namespace TileShop
             if(arranger.IsSequential) // Sequential requires only one seek per render
             {
                 br = new BinaryReader(FileManager.Instance.GetFileStream(arranger.ElementList[0, 0].FileName));
-                br.BaseStream.Seek(arranger.ElementList[0, 0].FileOffset, SeekOrigin.Begin);
+                br.BaseStream.Seek(arranger.ElementList[0, 0].FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise
             }
 
             string PrevFileName = "";
@@ -59,7 +59,7 @@ namespace TileShop
                     ArrangerElement el = arranger.ElementList[j, i];
                     if (!arranger.IsSequential) // Non-sequential requires a seek for each element rendered
                     {
-                        if (el.Format == "") // Empty format means a blank tile
+                        if (el.FormatName == "") // Empty format means a blank tile
                         {
                             GraphicsCodec.DecodeBlank(Image, el);
                             continue;
@@ -67,11 +67,12 @@ namespace TileShop
                         if(PrevFileName != el.FileName) // Only create a new binary reader when necessary
                             br = new BinaryReader(FileManager.Instance.GetFileStream(el.FileName));
 
-                        br.BaseStream.Seek(el.FileOffset, SeekOrigin.Begin);
+                        br.BaseStream.Seek(el.FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise
                         PrevFileName = el.FileName;
                     }
 
-                    GraphicsCodec.Decode(Image, el.X1, el.Y1, FileManager.Instance.GetGraphicsFormat(el.Format), br, FileManager.Instance.GetPalette(el.PaletteName));
+                    GraphicsCodec.Decode(Image, el);
+                    //GraphicsCodec.Decode(Image, el.X1, el.Y1, FileManager.Instance.GetGraphicsFormat(el.FormatName), br, FileManager.Instance.GetPalette(el.PaletteName));
                 }
             }
 
@@ -109,17 +110,18 @@ namespace TileShop
                     ArrangerElement el = arranger.ElementList[j, i];
                     if (!arranger.IsSequential) // Non-sequential requires a seek for each element rendered
                     {
-                        if (el.Format == "") // Empty format means a blank tile
+                        if (el.FormatName == "") // Empty format means a blank tile
                             continue;
 
                         if (PrevFileName != el.FileName) // Only create a new binary reader when necessary
                             bw = new BinaryWriter(FileManager.Instance.GetFileStream(el.FileName));
 
-                        bw.BaseStream.Seek(el.FileOffset, SeekOrigin.Begin);
+                        bw.BaseStream.Seek(el.FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise
                         PrevFileName = el.FileName;
                     }
 
-                    GraphicsCodec.Encode(Image, el.X1, el.Y1, FileManager.Instance.GetGraphicsFormat(el.Format), bw, FileManager.Instance.GetPalette(el.PaletteName));
+                    GraphicsCodec.Encode(Image, el);
+                    //GraphicsCodec.Encode(Image, el.X1, el.Y1, FileManager.Instance.GetGraphicsFormat(el.FormatName), bw, FileManager.Instance.GetPalette(el.PaletteName));
                 }
             }
 

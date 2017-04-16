@@ -303,7 +303,6 @@ namespace TileShop
             }
             else if (keyData == Keys.L && arranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element shorter
             {
-                DisplayElements.Height--;
                 if (DisplayElements.Height < 1)
                     DisplayElements.Height = 1;
 

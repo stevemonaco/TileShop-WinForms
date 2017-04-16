@@ -308,9 +308,7 @@ namespace TileShop
 
                     el.FileName = graphic.file?.Value ?? arranger.defaultfile;
                     el.PaletteName = graphic.palette?.Value ?? arranger.defaultpalette;
-                    el.Format = graphic.format?.Value ?? arranger.defaultformat;
-
-                    el.FileOffset = graphic.fileoffset;
+                    el.FormatName = graphic.format?.Value ?? arranger.defaultformat;
 
                     if (graphic.bitoffset != null)
                         el.FileAddress = new FileBitAddress(graphic.fileoffset, int.Parse(graphic.bitoffset.Value));
@@ -323,6 +321,8 @@ namespace TileShop
                     el.Y1 = graphic.posy * el.Height;
                     el.X2 = el.X1 + el.Width - 1;
                     el.Y2 = el.Y1 + el.Height - 1;
+
+                    el.AllocateBuffers();
 
                     arr.SetElement(el, graphic.posx, graphic.posy);
                 }
@@ -408,11 +408,12 @@ namespace TileShop
                         XElement graphic = new XElement("graphic");
                         ArrangerElement arrel = arr.GetElement(x, y);
 
-                        graphic.SetAttributeValue("fileoffset", String.Format("{0:X}", arrel.FileOffset));
+                        graphic.SetAttributeValue("fileoffset", String.Format("{0:X}", arrel.FileAddress.FileOffset));
+                        graphic.SetAttributeValue("bitoffset", String.Format("{0:X}", arrel.FileAddress.BitOffset));
                         graphic.SetAttributeValue("posx", x);
                         graphic.SetAttributeValue("posy", y);
-                        if (arrel.Format != DefaultFormat)
-                            graphic.SetAttributeValue("format", arrel.Format);
+                        if (arrel.FormatName != DefaultFormat)
+                            graphic.SetAttributeValue("format", arrel.FormatName);
                         if (arrel.FileName != DefaultFile)
                             graphic.SetAttributeValue("file", arrel.FileName);
                         if (arrel.PaletteName != DefaultPalette)

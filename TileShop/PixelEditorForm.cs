@@ -68,7 +68,7 @@ namespace TileShop
             PixelPanel.Invalidate();
 
             string palName = EditArranger.GetElement(0, 0).PaletteName;
-            string formatName = EditArranger.GetElement(0, 0).Format;
+            string formatName = EditArranger.GetElement(0, 0).FormatName;
             SwatchControl.ShowPalette(FileManager.Instance.GetPalette(palName), (int)Math.Pow(2, FileManager.Instance.GetGraphicsFormat(formatName).ColorDepth));
             SwatchControl.SelectedIndex = 0;
             SwatchControl.Show();
@@ -121,7 +121,7 @@ namespace TileShop
             PixelPanel.Invalidate();
 
             string palName = EditArranger.GetElement(0, 0).PaletteName;
-            string formatName = EditArranger.GetElement(0, 0).Format;
+            string formatName = EditArranger.GetElement(0, 0).FormatName;
             SwatchControl.ShowPalette(FileManager.Instance.GetPalette(palName), (int) Math.Pow(2, FileManager.Instance.GetGraphicsFormat(formatName).ColorDepth));
             SwatchControl.SelectedIndex = 0;
             SwatchControl.Show();
