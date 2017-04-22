@@ -58,7 +58,7 @@ namespace TileShop
         /// </summary>
         private FileTypeLoader Loader = new FileTypeLoader();
 
-        const int DefaultElementsX = 8;
+        const int DefaultElementsX = 16;
         const int DefaultElementsY = 16;
 
         public void AddFileStream(string FileName, FileStream fs)

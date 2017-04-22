@@ -8,7 +8,16 @@ Add direct encoding/decoding
 Support for palettes with scattered color locations
 Add support to attach palettes to tiles in the arranger
 Add support for palettes in pixel editor (gray out pixels that cannot be edited using the current palette)
+Change fixedsize in codec to fixedwidth and fixedheight
 For drag+drop of elements from a ScatteredArranger->SequentialArranger, create a new temp Arranger with adjusted addresses, render, and save
+Crashing bug when selecting a blank element in a ScatteredArranger (editing) -> Selection contains blank element and cannot be edited MessageBox popup
 
 Longer term TODO:
 Implement linear formats
+
+Testing:
+FF5 8x12 1bpp font @ 3EB00
+JackBros 16x16 2bpp VB font @ A0000
+Magical Drop NGPC @ 26BD0
+Genesis 4bpp: Shining Force 2 @ 1D8004
+Game gear 4bpp: Ninja Gaiden @ 15000

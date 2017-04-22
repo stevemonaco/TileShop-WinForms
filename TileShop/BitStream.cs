@@ -12,6 +12,18 @@ namespace TileShop
     /// </summary>
     public struct FileBitAddress
     {
+        /// <summary>
+        /// File offset in bytes
+        /// </summary>
+        public long FileOffset;
+
+        /// <summary>
+        /// Number of bits to skip after FileOffset
+        /// Valid range is 0-7 inclusive
+        /// A zero value would result in a byte-aligned address
+        /// </summary>
+        public int BitOffset;
+
         public FileBitAddress(long fileOffset, int bitOffset)
         {
             if (bitOffset > 7)
@@ -22,36 +34,104 @@ namespace TileShop
         }
 
         /// <summary>
-        /// File offset in bytes
+        /// Construct a new FileBitAddress from the number of bits to the address
         /// </summary>
-        public long FileOffset;
-
-        /// <summary>
-        /// Number of bits to skip after FileOffset
-        /// Valid range is 0-7 inclusive
-        /// </summary>
-        public int BitOffset;
-
-        /*public static implicit operator FileBitAddress(long Address)
+        /// <param name="bits"></param>
+        public FileBitAddress(long bits)
         {
-            return new FileBitAddress(Address, 0);
-        }*/
+            FileOffset = bits / 8;
+            BitOffset = (int)(bits % 8);
+        }
 
-        public static FileBitAddress operator+(FileBitAddress Address1, FileBitAddress Address2)
+        public long Bits()
         {
-            return new FileBitAddress(Address1.FileOffset + Address2.FileOffset + (Address1.BitOffset + Address2.BitOffset) / 8, (Address1.BitOffset + Address2.BitOffset) % 8);
+            return FileOffset * 8 + BitOffset;
         }
 
         /// <summary>
-        /// Advance the address by the specified number of bits
+        /// Casts a long into a FileBitAddress
+        /// </summary>
+        /// <param name="Address">Number of bits</param>
+        public static implicit operator FileBitAddress(long Address)
+        {
+            return new FileBitAddress(Address / 8, (int)(Address % 8));
+        }
+
+        /// <summary>
+        /// Adds two FileBitAddress objects and returns the result
+        /// </summary>
+        /// <param name="Address1"></param>
+        /// <param name="Address2"></param>
+        /// <returns></returns>
+        public static FileBitAddress operator+(FileBitAddress Address1, FileBitAddress Address2)
+        {
+            long bits = Address1.Bits() + Address2.Bits();
+            return new FileBitAddress(bits);
+        }
+
+        /// <summary>
+        /// Adds a specified number of bits to a FileBitAddress object
         /// </summary>
         /// <param name="Address"></param>
         /// <param name="Offset">Number of bits to advance the address</param>
         /// <returns></returns>
         public static FileBitAddress operator +(FileBitAddress Address, long Offset)
         {
-            FileBitAddress Address2 = new FileBitAddress(Offset / 8, (int)Offset % 8);
-            return Address + Address2;
+            long bits = Address.Bits() + Offset;
+            return new FileBitAddress(bits);
+        }
+
+        /// <summary>
+        /// Subtracts two FileBitAddress objects and returns the result
+        /// </summary>
+        /// <param name="Address1"></param>
+        /// <param name="Address2"></param>
+        /// <returns></returns>
+        public static FileBitAddress operator -(FileBitAddress Address1, FileBitAddress Address2)
+        {
+            if (Address2 > Address1)
+                throw new ArithmeticException("The result of FileBitAddress subtraction would result in a negative result");
+
+            long bits = Address1.Bits() - Address2.Bits();
+
+            return new FileBitAddress(bits);
+        }
+
+        /// <summary>
+        /// Subtracts a number of bits from a FileBitAddress object
+        /// </summary>
+        /// <param name="Address"></param>
+        /// <param name="Offset"></param>
+        /// <returns></returns>
+        public static FileBitAddress operator -(FileBitAddress Address, long Offset)
+        {
+            long addressbits = Address.Bits();
+
+            if (Offset > addressbits)
+                throw new ArithmeticException("The result of FileBitAddress subtraction would result in a negative result");
+
+            long retbits = addressbits - Offset;
+
+            return new FileBitAddress(retbits);
+        }
+
+        public static bool operator <(FileBitAddress Address1, FileBitAddress Address2)
+        {
+            return Address1.Bits() < Address2.Bits();
+        }
+
+        public static bool operator <=(FileBitAddress Address1, FileBitAddress Address2)
+        {
+            return Address1.Bits() <= Address2.Bits();
+        }
+
+        public static bool operator >(FileBitAddress Address1, FileBitAddress Address2)
+        {
+            return Address1.Bits() > Address2.Bits();
+        }
+        public static bool operator >=(FileBitAddress Address1, FileBitAddress Address2)
+        {
+            return Address1.Bits() >= Address2.Bits();
         }
     }
 

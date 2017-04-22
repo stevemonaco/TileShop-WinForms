@@ -12,16 +12,18 @@ namespace TileShop
     {
         public int ColorDepth;
         public bool RowInterlace;
+        public int[] RowPixelOrder;
 
         public ImageProperty()
         {
 
         }
 
-        public ImageProperty(int colorDepth, bool rowInterlace)
+        public ImageProperty(int colorDepth, bool rowInterlace, int[] rowPixelOrder)
         {
             ColorDepth = colorDepth;
             RowInterlace = rowInterlace;
+            RowPixelOrder = rowPixelOrder;
         }
     }
 
@@ -51,22 +53,6 @@ namespace TileShop
 
         // Pixel remap operations
 
-        // Preallocated TileData buffers
-        public List<byte[]> TileData = new List<byte[]>();
-        public byte[] MergedData;
-
-        public void AllocateBuffers()
-        {
-            TileData.Clear();
-            for (int i = 0; i < ColorDepth; i++)
-            {
-                byte[] data = new byte[Width * Height];
-                TileData.Add(data);
-            }
-
-            MergedData = new byte[Width * Height];
-        }
-
         // Load a codec via XML format
         public bool LoadFromXml(string Filename)
         {
@@ -95,14 +81,36 @@ namespace TileShop
             FixedSize = bool.Parse(codecs.First().fixedsize);
 
             var images = xe.Descendants("image")
-                         .Select(e => new { colordepth = e.Descendants("colordepth").First().Value, rowinterlace = e.Descendants("rowinterlace").First().Value });
+                         .Select(e => new
+                         {
+                             colordepth = e.Descendants("colordepth").First().Value,
+                             rowinterlace = e.Descendants("rowinterlace").First().Value,
+                             rowpixelorder = e.Descendants("rowpixelorder")
+                         });
 
             foreach(var image in images)
             {
-                ImagePropertyList.Add(new ImageProperty(int.Parse(image.colordepth), bool.Parse(image.rowinterlace)));
-            }
+                int[] rowPixelOrder = new int[Width];
 
-            AllocateBuffers();
+                if (FixedSize && image.rowpixelorder.Count() > 0) // Parse rowpixelorder
+                {
+                    string order = image.rowpixelorder.First().Value;
+                    order.Replace(" ", "");
+                    string[] orderInts = order.Split(',');
+
+                    if (orderInts.Length > Width)
+                        throw new Exception("rowpixel order contains more entries than the width of the row");
+                    for (int i = 0; i < orderInts.Length; i++)
+                        rowPixelOrder[i] = int.Parse(orderInts[i]);
+                }
+                else
+                {
+                    for (int i = 0; i < Width; i++)
+                        rowPixelOrder[i] = i;
+                }
+
+                ImagePropertyList.Add(new ImageProperty(int.Parse(image.colordepth), bool.Parse(image.rowinterlace), rowPixelOrder));
+            }
 
             return true;
         }

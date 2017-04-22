@@ -186,7 +186,7 @@ namespace TileShop
             if (keyData == Keys.Add || keyData == Keys.Oemplus && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.ByteDown);
-                UpdateOffsetLabel();
+                UpdateAddressLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -195,7 +195,7 @@ namespace TileShop
             if (keyData == Keys.Subtract || keyData == Keys.OemMinus && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.ByteUp);
-                UpdateOffsetLabel();
+                UpdateAddressLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -204,7 +204,7 @@ namespace TileShop
             if (keyData == Keys.Down && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.RowDown);
-                UpdateOffsetLabel();
+                UpdateAddressLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -213,7 +213,7 @@ namespace TileShop
             else if (keyData == Keys.Up && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.RowUp);
-                UpdateOffsetLabel();
+                UpdateAddressLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -222,7 +222,7 @@ namespace TileShop
             else if (keyData == Keys.Right && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.ColRight);
-                UpdateOffsetLabel();
+                UpdateAddressLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -231,7 +231,7 @@ namespace TileShop
             else if (keyData == Keys.Left && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.ColLeft);
-                UpdateOffsetLabel();
+                UpdateAddressLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -240,7 +240,7 @@ namespace TileShop
             else if (keyData == Keys.PageDown && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.PageDown);
-                UpdateOffsetLabel();
+                UpdateAddressLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -249,7 +249,7 @@ namespace TileShop
             else if (keyData == Keys.PageUp && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.PageUp);
-                UpdateOffsetLabel();
+                UpdateAddressLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -258,7 +258,7 @@ namespace TileShop
             else if (keyData == Keys.Home && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.Home);
-                UpdateOffsetLabel();
+                UpdateAddressLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -267,7 +267,7 @@ namespace TileShop
             else if (keyData == Keys.End && arranger.Mode == ArrangerMode.SequentialArranger)
             {
                 arranger.Move(ArrangerMoveType.End);
-                UpdateOffsetLabel();
+                UpdateAddressLabel();
                 CancelSelection();
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -284,7 +284,7 @@ namespace TileShop
             {
                 DisplayElements.Width++;
                 arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                UpdateOffsetLabel();
+                UpdateAddressLabel();
                 DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -296,7 +296,7 @@ namespace TileShop
                     DisplayElements.Width = 1;
 
                 arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                UpdateOffsetLabel();
+                UpdateAddressLabel();
                 DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -307,7 +307,7 @@ namespace TileShop
                     DisplayElements.Height = 1;
 
                 arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                UpdateOffsetLabel();
+                UpdateAddressLabel();
                 DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -316,7 +316,7 @@ namespace TileShop
             {
                 DisplayElements.Height++;
                 arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                UpdateOffsetLabel();
+                UpdateAddressLabel();
                 DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
                 RenderPanel.Invalidate();
@@ -336,8 +336,9 @@ namespace TileShop
                 return;
 
             arranger.SetGraphicsFormat((string)FormatSelectBox.SelectedItem);
+            ElementSize = arranger.ElementPixelSize;
 
-            UpdateOffsetLabel();
+            UpdateAddressLabel();
             prevFormatIndex = index;
             cache.Clear();
             CancelSelection();
@@ -347,16 +348,16 @@ namespace TileShop
             return;
         }
 
-        private void UpdateOffsetLabel()
+        private void UpdateAddressLabel()
         {
-            long offset = arranger.GetInitialSequentialFileOffset();
+            FileBitAddress address = arranger.GetInitialSequentialFileAddress();
             string sizestring = arranger.FileSize.ToString("X");
 
             int maxdigit = sizestring.Length;
             if (maxdigit % 2 == 1)
                 maxdigit++; // Pad out a zero
 
-            offsetLabel.Text = String.Format("{0:X" + maxdigit.ToString() + "} / {1:X" + maxdigit.ToString() + "}", offset, arranger.FileSize);
+            offsetLabel.Text = String.Format("{0:X" + maxdigit.ToString() + "} / {1:X" + maxdigit.ToString() + "}", address.FileOffset, arranger.FileSize); // TODO: Update for bitwise display
         }
 
         private void DrawGridlines(Graphics g)
@@ -364,10 +365,12 @@ namespace TileShop
             if (showGridlines)
             {
                 for (int y = 0; y <= DisplayElements.Height; y++) // Draw horizontal lines
-                    g.DrawLine(Pens.White, 0, y * ElementSize.Height * Zoom + 1, DisplayElements.Width * ElementSize.Width * Zoom, y * ElementSize.Height * Zoom + 1);
+                    g.DrawLine(Pens.White, 0, y * ElementSize.Height * Zoom + 1,
+                        DisplayElements.Width * ElementSize.Width * Zoom, y * ElementSize.Height * Zoom + 1);
 
                 for (int x = 0; x <= DisplayElements.Width; x++) // Draw vertical lines
-                    g.DrawLine(Pens.White, x * ElementSize.Width * Zoom + 1, 0, x * ElementSize.Width * Zoom + 1, DisplayElements.Height * ElementSize.Height * Zoom);
+                    g.DrawLine(Pens.White, x * ElementSize.Width * Zoom + 1, 0,
+                        x * ElementSize.Width * Zoom + 1, DisplayElements.Height * ElementSize.Height * Zoom);
             }
         }
 

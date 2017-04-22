@@ -393,9 +393,9 @@ namespace TileShop
                 el.SetAttributeValue("width", arr.ElementPixelSize.Width);
                 el.SetAttributeValue("height", arr.ElementPixelSize.Height);
 
-                string DefaultPalette = FindMostFrequentValue(arr, "Palette");
+                string DefaultPalette = FindMostFrequentValue(arr, "PaletteName");
                 string DefaultFile = FindMostFrequentValue(arr, "FileName");
-                string DefaultFormat = FindMostFrequentValue(arr, "Format");
+                string DefaultFormat = FindMostFrequentValue(arr, "FormatName");
 
                 el.SetAttributeValue("defaultformat", DefaultFormat);
                 el.SetAttributeValue("defaultfile", DefaultFile);

@@ -163,7 +163,18 @@ namespace TileShop
         {
             if(String.IsNullOrEmpty(ProjectFileName)) // First save, need a filename
             {
+                SaveFileDialog sfd = new SaveFileDialog();
+                sfd.AddExtension = true;
+                sfd.DefaultExt = ".xml";
+                sfd.ValidateNames = true;
+                sfd.Filter = "Xml Project File|*.xml";
+                sfd.Title = "Save Project";
 
+                if(sfd.ShowDialog() == DialogResult.OK)
+                {
+                    ProjectFileName = sfd.FileName;
+                    pec.SaveProject(ProjectFileName);
+                }
             }
             else
                 pec.SaveProject(ProjectFileName);
@@ -171,7 +182,18 @@ namespace TileShop
 
         private void SaveProjectAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.AddExtension = true;
+            sfd.DefaultExt = ".xml";
+            sfd.ValidateNames = true;
+            sfd.Filter = "Xml Project File|*.xml";
+            sfd.Title = "Save Project";
 
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                ProjectFileName = sfd.FileName;
+                pec.SaveProject(ProjectFileName);
+            }
         }
 
         private void NewPaletteToolStripMenuItem_Click(object sender, EventArgs e)

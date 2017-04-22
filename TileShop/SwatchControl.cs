@@ -72,6 +72,12 @@ namespace TileShop
         public void ShowPalette(Palette palette, int MaxColorsDisplayed = 0)
         {
             pal = palette ?? throw new ArgumentNullException();
+
+            if (MaxColorsDisplayed < pal.Entries)
+                MaxColors = MaxColorsDisplayed;
+            else
+                MaxColors = pal.Entries;
+
             Invalidate();
         }
 
@@ -92,7 +98,7 @@ namespace TileShop
             int palx = 0, paly = 0;
             Rectangle DrawRect = new Rectangle(swatchLoc, new Size(swatchScale * swatchElementSize.Width, swatchScale * swatchElementSize.Height));
 
-            for (int idx = 0; idx < pal.Entries; idx++)
+            for (int idx = 0; idx < MaxColors; idx++)
             {
                 //e.Graphics.DrawRectangle(Pens.Black, DrawRect);
                 Rectangle HighlightRect = DrawRect;
@@ -143,7 +149,7 @@ namespace TileShop
             if (unscaledLoc.X < swatchElementSize.Width && unscaledLoc.Y < swatchElementSize.Height)
             {
                 int idx = palIndex.X + palIndex.Y * 16;
-                if (idx < pal.Entries)
+                if (idx < MaxColors)
                     SelectedIndex = idx;
             }
         }
