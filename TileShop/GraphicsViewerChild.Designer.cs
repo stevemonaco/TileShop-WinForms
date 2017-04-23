@@ -32,13 +32,11 @@
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.FormatSelectBox = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.ZoomSelectBox = new System.Windows.Forms.ToolStripComboBox();
             this.ShowGridlinesButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.offsetLabel = new System.Windows.Forms.ToolStripLabel();
             this.EditModeButton = new System.Windows.Forms.ToolStripButton();
             this.ReloadButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.SaveLoadSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.SaveButton = new System.Windows.Forms.ToolStripButton();
             this.RenderPanel = new System.Windows.Forms.Panel();
             this.toolStrip1.SuspendLayout();
@@ -50,13 +48,11 @@
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.FormatSelectBox,
             this.toolStripSeparator1,
-            this.ZoomSelectBox,
             this.ShowGridlinesButton,
-            this.toolStripSeparator2,
             this.offsetLabel,
             this.EditModeButton,
             this.ReloadButton,
-            this.toolStripSeparator3,
+            this.SaveLoadSeparator,
             this.SaveButton});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
@@ -78,22 +74,6 @@
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
             // 
-            // ZoomSelectBox
-            // 
-            this.ZoomSelectBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.ZoomSelectBox.Items.AddRange(new object[] {
-            "Zoom 100%",
-            "Zoom 200%",
-            "Zoom 300%",
-            "Zoom 400%",
-            "Zoom 500%",
-            "Zoom 600%",
-            "Zoom 700%",
-            "Zoom 800%"});
-            this.ZoomSelectBox.Name = "ZoomSelectBox";
-            this.ZoomSelectBox.Size = new System.Drawing.Size(121, 25);
-            this.ZoomSelectBox.SelectedIndexChanged += new System.EventHandler(this.ZoomSelectBox_SelectedIndexChanged);
-            // 
             // ShowGridlinesButton
             // 
             this.ShowGridlinesButton.Checked = true;
@@ -107,13 +87,9 @@
             this.ShowGridlinesButton.ToolTipText = "Show Gridlines";
             this.ShowGridlinesButton.Click += new System.EventHandler(this.ShowGridlinesButton_Click);
             // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
-            // 
             // offsetLabel
             // 
+            this.offsetLabel.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.offsetLabel.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.offsetLabel.Name = "offsetLabel";
             this.offsetLabel.Size = new System.Drawing.Size(0, 22);
@@ -143,11 +119,11 @@
             this.ReloadButton.ToolTipText = "Reload arranger from underlying source";
             this.ReloadButton.Click += new System.EventHandler(this.ReloadButton_Click);
             // 
-            // toolStripSeparator3
+            // SaveLoadSeparator
             // 
-            this.toolStripSeparator3.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            this.SaveLoadSeparator.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.SaveLoadSeparator.Name = "SaveLoadSeparator";
+            this.SaveLoadSeparator.Size = new System.Drawing.Size(6, 25);
             // 
             // SaveButton
             // 
@@ -204,14 +180,12 @@
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripComboBox FormatSelectBox;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripComboBox ZoomSelectBox;
         private System.Windows.Forms.ToolStripButton ShowGridlinesButton;
         private System.Windows.Forms.Panel RenderPanel;
         private System.Windows.Forms.ToolStripLabel offsetLabel;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripButton EditModeButton;
         private System.Windows.Forms.ToolStripButton SaveButton;
         private System.Windows.Forms.ToolStripButton ReloadButton;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripSeparator SaveLoadSeparator;
     }
 }

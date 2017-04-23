@@ -52,6 +52,12 @@ namespace TileShop
             FileStream fs = FileManager.Instance.GetFileStream(el.FileName);
             GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
 
+            if (el.FileAddress + format.Size() > fs.Length * 8) // Element would contain data past the end of the file
+            {
+                DecodeBlank(bmp, el);
+                return;
+            }
+
             byte[] Data = fs.ReadUnshifted(el.FileAddress, format.Size(), true);
             BitStream bs = BitStream.OpenRead(Data, format.Size()); // TODO: Change to account for first bit alignment
 
@@ -92,7 +98,8 @@ namespace TileShop
             {
                 foreignColor = 0;
                 for (int i = 0; i < format.ColorDepth; i++)
-                    foreignColor |= (byte)(el.TileData[i][pos] << i);
+                    //foreignColor |= (byte)(el.TileData[i][pos] << i); // Works for SNES palettes
+                    foreignColor |= (byte)(el.TileData[i][pos] << (format.ColorDepth - i - 1)); // Works for TIM palettes
                 el.MergedData[pos] = foreignColor;
             }
 

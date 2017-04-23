@@ -386,44 +386,44 @@ namespace TileShop
             foreach(ArrangerNode an in arrangersNode.Nodes)
             {
                 Arranger arr = FileManager.Instance.GetPersistentArranger(an.Text);
-                XElement el = new XElement("arranger");
-                el.SetAttributeValue("name", arr.Name);
-                el.SetAttributeValue("elementsx", arr.ArrangerElementSize.Width);
-                el.SetAttributeValue("elementsy", arr.ArrangerElementSize.Height);
-                el.SetAttributeValue("width", arr.ElementPixelSize.Width);
-                el.SetAttributeValue("height", arr.ElementPixelSize.Height);
+                XElement xmlarr = new XElement("arranger");
+                xmlarr.SetAttributeValue("name", arr.Name);
+                xmlarr.SetAttributeValue("elementsx", arr.ArrangerElementSize.Width);
+                xmlarr.SetAttributeValue("elementsy", arr.ArrangerElementSize.Height);
+                xmlarr.SetAttributeValue("width", arr.ElementPixelSize.Width);
+                xmlarr.SetAttributeValue("height", arr.ElementPixelSize.Height);
 
                 string DefaultPalette = FindMostFrequentValue(arr, "PaletteName");
                 string DefaultFile = FindMostFrequentValue(arr, "FileName");
                 string DefaultFormat = FindMostFrequentValue(arr, "FormatName");
 
-                el.SetAttributeValue("defaultformat", DefaultFormat);
-                el.SetAttributeValue("defaultfile", DefaultFile);
-                el.SetAttributeValue("defaultpalette", DefaultPalette);
+                xmlarr.SetAttributeValue("defaultformat", DefaultFormat);
+                xmlarr.SetAttributeValue("defaultfile", DefaultFile);
+                xmlarr.SetAttributeValue("defaultpalette", DefaultPalette);
 
                 for(int y = 0; y < arr.ArrangerElementSize.Height; y++)
                 {
                     for(int x = 0; x < arr.ArrangerElementSize.Width; x++)
                     {
                         XElement graphic = new XElement("graphic");
-                        ArrangerElement arrel = arr.GetElement(x, y);
+                        ArrangerElement el = arr.GetElement(x, y);
 
-                        graphic.SetAttributeValue("fileoffset", String.Format("{0:X}", arrel.FileAddress.FileOffset));
-                        graphic.SetAttributeValue("bitoffset", String.Format("{0:X}", arrel.FileAddress.BitOffset));
+                        graphic.SetAttributeValue("fileoffset", String.Format("{0:X}", el.FileAddress.FileOffset));
+                        graphic.SetAttributeValue("bitoffset", String.Format("{0:X}", el.FileAddress.BitOffset));
                         graphic.SetAttributeValue("posx", x);
                         graphic.SetAttributeValue("posy", y);
-                        if (arrel.FormatName != DefaultFormat)
-                            graphic.SetAttributeValue("format", arrel.FormatName);
-                        if (arrel.FileName != DefaultFile)
-                            graphic.SetAttributeValue("file", arrel.FileName);
-                        if (arrel.PaletteName != DefaultPalette)
-                            graphic.SetAttributeValue("palette", arrel.PaletteName);
+                        if (el.FormatName != DefaultFormat)
+                            graphic.SetAttributeValue("format", el.FormatName);
+                        if (el.FileName != DefaultFile)
+                            graphic.SetAttributeValue("file", el.FileName);
+                        if (el.PaletteName != DefaultPalette)
+                            graphic.SetAttributeValue("palette", el.PaletteName);
 
-                        el.Add(graphic);
+                        xmlarr.Add(graphic);
                     }
                 }
 
-                arrangers.Add(el);
+                arrangers.Add(xmlarr);
             }
 
             root.Add(arrangers);

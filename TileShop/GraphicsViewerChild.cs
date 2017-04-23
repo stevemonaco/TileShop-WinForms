@@ -17,7 +17,20 @@ namespace TileShop
     {
         int prevFormatIndex = -1;
 
-        public int Zoom { get; private set; }
+        public int Zoom
+        {
+            get { return zoom; }
+            private set
+            {
+                zoom = value;
+                selectionData.Zoom = Zoom;
+                DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
+                CancelSelection();
+                RenderPanel.Invalidate();
+            }
+        }
+        private int zoom;
+
         bool showGridlines = true;
 
         Size DisplayElements; // The number of elements in the entire display
@@ -62,7 +75,6 @@ namespace TileShop
             ElementSize = arranger.ElementPixelSize;
             this.Text = arranger.Name;
             selectionData = new ArrangerSelectionData(arranger.Name);
-            ZoomSelectBox.SelectedIndex = 0;
             selectionData.Zoom = 1;
             ContentSourceName = ArrangerName;
             ContainsModifiedContent = false;
@@ -77,6 +89,7 @@ namespace TileShop
 
                 SaveButton.Visible = false;
                 ReloadButton.Visible = false;
+                SaveLoadSeparator.Visible = false;
 
                 // Initialize the codec select box
                 List<string> formatList = FileManager.Instance.GetGraphicsFormatsNameList();
@@ -303,6 +316,7 @@ namespace TileShop
             }
             else if (keyData == Keys.L && arranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element shorter
             {
+                DisplayElements.Height--;
                 if (DisplayElements.Height < 1)
                     DisplayElements.Height = 1;
 
@@ -320,6 +334,15 @@ namespace TileShop
                 DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
                 RenderPanel.Invalidate();
+            }
+            else if(keyData == Keys.Z)
+            {
+                Zoom++;
+            }
+            else if(keyData == Keys.X)
+            {
+                if (Zoom > 1)
+                    Zoom--;
             }
 
             return base.ProcessCmdKey(ref msg, keyData);
@@ -395,16 +418,7 @@ namespace TileShop
 
         public void SetZoom(int ZoomLevel)
         {
-            ZoomSelectBox.SelectedIndex = ZoomLevel - 1;
-        }
-
-        private void ZoomSelectBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            Zoom = ZoomSelectBox.SelectedIndex + 1;
-            selectionData.Zoom = Zoom;
-            DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
-            CancelSelection();
-            RenderPanel.Invalidate();
+            Zoom = ZoomLevel;
         }
 
         private void ShowGridlinesButton_Click(object sender, EventArgs e)

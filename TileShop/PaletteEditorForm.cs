@@ -126,7 +126,7 @@ namespace TileShop
             NudEntries.Value = pal.Entries;
             SetColorFormatBox(pal.ColorFormat);
 
-            SwatchControl.ShowPalette(FileManager.Instance.GetPalette(PaletteName));
+            SwatchControl.ShowPalette(pal, pal.Entries);
 
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.NonPublic, null,
                 activeColorPanel, new object[] { true }); // Enable double buffering
@@ -208,7 +208,7 @@ namespace TileShop
         {
             switch(palFormat)
             {
-                case PaletteColorFormat.BGR15:
+                case PaletteColorFormat.BGR15: case PaletteColorFormat.RGB15:
                     SliderAlpha.Visible = false;
                     NudAlpha.Enabled = false;
                     SetPaletteNumericBounds(0, 31, 0, 31, 0, 31, 0, 31);

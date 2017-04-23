@@ -12,7 +12,7 @@ using System.Drawing.Imaging;
 
 namespace TileShop
 {
-    public enum PaletteColorFormat { RGB24 = 0, ARGB32, BGR15, ABGR16, NES }
+    public enum PaletteColorFormat { RGB24 = 0, ARGB32, BGR15, ABGR16, RGB15, NES }
 
     /// <summary>
     /// Storage source of the palette
@@ -150,7 +150,7 @@ namespace TileShop
 
             switch(format)
             {
-                case PaletteColorFormat.BGR15:
+                case PaletteColorFormat.BGR15: case PaletteColorFormat.RGB15:
                     readSize = 2;
                     HasAlpha = false;
                     break;
@@ -230,19 +230,28 @@ namespace TileShop
         {
             uint localColor;
 
+            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignColor, format);
+
             if (format == PaletteColorFormat.BGR15)
             {
-                localColor = (foreignColor & 0x1F) << 19; // Red
-                localColor |= (foreignColor & 0x3E0) << 6; // Blue
-                localColor |= (foreignColor & 0x7C00) >> 7; // Green
+                localColor = (uint)R << 19; // Red
+                localColor |= (uint)G << 11; // Green
+                localColor |= (uint)B << 3; // Blue
                 localColor |= 0xFF000000; // Alpha
             }
             else if (format == PaletteColorFormat.ABGR16)
             {
-                localColor = (foreignColor & 0x1F) << 19; // Red
-                localColor |= (foreignColor & 0x3E0) << 6; // Blue
-                localColor |= (foreignColor & 0x7C00) >> 7; // Green
-                localColor |= ((foreignColor & 0x8000) * 255) << 24; // Alpha
+                localColor = (uint)R << 19; // Red
+                localColor |= (uint)G << 11; // Green
+                localColor |= (uint)B << 3; // Blue
+                localColor |= ((uint)A * 255) << 24; // Alpha
+            }
+            else if (format == PaletteColorFormat.RGB15)
+            {
+                localColor = (uint)R << 19; // Red
+                localColor |= (uint)G << 11; // Green
+                localColor |= (uint)B << 3; // Blue
+                localColor |= 0xFF000000; // Alpha
             }
             else
                 throw new ArgumentException("Unsupported PaletteColorFormat");
@@ -276,6 +285,13 @@ namespace TileShop
                 localColor |= (uint)G << 11; // Green
                 localColor |= (uint)B << 3; // Blue
                 localColor |= (uint) (A * 255) << 24; // Alpha
+            }
+            else if (format == PaletteColorFormat.RGB15)
+            {
+                localColor = (uint)R << 19; // Red
+                localColor |= (uint)G << 11; // Green
+                localColor |= (uint)B << 3; // Blue
+                localColor |= 0xFF000000; // Alpha
             }
             else
                 throw new ArgumentException("Unsupported PaletteColorFormat");
@@ -426,6 +442,12 @@ namespace TileShop
                     B = (byte)((foreignColor & 0x7C00) >> 10);
                     A = (byte)((foreignColor & 0x8000) >> 15);
                     break;
+                case PaletteColorFormat.RGB15:
+                    R = (byte)((foreignColor & 0x7C00) >> 10);
+                    G = (byte)((foreignColor & 0x3E0) >> 5);
+                    B = (byte)(foreignColor & 0x1F);
+                    A = (byte)((foreignColor & 0x8000) >> 15);
+                    break;
                 default:
                     throw new ArgumentException("Unsupported PaletteColorFormat");
             }
@@ -444,6 +466,12 @@ namespace TileShop
                     foreignColor |= R;
                     foreignColor |= ((uint)G << 5);
                     foreignColor |= ((uint)B << 10);
+                    foreignColor |= ((uint)A << 15);
+                    break;
+                case PaletteColorFormat.RGB15:
+                    foreignColor |= B;
+                    foreignColor |= ((uint)G << 5);
+                    foreignColor |= ((uint)R << 10);
                     foreignColor |= ((uint)A << 15);
                     break;
                 default:
@@ -559,6 +587,10 @@ namespace TileShop
                         writeSize = 4;
                         HasAlpha = true;
                         break;
+                    case PaletteColorFormat.RGB15:
+                        writeSize = 2;
+                        HasAlpha = false;
+                        break;
                     default:
                         throw new NotSupportedException("An unsupported palette format was attempted to be read");
                 }
@@ -604,6 +636,8 @@ namespace TileShop
                     return PaletteColorFormat.BGR15;
                 case "ABGR16":
                     return PaletteColorFormat.ABGR16;
+                case "RGB15":
+                    return PaletteColorFormat.RGB15;
                 case "NES":
                     return PaletteColorFormat.NES;
                 default:
@@ -623,6 +657,8 @@ namespace TileShop
                     return "BGR15";
                 case PaletteColorFormat.ABGR16:
                     return "ABGR16";
+                case PaletteColorFormat.RGB15:
+                    return "RGB15";
                 case PaletteColorFormat.NES:
                     return "NES";
                 default:

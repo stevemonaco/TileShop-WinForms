@@ -161,7 +161,17 @@ namespace TileShop
 
         private void SaveProjectToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if(String.IsNullOrEmpty(ProjectFileName)) // First save, need a filename
+            // Save all EditorDockContents
+            foreach (DockPane dp in DockPanel.Panes)
+            {
+                foreach (DockContent dc in dp.Contents)
+                {
+                    if (dc.GetType().IsSubclassOf(typeof(EditorDockContent)))
+                        ((EditorDockContent)dc).SaveContent();
+                }
+            }
+
+            if (String.IsNullOrEmpty(ProjectFileName)) // First save, need a filename
             {
                 SaveFileDialog sfd = new SaveFileDialog();
                 sfd.AddExtension = true;
@@ -182,6 +192,16 @@ namespace TileShop
 
         private void SaveProjectAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Save all EditorDockContents
+            foreach (DockPane dp in DockPanel.Panes)
+            {
+                foreach (DockContent dc in dp.Contents)
+                {
+                    if (dc.GetType().IsSubclassOf(typeof(EditorDockContent)))
+                        ((EditorDockContent)dc).SaveContent();
+                }
+            }
+
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.AddExtension = true;
             sfd.DefaultExt = ".xml";

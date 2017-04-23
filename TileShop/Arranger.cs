@@ -74,22 +74,6 @@ namespace TileShop
         private long fileSize;
 
         /// <summary>
-        /// Number of bytes required to be read from file sequentially
-        /// </summary>
-        /*public long ArrangerByteSize
-        {
-            get
-            {
-                if (Mode != ArrangerMode.SequentialArranger)
-                    throw new InvalidOperationException("Cannot retrieve the ArrangerByteSize for an arranger that is not a SequentialArranger");
-                else
-                    return arrangerByteSize;
-            }
-            private set { arrangerByteSize = value; }
-        }
-        private long arrangerByteSize;*/
-
-        /// <summary>
         /// Number of bits required to be read from file sequentially
         /// </summary>
         public long ArrangerBitSize
@@ -477,7 +461,10 @@ namespace TileShop
 
             FileBitAddress address;
             FileBitAddress testaddress = AbsoluteAddress + ArrangerBitSize; // Tests the bounds of the arranger vs the file size
-            if (testaddress.Bits() > FileSize * 8)
+
+            if (FileSize * 8 < ArrangerBitSize) // Arranger needs more bits than the entire file
+                address = new FileBitAddress(0, 0);
+            else if (testaddress.Bits() > FileSize * 8)
                 address = new FileBitAddress(FileSize * 8 - ArrangerBitSize);
             else
                 address = AbsoluteAddress;

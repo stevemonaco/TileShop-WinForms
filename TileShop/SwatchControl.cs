@@ -68,15 +68,15 @@ namespace TileShop
         /// Shows the specified palette inside of the SwatchControl
         /// </summary>
         /// <param name="palette">Palette to show</param>
-        /// <param name="MaxColorsDisplayed">Maximum palette entries to display. Default shows all entries</param>
-        public void ShowPalette(Palette palette, int MaxColorsDisplayed = 0)
+        /// <param name="MaxColorsDisplayed">Maximum palette entries to display</param>
+        public void ShowPalette(Palette palette, int MaxColorsDisplayed)
         {
             pal = palette ?? throw new ArgumentNullException();
 
-            if (MaxColorsDisplayed < pal.Entries)
-                MaxColors = MaxColorsDisplayed;
-            else
-                MaxColors = pal.Entries;
+            if (MaxColorsDisplayed > pal.Entries && MaxColorsDisplayed < 1)
+                throw new ArgumentOutOfRangeException();
+
+            MaxColors = MaxColorsDisplayed;
 
             Invalidate();
         }
