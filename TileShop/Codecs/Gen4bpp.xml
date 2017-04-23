@@ -1,0 +1,14 @@
+<format name="Genesis 4bpp">
+    <codec>
+        <colortype>indexed</colortype>
+        <colordepth>4</colordepth>
+        <imagetype>tiled</imagetype>
+        <height>8</height>
+        <width>8</width>
+        <fixedsize>false</fixedsize>
+    </codec>
+    <image>
+        <colordepth>4</colordepth>
+        <rowinterlace>false</rowinterlace>
+    </image>
+</format>

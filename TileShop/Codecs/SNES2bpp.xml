@@ -1,0 +1,14 @@
+<format name="SNES 2bpp">
+    <codec>
+        <colortype>indexed</colortype>
+        <colordepth>2</colordepth>
+        <imagetype>tiled</imagetype>
+        <height>8</height>
+        <width>8</width>
+        <fixedsize>false</fixedsize>
+    </codec>
+    <image>
+        <colordepth>2</colordepth>
+        <rowinterlace>true</rowinterlace>
+    </image>
+</format>

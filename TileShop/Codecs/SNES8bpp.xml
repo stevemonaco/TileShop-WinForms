@@ -1,0 +1,26 @@
+<format name="SNES 8bpp">
+    <codec>
+        <colortype>indexed</colortype>
+        <colordepth>8</colordepth>
+        <imagetype>tiled</imagetype>
+        <height>8</height>
+        <width>8</width>
+        <fixedsize>false</fixedsize>
+    </codec>
+    <image>
+        <colordepth>2</colordepth>
+        <rowinterlace>true</rowinterlace>
+    </image>
+    <image>
+        <colordepth>2</colordepth>
+        <rowinterlace>true</rowinterlace>
+    </image>
+	<image>
+        <colordepth>2</colordepth>
+        <rowinterlace>true</rowinterlace>
+    </image>
+	<image>
+        <colordepth>2</colordepth>
+        <rowinterlace>true</rowinterlace>
+    </image>
+</format>

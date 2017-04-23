@@ -1,0 +1,15 @@
+<format name="Virtual Boy 2bpp">
+    <codec>
+        <colortype>indexed</colortype>
+        <colordepth>2</colordepth>
+        <imagetype>tiled</imagetype>
+        <height>8</height>
+        <width>8</width>
+        <fixedsize>true</fixedsize>
+    </codec>
+    <image>
+        <colordepth>2</colordepth>
+		<rowpixelorder>3, 2, 1, 0, 7, 6, 5, 4</rowpixelorder>
+        <rowinterlace>false</rowinterlace>
+    </image>
+</format>
