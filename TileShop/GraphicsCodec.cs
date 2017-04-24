@@ -59,6 +59,10 @@ namespace TileShop
             }
 
             byte[] Data = fs.ReadUnshifted(el.FileAddress, format.Size(), true);
+
+            //for (int i = 0; i < Data.Length; i++)
+            //    Data[i] = (byte)(((Data[i] & 0xF) << 4) | (Data[i] >> 4));
+
             BitStream bs = BitStream.OpenRead(Data, format.Size()); // TODO: Change to account for first bit alignment
 
             int plane = 0;
@@ -76,7 +80,8 @@ namespace TileShop
                         {
                             pos = y * format.Height;
                             for (int x = 0; x < format.Width; x++)
-                                el.TileData[curPlane][pos + ip.RowPixelOrder[x]] = (byte)bs.ReadBit();
+                                //el.TileData[curPlane][pos + ip.RowPixelPattern[x]] = (byte)bs.ReadBit();
+                                el.TileData[format.MergePriority[curPlane]][pos + ip.RowExtendedPixelPattern[x]] = (byte)bs.ReadBit();
                         }
                     }
                 }
@@ -85,7 +90,68 @@ namespace TileShop
                     for (int y = 0; y < format.Height; y++, pos+=format.Width)
                         for (int x = 0; x < format.Width; x++)
                             for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
-                                el.TileData[curPlane][pos + ip.RowPixelOrder[x]] = (byte)bs.ReadBit();
+                                //el.TileData[curPlane][pos + ip.RowPixelPattern[x]] = (byte)bs.ReadBit();
+                                el.TileData[format.MergePriority[curPlane]][pos + ip.RowExtendedPixelPattern[x]] = (byte)bs.ReadBit();
+                }
+
+                plane += ip.ColorDepth;
+            }
+
+            // Merge into foreign colors
+            byte foreignColor = 0;
+
+            for (pos = 0; pos < el.MergedData.Length; pos++)
+            {
+                foreignColor = 0;
+                for (int i = 0; i < format.ColorDepth; i++)
+                    foreignColor |= (byte)(el.TileData[i][pos] << i); // Works for SNES palettes
+                    //foreignColor |= (byte)(el.TileData[i][pos] << (format.ColorDepth - i - 1)); // Works for TIM palettes
+                el.MergedData[pos] = foreignColor;
+            }
+
+            // Translate foreign colors to local colors and draw to bitmap
+            DrawBitmapIndexed(bmp, el);
+        }
+
+        public static void DirectDecode(Bitmap bmp, ArrangerElement el)
+        {
+            throw new NotImplementedException();
+            /*FileStream fs = FileManager.Instance.GetFileStream(el.FileName);
+            GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
+
+            if (el.FileAddress + format.Size() > fs.Length * 8) // Element would contain data past the end of the file
+            {
+                DecodeBlank(bmp, el);
+                return;
+            }
+
+            byte[] Data = fs.ReadUnshifted(el.FileAddress, format.Size(), true);
+            // BitStream bs = BitStream.OpenRead(Data, format.Size()); // TODO: Change to account for first bit alignment
+
+            int pos = 0;
+
+            // Deinterlace into separate bitplanes
+            foreach (ImageProperty ip in format.ImagePropertyList)
+            {
+                pos = 0;
+                if (ip.RowInterlace)
+                {
+                    for (int y = 0; y < format.Height; y++)
+                    {
+                        for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
+                        {
+                            pos = y * format.Height;
+                            for (int x = 0; x < format.Width; x++)
+                                el.TileData[curPlane][pos + ip.RowPixelPattern[x]] = (byte)bs.ReadBit();
+                        }
+                    }
+                }
+                else
+                {
+                    for (int y = 0; y < format.Height; y++, pos += format.Width)
+                        for (int x = 0; x < format.Width; x++)
+                            for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
+                                el.TileData[curPlane][pos + ip.RowPixelPattern[x]] = (byte)bs.ReadBit();
                 }
 
                 plane += ip.ColorDepth;
@@ -104,20 +170,15 @@ namespace TileShop
             }
 
             // Translate foreign colors to local colors and draw to bitmap
-            DrawBitmap(bmp, el);
-        }
-
-        public static void DirectDecode(Bitmap bmp, ArrangerElement el)
-        {
-            throw new NotImplementedException();
+            DrawBitmapIndexed(bmp, el);*/
         }
 
         /// <summary>
-        /// Draws an element onto an ARGB32 Bitmap at the specified location
+        /// Draws an indexed element onto an ARGB32 Bitmap at the specified location
         /// </summary>
         /// <param name="bmp">Destination bitmap</param>
         /// <param name="el">ArrangerElement to render</param>
-        unsafe static void DrawBitmap(Bitmap bmp, ArrangerElement el)
+        unsafe static void DrawBitmapIndexed(Bitmap bmp, ArrangerElement el)
         {
             Rectangle lockRect = new Rectangle(0, 0, bmp.Width, bmp.Height);
             BitmapData bd = bmp.LockBits(lockRect, ImageLockMode.ReadOnly, bmp.PixelFormat);
@@ -185,7 +246,7 @@ namespace TileShop
         unsafe static void IndexedEncode(Bitmap bmp, ArrangerElement el)
         {
             // ReadBitmap for local->foreign color conversion into fmt.MergedData
-            ReadBitmap(bmp, el);
+            ReadBitmapIndexed(bmp, el);
 
             FileStream fs = FileManager.Instance.GetFileStream(el.FileName);
             GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
@@ -216,7 +277,7 @@ namespace TileShop
                             //for (int x = 0; x < format.Width; x++, pos++)
                             //    bs.WriteBit(el.TileData[curPlane][pos]);
                             for (int x = 0; x < format.Width; x++)
-                                bs.WriteBit(el.TileData[curPlane][pos + ip.RowPixelOrder[x]]);
+                                bs.WriteBit(el.TileData[curPlane][pos + ip.RowPixelPattern[x]]);
                         }
                     }
                 }
@@ -233,7 +294,7 @@ namespace TileShop
                     {
                         for (int x = 0; x < format.Width; x++)
                             for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
-                                bs.WriteBit(el.TileData[curPlane][pos + ip.RowPixelOrder[x]]);
+                                bs.WriteBit(el.TileData[curPlane][pos + ip.RowPixelPattern[x]]);
                     }
                 }
 
@@ -250,11 +311,11 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Reads an element at a specified location on a ARGB32 Bitmap
+        /// Reads an indexed element at a specified location on a ARGB32 Bitmap
         /// </summary>
         /// <param name="bmp">Source bitmap</param>
         /// <param name="el">Destination arranger</param>
-        unsafe static void ReadBitmap(Bitmap bmp, ArrangerElement el)
+        unsafe static void ReadBitmapIndexed(Bitmap bmp, ArrangerElement el)
         {
             Rectangle lockRect = new Rectangle(0, 0, bmp.Width, bmp.Height);
             BitmapData bd = bmp.LockBits(lockRect, ImageLockMode.WriteOnly, bmp.PixelFormat);

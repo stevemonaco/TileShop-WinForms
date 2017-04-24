@@ -2,7 +2,7 @@
 *Fix sequential arranger offsets to be bitwise
 Test NewPaletteForm (Add bitwise)
 Implement new PaletteColorFormats
-Implement UI features for detecting modifications to arrangers/palettes/etc
+Test UI features for detecting modifications to arrangers/palettes/etc
 Add more tools to the pixel editor
 Add direct encoding/decoding
 Support for palettes with scattered color locations
@@ -12,9 +12,11 @@ Change fixedsize in codec to fixedwidth and fixedheight
 For drag+drop of elements from a ScatteredArranger->SequentialArranger, create a new temp Arranger with adjusted addresses, render, and save
 Crashing bug when selecting a blank element in a ScatteredArranger (editing) -> Selection contains blank element and cannot be edited MessageBox popup
 Fix File->Save Project XML export (add defaultfile / defaultformat to arranger, ensure graphic does not use blank format/file, and fix offsets)
+Test encoding support for rowpixelpattern
+Add encoding support for mergepriority
 
 Longer term TODO:
-Implement linear formats
+Implement editing support geared specifically towards linear graphics
 
 Testing:
 FF5 8x12 1bpp font @ 3EB00

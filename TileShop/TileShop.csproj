@@ -214,10 +214,13 @@
     <Content Include="Codecs\NES1bpp.xml" />
     <Content Include="Codecs\NES2bpp.xml" />
     <Content Include="Codecs\NGPC2bpp.xml" />
+    <Content Include="Codecs\PSX4bpp.xml" />
+    <Content Include="Codecs\PSX8bpp.xml" />
     <Content Include="Codecs\SNES2bpp.xml" />
     <Content Include="Codecs\SNES3bpp.xml" />
     <Content Include="Codecs\SNES4bpp.xml" />
     <Content Include="Codecs\SNES8bpp.xml" />
+    <Content Include="Codecs\SNESMode7.xml" />
     <Content Include="Codecs\VB2bpp.xml" />
     <Content Include="Development Notes.txt" />
     <None Include="Resources\PencilTool.png" />

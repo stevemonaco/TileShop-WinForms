@@ -293,7 +293,7 @@ namespace TileShop
                 RenderPanel.Invalidate();
                 return true;
             }
-            else if (keyData == Keys.OemPeriod && arranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element wider
+            else if (keyData == Keys.OemQuestion && arranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element wider
             {
                 DisplayElements.Width++;
                 arranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
@@ -301,8 +301,9 @@ namespace TileShop
                 DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
                 RenderPanel.Invalidate();
+                return true;
             }
-            else if (keyData == Keys.Oemcomma && arranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element thinner
+            else if (keyData == Keys.OemPeriod && arranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element thinner
             {
                 DisplayElements.Width--;
                 if (DisplayElements.Width < 1)
@@ -313,6 +314,7 @@ namespace TileShop
                 DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
                 RenderPanel.Invalidate();
+                return true;
             }
             else if (keyData == Keys.L && arranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element shorter
             {
@@ -325,6 +327,7 @@ namespace TileShop
                 DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
                 RenderPanel.Invalidate();
+                return true;
             }
             else if (keyData == Keys.OemSemicolon && arranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element taller
             {
@@ -334,15 +337,34 @@ namespace TileShop
                 DisplayRect = new Rectangle(0, 0, arranger.ArrangerPixelSize.Width * Zoom, arranger.ArrangerPixelSize.Height * Zoom);
                 rm.Invalidate();
                 RenderPanel.Invalidate();
+                return true;
             }
-            else if(keyData == Keys.Z)
+            else if(keyData == Keys.Z) // Zoom in
             {
                 Zoom++;
+                return true;
             }
-            else if(keyData == Keys.X)
+            else if(keyData == Keys.X) // Zoom out
             {
                 if (Zoom > 1)
                     Zoom--;
+                return true;
+            }
+            else if(keyData == Keys.A && arranger.Mode == ArrangerMode.SequentialArranger) // Next codec
+            {
+                if (FormatSelectBox.SelectedIndex + 1 == FormatSelectBox.Items.Count)
+                    FormatSelectBox.SelectedIndex = 0;
+                else
+                    FormatSelectBox.SelectedIndex++;
+                return true;
+            }
+            else if(keyData == Keys.S && arranger.Mode == ArrangerMode.SequentialArranger) // Previous codec
+            {
+                if (FormatSelectBox.SelectedIndex == 0)
+                    FormatSelectBox.SelectedIndex = FormatSelectBox.Items.Count - 1;
+                else
+                    FormatSelectBox.SelectedIndex--;
+                return true;
             }
 
             return base.ProcessCmdKey(ref msg, keyData);

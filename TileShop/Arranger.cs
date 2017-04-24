@@ -193,7 +193,7 @@ namespace TileShop
                     if (format.ImageType == "tiled")
                         address += format.Size();
                     else // Linear
-                        address += (format.Width + format.Stride) * format.ColorDepth / 4; // TODO: Fix sequential arranger offsets to be bit-wise
+                        address += (format.Width + format.RowStride) * format.ColorDepth / 4; // TODO: Fix sequential arranger offsets to be bit-wise
 
                     x += format.Width;
                 }
@@ -379,61 +379,37 @@ namespace TileShop
             FileBitAddress address = ElementList[0, 0].FileAddress;
             FileBitAddress delta;
 
-            switch (MoveType)
+            switch (MoveType) // Calculate the new address based on the movement command. Negative and post-EOF addresses are handled after the switch
             {
                 case ArrangerMoveType.ByteDown:
-                    if (address + 8 + ArrangerBitSize <= FileSize * 8)
-                        address += 8;
-                    else
-                        address = new FileBitAddress(FileSize * 8 - ArrangerBitSize);
+                    address += 8;
                     break;
                 case ArrangerMoveType.ByteUp:
-                    if (address.FileOffset >= 1)
-                        address -= 8;
-                    else
-                        address = 0;
+                    address -= 8;
                     break;
                 case ArrangerMoveType.RowDown:
                     delta = ArrangerElementSize.Width * FileManager.Instance.GetGraphicsFormat(ElementList[0, 0].FormatName).Size();
-                    if (address + delta + ArrangerBitSize <= FileSize * 8)
-                        address += delta;
-                    else
-                        address = new FileBitAddress(FileSize * 8 - ArrangerBitSize);
+                    address += delta;
                     break;
                 case ArrangerMoveType.RowUp:
                     delta = ArrangerElementSize.Width * FileManager.Instance.GetGraphicsFormat(ElementList[0, 0].FormatName).Size();
-                    if (address >= delta)
-                        address -= delta;
-                    else
-                        address = 0;
+                    address -= delta;
                     break;
                 case ArrangerMoveType.ColRight:
                     delta = FileManager.Instance.GetGraphicsFormat(ElementList[0, 0].FormatName).Size();
-                    if (address + delta + ArrangerBitSize <= FileSize * 8)
-                        address += delta;
-                    else
-                        address = new FileBitAddress(FileSize * 8 - ArrangerBitSize);
+                    address += delta;
                     break;
                 case ArrangerMoveType.ColLeft:
                     delta = FileManager.Instance.GetGraphicsFormat(ElementList[0, 0].FormatName).Size();
-                    if (address >= delta)
-                        address -= delta;
-                    else
-                        address = 0;
+                    address -= delta;
                     break;
                 case ArrangerMoveType.PageDown:
                     delta = ArrangerElementSize.Width * FileManager.Instance.GetGraphicsFormat(ElementList[0, 0].FormatName).Size() * ArrangerElementSize.Height / 2;
-                    if (address + delta + ArrangerBitSize <= FileSize * 8)
-                        address += delta;
-                    else
-                        address = new FileBitAddress(FileSize * 8 - ArrangerBitSize);
+                    address += delta;
                     break;
                 case ArrangerMoveType.PageUp:
                     delta = ArrangerElementSize.Width * FileManager.Instance.GetGraphicsFormat(ElementList[0, 0].FormatName).Size() * ArrangerElementSize.Height / 2;
-                    if (address >= delta)
-                        address -= delta;
-                    else
-                        address = 0;
+                    address -= delta;
                     break;
                 case ArrangerMoveType.Home:
                     address = 0;
@@ -442,6 +418,12 @@ namespace TileShop
                     address = new FileBitAddress(FileSize * 8 - ArrangerBitSize);
                     break;
             }
+
+            if (address + ArrangerBitSize > FileSize * 8) // Calculated address is past EOF (first)
+                address = new FileBitAddress(FileSize * 8 - ArrangerBitSize);
+
+            if (address < 0) // Calculated address is before start of file (second)
+                address = 0;
 
             SetNewSequentialFileOffset(address);
 

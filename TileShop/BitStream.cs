@@ -89,9 +89,6 @@ namespace TileShop
         /// <returns></returns>
         public static FileBitAddress operator -(FileBitAddress Address1, FileBitAddress Address2)
         {
-            if (Address2 > Address1)
-                throw new ArithmeticException("The result of FileBitAddress subtraction would result in a negative result");
-
             long bits = Address1.Bits() - Address2.Bits();
 
             return new FileBitAddress(bits);
@@ -106,10 +103,6 @@ namespace TileShop
         public static FileBitAddress operator -(FileBitAddress Address, long Offset)
         {
             long addressbits = Address.Bits();
-
-            if (Offset > addressbits)
-                throw new ArithmeticException("The result of FileBitAddress subtraction would result in a negative result");
-
             long retbits = addressbits - Offset;
 
             return new FileBitAddress(retbits);
