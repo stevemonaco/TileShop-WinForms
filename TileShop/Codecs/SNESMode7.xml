@@ -1,15 +1,15 @@
-<format name="SNES 2bpp">
+<format name="SNES Mode7">
     <codec>
         <colortype>indexed</colortype>
-        <colordepth>2</colordepth>
+        <colordepth>8</colordepth>
         <imagetype>tiled</imagetype>
         <height>8</height>
         <width>8</width>
         <fixedsize>false</fixedsize>
-		<mergepriority>0, 1</mergepriority>
+		<mergepriority>0, 1, 2, 3, 4, 5, 6, 7</mergepriority>
     </codec>
     <image>
-        <colordepth>2</colordepth>
-        <rowinterlace>true</rowinterlace>
+        <colordepth>8</colordepth>
+        <rowinterlace>false</rowinterlace>
     </image>
 </format>

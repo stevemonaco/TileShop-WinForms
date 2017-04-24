@@ -6,6 +6,7 @@
         <height>8</height>
         <width>8</width>
         <fixedsize>true</fixedsize>
+		<mergepriority>0, 1</mergepriority>
     </codec>
     <image>
         <colordepth>2</colordepth>

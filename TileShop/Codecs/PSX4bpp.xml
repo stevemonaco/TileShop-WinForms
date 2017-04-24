@@ -1,15 +1,16 @@
-<format name="Genesis 4bpp">
+<format name="PSX 4bpp">
     <codec>
         <colortype>indexed</colortype>
         <colordepth>4</colordepth>
-        <imagetype>tiled</imagetype>
-        <height>8</height>
-        <width>8</width>
+        <imagetype>linear</imagetype>
+        <height>1</height>
+        <width>256</width>
         <fixedsize>false</fixedsize>
-		<mergepriority>0, 1, 2, 3</mergepriority>
+		<mergepriority>3, 2, 1, 0</mergepriority>
     </codec>
     <image>
         <colordepth>4</colordepth>
         <rowinterlace>false</rowinterlace>
+		<rowpixelpattern>1, 0</rowpixelpattern>
     </image>
 </format>
