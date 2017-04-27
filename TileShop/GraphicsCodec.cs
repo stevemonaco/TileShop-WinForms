@@ -12,8 +12,9 @@ using System.Drawing.Drawing2D;
 namespace TileShop
 {
     /// <summary>
-    /// GraphicsCodec provides a set of codecs for generalized bitmap formats
+    /// GraphicsCodec provides a generalized method to encode/decode bitmap formats
     /// The process goes through several stages of transformations
+    /// 
     /// For indexed bitmaps:
     /// 1. Deinterlace a bitmap's pixels into separate bitplanes
     /// 2. Merge bitplanes into indexed foreign colors
@@ -36,9 +37,9 @@ namespace TileShop
         {
             GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
 
-            if (format.ColorType == "indexed")
+            if (format.ColorType == PixelColorType.Indexed)
                 IndexedDecode(bmp, el);
-            else if (format.ColorType == "direct")
+            else if (format.ColorType == PixelColorType.Direct)
                 DirectDecode(bmp, el);
         }
 
@@ -235,9 +236,9 @@ namespace TileShop
         {
             GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
 
-            if (format.ColorType == "indexed")
+            if (format.ColorType == PixelColorType.Indexed)
                 IndexedEncode(bmp, el);
-            else if (format.ColorType == "direct")
+            else if (format.ColorType == PixelColorType.Direct)
                 DirectEncode(bmp, el);
         }
 

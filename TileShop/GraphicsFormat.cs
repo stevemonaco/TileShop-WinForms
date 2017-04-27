@@ -71,7 +71,19 @@ namespace TileShop
         }
     }
 
+    /// <summary>
+    /// Specifies how the graphical viewer will treat the graphic
+    /// Tiled graphics will render a grid of multiple images
+    /// Linear graphics will render a single image
+    /// </summary>
     public enum ImageLayout { Tiled = 0, Linear }
+
+    /// <summary>
+    /// Specifies how the pixels' colors are determined for the graphic
+    /// Indexed graphics have their full color determined by a palette
+    /// Direct graphics have their full color determined by the pixel image data alone
+    /// </summary>
+    public enum PixelColorType { Indexed = 0, Direct }
 
     /// <summary>
     /// GraphicsFormat describes properties relating to decoding/encoding a general graphics format
@@ -98,7 +110,9 @@ namespace TileShop
         /// <summary>
         /// ColorType defines how pixel data is translated into color data (values: "indexed" or "direct")
         /// </summary>
-        public string ColorType;
+        //public string ColorType;
+
+        public PixelColorType ColorType;
 
         /// <summary>
         /// Specifies how individual bits of each color are merged according to priority
@@ -142,7 +156,11 @@ namespace TileShop
 
         // Pixel remap operations
 
-        // Load a codec via XML format
+        /// <summary>
+        /// Loads a codec from an external XML file
+        /// </summary>
+        /// <param name="Filename">Filename of the codec</param>
+        /// <returns>True on success, false on failure</returns>
         public bool LoadFromXml(string Filename)
         {
             ImagePropertyList.Clear();
@@ -163,7 +181,13 @@ namespace TileShop
                     mergepriority = e.Descendants("mergepriority").First().Value
                 }).First();
 
-            ColorType = codecs.colortype;
+            if (codecs.colortype == "indexed")
+                ColorType = PixelColorType.Indexed;
+            else if (codecs.colortype == "direct")
+                ColorType = PixelColorType.Direct;
+            else
+                throw new XmlException(String.Format("Unsupported colortype '{0}'", codecs.colortype));
+
             ColorDepth = int.Parse(codecs.colordepth);
 
             if (codecs.layout == "tiled")
