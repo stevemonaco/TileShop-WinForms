@@ -4,21 +4,87 @@ using System.Drawing;
 namespace TileShop
 {
     // Class to store a selection of arranger data
+
+    /// <summary>
+    /// Handles the data associated with arranger selections
+    /// </summary>
     public class ArrangerSelectionData
     {
-        public string ArrangerName { get; private set; } // Name of the Arranger which holds the data to be copied
-        public Point Location { get; private set; } // Upper left location of the selection, in element units
-        public Size SelectionSize { get; private set; } // Size of selection in number of elements
+        /// <summary>
+        /// Name of the Arranger which holds the data to be copied
+        /// </summary>
+        public string ArrangerName { get; private set; }
+
+        /// <summary>
+        /// Upper left location of the selection, in element units
+        /// </summary>
+        public Point Location { get; private set; }
+
+        /// <summary>
+        /// Size of selection in number of elements
+        /// </summary>
+        public Size SelectionSize { get; private set; }
+
+        /// <summary>
+        /// State of having a finalized selection
+        /// </summary>
         public bool HasSelection { get; private set; }
+
+        /// <summary>
+        /// State of currently making or resizing a selection
+        /// </summary>
         public bool InSelection { get; private set; }
+
+        /// <summary>
+        /// State of currently dragging a finalized selection area
+        /// </summary>
         public bool InDragState { get; private set; }
-        public bool SelectionChanged { get; private set; } // Lets calling class to check if the selection has changed
-        public int Zoom { get; set; }
-        public Point BeginPoint { get; private set; } // BeginPoint/EndPoint as provided by the caller in zoomed coordinates
+
+        /// <summary>
+        /// State of the selection being changed or not
+        /// </summary>
+        public bool SelectionChanged { get; private set; }
+
+        /// <summary>
+        /// Sets the zoom level to translate coordinates appropriately between original element coordinates and a resized element coordinate system
+        /// Must be greater than or equal to 1
+        /// </summary>
+        public int Zoom
+        {
+            get => zoom;
+            set
+            {
+                if (zoom < 1)
+                    throw new ArgumentOutOfRangeException();
+                zoom = value;
+            }
+        }
+        private int zoom;
+
+        /// <summary>
+        /// Beginning selection point in zoomed coordinates
+        /// </summary>
+        public Point BeginPoint { get; private set; }
+
+        /// <summary>
+        /// Ending selection point in zoomed coordinates
+        /// </summary>
         public Point EndPoint { get; private set; }
-        public Rectangle SelectedElements { get; private set; } // Selected elements of the parent arranger in units of elements
+
+        /// <summary>
+        /// Location of elements selected in the underlying arranger
+        /// </summary>
+        public Rectangle SelectedElements { get; private set; }
+
+        /// <summary>
+        /// Rectangle containing selected pixels in zoomed coordinates
+        /// </summary>
         public Rectangle SelectedClientRect { get; private set; }
 
+        /// <summary>
+        /// List of selected elements
+        /// Must call PopulateData before retrieving
+        /// </summary>
         public ArrangerElement[,] ElementList { get; private set; }
 
         public ArrangerSelectionData(string arrangerName)
@@ -42,7 +108,10 @@ namespace TileShop
             EndPoint = new Point(0, 0);
         }
 
-        // Populates ElementList
+        /// <summary>
+        /// Populates ElementList for retrieval
+        /// </summary>
+        /// <returns></returns>
         public bool PopulateData()
         {
             if (!HasSelection)
@@ -62,11 +131,22 @@ namespace TileShop
             return true;
         }
 
+        /// <summary>
+        /// Retrieves an element from the selected elements
+        /// </summary>
+        /// <param name="ElementX"></param>
+        /// <param name="ElementY"></param>
+        /// <returns></returns>
         public ArrangerElement GetElement(int ElementX, int ElementY)
         {
             return ElementList[ElementX, ElementY];
         }
 
+        /// <summary>
+        /// Begins a new selection
+        /// </summary>
+        /// <param name="beginPoint"></param>
+        /// <param name="endPoint"></param>
         public void BeginSelection(Point beginPoint, Point endPoint)
         {
             HasSelection = true;
@@ -74,22 +154,29 @@ namespace TileShop
             SelectionChanged = true;
             BeginPoint = beginPoint;
             EndPoint = endPoint;
-            CalculateRectangles();
+            CalculateSelectionData();
         }
 
-        // Returns true if the selection was changed (ie. endpoint changed)
+        /// <summary>
+        /// Updates an in-progress selection with a new end point
+        /// </summary>
+        /// <param name="endPoint"></param>
+        /// <returns>True if the selection was changed</returns>
         public bool UpdateSelection(Point endPoint)
         {
             if (EndPoint != endPoint)
             {
                 EndPoint = endPoint;
-                CalculateRectangles();
+                CalculateSelectionData();
                 return true;
             }
             else // No need to set as the two points are equal
                 return false;
         }
 
+        /// <summary>
+        /// Ends the selection and moves the selection into a finalized state
+        /// </summary>
         public void EndSelection()
         {
             InSelection = false;
@@ -101,21 +188,30 @@ namespace TileShop
                 ClearSelection();
                 HasSelection = false;
             }
-
-            //PopulateData(); // Clean this up so that PopulateData will not crash from out of ClientRect clicks
         }
 
+        /// <summary>
+        /// Begins the drag and drop state for the current finalized selection
+        /// </summary>
         public void BeginDragDrop()
         {
             InDragState = true;
         }
 
+        /// <summary>
+        /// Ends the drag and drop state for the current finalized selection
+        /// </summary>
         public void EndDragDrop()
         {
             InDragState = false;
         }
 
 
+        /// <summary>
+        /// Translates a point in zoomed coordinates to an element location in the underlying arranger
+        /// </summary>
+        /// <param name="Location">Point in zoomed coordinates</param>
+        /// <returns>Element location</returns>
         public Point PointToElementLocation(Point Location)
         {
             Point unzoomed = new Point(Location.X / Zoom, Location.Y / Zoom);
@@ -136,7 +232,11 @@ namespace TileShop
             throw new ArgumentOutOfRangeException("Location is outside of the range of all ArrangerElements in ElementList");
         }
 
-        private void CalculateRectangles()
+        /// <summary>
+        /// Calculates a resized selection rectangle in zoomed coordinates (to fully cover tiles that are half-moused over) and populates
+        /// selected elements and selection size for retrieval
+        /// </summary>
+        private void CalculateSelectionData()
         {
             Rectangle zoomed = PointsToRectangle(BeginPoint, EndPoint); // Rectangle in zoomed coordinates
             Rectangle unzoomed = ViewerToArrangerRectangle(zoomed);
@@ -152,6 +252,11 @@ namespace TileShop
             SelectionSize = new Size(SelectedElements.Width, SelectedElements.Height);
         }
 
+        /// <summary>
+        /// Resizes the current selection rect to encompass the entirety of selected elements (tiles)
+        /// </summary>
+        /// <param name="r"></param>
+        /// <returns></returns>
         private Rectangle GetSelectionPixelRect(Rectangle r)
         {
             Arranger arr = FileManager.Instance.GetArranger(ArrangerName);
