@@ -128,6 +128,9 @@ namespace TileShop
         }
     }
 
+    /// <summary>
+    /// Adds additional methods to FileStream related to bitwise file reading
+    /// </summary>
     public static class FileExtensionMethods
     {
         public static byte[] ReadUnshifted(this FileStream file, FileBitAddress address, int numBits, bool Seek)
@@ -169,6 +172,9 @@ namespace TileShop
         } */
     }
 
+    /// <summary>
+    /// Stream class with specific features for bit reading and writing
+    /// </summary>
     public class BitStream
     {
         private enum BitStreamAccess { Read, Write, ReadWrite };

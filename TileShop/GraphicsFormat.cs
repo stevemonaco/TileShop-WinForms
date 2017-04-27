@@ -71,6 +71,8 @@ namespace TileShop
         }
     }
 
+    public enum ImageLayout { Tiled = 0, Linear }
+
     /// <summary>
     /// GraphicsFormat describes properties relating to decoding/encoding a general graphics format
     /// </summary>
@@ -85,7 +87,8 @@ namespace TileShop
         /// Returns true if the codec requires fixed size elements or false if the codec operates on variable size elements
         /// </summary>
         public bool FixedSize { get; private set; }
-        public string ImageType; // "tiled" or "linear"
+        //public string ImageType; // "tiled" or "linear"
+        public ImageLayout Layout { get; private set; }
 
         /// <summary>
         /// The color depth of the format
@@ -153,21 +156,28 @@ namespace TileShop
                 {
                     colortype = e.Descendants("colortype").First().Value,
                     colordepth = e.Descendants("colordepth").First().Value,
-                    imagetype = e.Descendants("imagetype").First().Value,
+                    layout = e.Descendants("layout").First().Value,
                     height = e.Descendants("height").First().Value,
                     width = e.Descendants("width").First().Value,
                     fixedsize = e.Descendants("fixedsize").First().Value,
                     mergepriority = e.Descendants("mergepriority").First().Value
-                });
+                }).First();
 
-            ColorType = codecs.First().colortype;
-            ColorDepth = int.Parse(codecs.First().colordepth);
-            ImageType = codecs.First().imagetype;
-            Width = int.Parse(codecs.First().width);
-            Height = int.Parse(codecs.First().height);
-            FixedSize = bool.Parse(codecs.First().fixedsize);
+            ColorType = codecs.colortype;
+            ColorDepth = int.Parse(codecs.colordepth);
 
-            string mergestring = codecs.First().mergepriority;
+            if (codecs.layout == "tiled")
+                Layout = ImageLayout.Tiled;
+            else if (codecs.layout == "linear")
+                Layout = ImageLayout.Linear;
+            else
+                throw new XmlException(String.Format("Unsupported layout '{0}'", codecs.layout));
+
+            Width = int.Parse(codecs.width);
+            Height = int.Parse(codecs.height);
+            FixedSize = bool.Parse(codecs.fixedsize);
+
+            string mergestring = codecs.mergepriority;
             mergestring.Replace(" ", "");
             string[] mergeInts = mergestring.Split(',');
 

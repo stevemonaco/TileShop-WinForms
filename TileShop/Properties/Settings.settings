@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="Version" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0.02e</Value>
+      <Value Profile="(Default)">0.03</Value>
     </Setting>
   </Settings>
 </SettingsFile>

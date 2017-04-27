@@ -11,7 +11,6 @@ Add support for palettes in pixel editor (gray out pixels that cannot be edited 
 Change fixedsize in codec to fixedwidth and fixedheight
 For drag+drop of elements from a ScatteredArranger->SequentialArranger, create a new temp Arranger with adjusted addresses, render, and save
 Crashing bug when selecting a blank element in a ScatteredArranger (editing) -> Selection contains blank element and cannot be edited MessageBox popup
-Fix File->Save Project XML export (add defaultfile / defaultformat to arranger, ensure graphic does not use blank format/file, and fix offsets)
 Test encoding support for rowpixelpattern
 Add encoding support for mergepriority
 

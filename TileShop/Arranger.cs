@@ -190,7 +190,7 @@ namespace TileShop
 
                     ElementList[j, i] = el;
 
-                    if (format.ImageType == "tiled")
+                    if (format.Layout == ImageLayout.Tiled)
                         address += format.Size();
                     else // Linear
                         address += (format.Width + format.RowStride) * format.ColorDepth / 4; // TODO: Fix sequential arranger offsets to be bit-wise

@@ -80,7 +80,6 @@ namespace TileShop
                         {
                             pos = y * format.Height;
                             for (int x = 0; x < format.Width; x++)
-                                //el.TileData[curPlane][pos + ip.RowPixelPattern[x]] = (byte)bs.ReadBit();
                                 el.TileData[format.MergePriority[curPlane]][pos + ip.RowExtendedPixelPattern[x]] = (byte)bs.ReadBit();
                         }
                     }
@@ -90,7 +89,6 @@ namespace TileShop
                     for (int y = 0; y < format.Height; y++, pos+=format.Width)
                         for (int x = 0; x < format.Width; x++)
                             for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
-                                //el.TileData[curPlane][pos + ip.RowPixelPattern[x]] = (byte)bs.ReadBit();
                                 el.TileData[format.MergePriority[curPlane]][pos + ip.RowExtendedPixelPattern[x]] = (byte)bs.ReadBit();
                 }
 
