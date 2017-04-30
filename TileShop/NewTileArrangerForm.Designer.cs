@@ -57,7 +57,7 @@
             // 
             // createButton
             // 
-            this.createButton.Location = new System.Drawing.Point(145, 196);
+            this.createButton.Location = new System.Drawing.Point(162, 196);
             this.createButton.Name = "createButton";
             this.createButton.Size = new System.Drawing.Size(58, 23);
             this.createButton.TabIndex = 1;
@@ -133,6 +133,8 @@
             // tilesYBox
             // 
             this.tilesYBox.Location = new System.Drawing.Point(140, 33);
+            this.tilesYBox.Maximum = 2147483647;
+            this.tilesYBox.Minimum = -2147483648;
             this.tilesYBox.Name = "tilesYBox";
             this.tilesYBox.Size = new System.Drawing.Size(62, 20);
             this.tilesYBox.TabIndex = 13;
@@ -140,6 +142,8 @@
             // tilesXBox
             // 
             this.tilesXBox.Location = new System.Drawing.Point(9, 33);
+            this.tilesXBox.Maximum = 2147483647;
+            this.tilesXBox.Minimum = -2147483648;
             this.tilesXBox.Name = "tilesXBox";
             this.tilesXBox.Size = new System.Drawing.Size(62, 20);
             this.tilesXBox.TabIndex = 12;
@@ -162,6 +166,8 @@
             // tileHeightBox
             // 
             this.tileHeightBox.Location = new System.Drawing.Point(140, 62);
+            this.tileHeightBox.Maximum = 2147483647;
+            this.tileHeightBox.Minimum = -2147483648;
             this.tileHeightBox.Name = "tileHeightBox";
             this.tileHeightBox.Size = new System.Drawing.Size(62, 20);
             this.tileHeightBox.TabIndex = 12;
@@ -169,6 +175,8 @@
             // tileWidthBox
             // 
             this.tileWidthBox.Location = new System.Drawing.Point(9, 62);
+            this.tileWidthBox.Maximum = 2147483647;
+            this.tileWidthBox.Minimum = -2147483648;
             this.tileWidthBox.Name = "tileWidthBox";
             this.tileWidthBox.Size = new System.Drawing.Size(62, 20);
             this.tileWidthBox.TabIndex = 11;

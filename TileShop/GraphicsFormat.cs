@@ -99,6 +99,7 @@ namespace TileShop
         /// Returns true if the codec requires fixed size elements or false if the codec operates on variable size elements
         /// </summary>
         public bool FixedSize { get; private set; }
+
         //public string ImageType; // "tiled" or "linear"
         public ImageLayout Layout { get; private set; }
 
@@ -110,8 +111,6 @@ namespace TileShop
         /// <summary>
         /// ColorType defines how pixel data is translated into color data (values: "indexed" or "direct")
         /// </summary>
-        //public string ColorType;
-
         public PixelColorType ColorType;
 
         /// <summary>
@@ -142,12 +141,12 @@ namespace TileShop
         public int ElementStride { get; private set; }
 
         /// <summary>
-        /// Size of an element in bits
+        /// Storage size of an element in bits
         /// </summary>
         /// <returns></returns>
         public int Size() { return (Width + RowStride) * Height * ColorDepth + ElementStride; }
 
-        public List<ImageProperty> ImagePropertyList = new List<ImageProperty>();
+        public List<ImageProperty> ImagePropertyList { get; private set; }
 
         // Processing Operations
         public bool HFlip;
@@ -155,6 +154,11 @@ namespace TileShop
         public bool Remap;
 
         // Pixel remap operations
+
+        GraphicsFormat()
+        {
+            ImagePropertyList = new List<ImageProperty>();
+        }
 
         /// <summary>
         /// Loads a codec from an external XML file

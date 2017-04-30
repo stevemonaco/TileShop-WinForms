@@ -185,7 +185,7 @@ namespace TileShop
                         FormatName = format.Name,
                         PaletteName = "Default"
                     };
-                    if (el.TileData.Count == 0 || el.MergedData == null)
+                    if (el.ElementData.Count == 0 || el.MergedData == null)
                         el.AllocateBuffers();
 
                     ElementList[j, i] = el;
@@ -569,7 +569,6 @@ namespace TileShop
     {
         public string FileName { get; set; }
         public FileBitAddress FileAddress { get; set; }
-        //public long FileOffset { get; set; }
         public string FormatName { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
@@ -579,20 +578,42 @@ namespace TileShop
         /// Left X-coordinate of the element
         /// </summary>
         public int X1 { get; set; } // Locations in unzoomed coordinates
+
         /// <summary>
         /// Top Y-coordinate of the element
         /// </summary>
         public int Y1 { get; set; }
+
         /// <summary>
         /// Right X-coordinate of the element, inclusive
         /// </summary>
         public int X2 { get; set; }
+
+        /// <summary>
         /// Bottom Y-coordinate of the element, inclusive
+        /// </summary>
         public int Y2 { get; set; }
 
         // Preallocated TileData buffers
-        public List<byte[]> TileData = new List<byte[]>();
-        public byte[] MergedData;
+        /// <summary>
+        /// Preallocated buffer that separates and stores pixel color data
+        /// </summary>
+        public List<byte[]> ElementData { get; private set; }
+
+        /// <summary>
+        /// Preallocated buffer that stores merged pixel color data
+        /// </summary>
+        public byte[] MergedData { get; private set; }
+
+        /// <summary>
+        /// Number of bits needed to store the element's foreign pixel data
+        /// </summary>
+        public int StorageSize
+        {
+            get => storageSize;
+            private set => storageSize = value;
+        }
+        private int storageSize;
 
         /// <summary>
         /// Used to allocate internal buffers to hold graphical data specific to the element
@@ -600,14 +621,15 @@ namespace TileShop
         public void AllocateBuffers()
         {
             GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(FormatName);
-            TileData.Clear();
+            ElementData.Clear();
             for (int i = 0; i < format.ColorDepth; i++)
             {
                 byte[] data = new byte[Width * Height];
-                TileData.Add(data);
+                ElementData.Add(data);
             }
 
             MergedData = new byte[Width * Height];
+            StorageSize = (Width + format.RowStride) * Height * format.ColorDepth + format.ElementStride;
         }
 
         public ArrangerElement()
@@ -622,6 +644,8 @@ namespace TileShop
             X2 = 0;
             Y1 = 0;
             Y2 = 0;
+
+            ElementData = new List<byte[]>();
         }
 
         /// <summary>
@@ -651,9 +675,9 @@ namespace TileShop
 
             // Copy TileData
             GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(FormatName);
-            for (int i = 0; i < TileData.Count; i++)
-                for (int j = 0; j < TileData[i].Length; j++)
-                    el.TileData[i][j] = TileData[i][j];
+            for (int i = 0; i < ElementData.Count; i++)
+                for (int j = 0; j < ElementData[i].Length; j++)
+                    el.ElementData[i][j] = ElementData[i][j];
 
             return el;
         }

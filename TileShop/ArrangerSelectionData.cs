@@ -54,7 +54,7 @@ namespace TileShop
             get => zoom;
             set
             {
-                if (zoom < 1)
+                if (value < 1)
                     throw new ArgumentOutOfRangeException();
                 zoom = value;
             }

@@ -16,7 +16,7 @@ namespace TileShop
             LookupDefaultFormat.Add(".nes", "NES 1bpp");
             LookupDefaultFormat.Add(".sfc", "SNES 2bpp");
             LookupDefaultFormat.Add(".smc", "SNES 2bpp");
-            LookupDefaultFormat.Add("", "");
+            //LookupDefaultFormat.Add("", "");
         }
 
         // Retrieves default graphics format name from a filename
