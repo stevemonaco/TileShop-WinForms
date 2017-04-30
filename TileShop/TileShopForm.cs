@@ -4,6 +4,7 @@ using System.IO;
 using System.Drawing;
 using WeifenLuo.WinFormsUI.Docking;
 using System.Collections.Generic;
+using TileShop.Plugins;
 
 namespace TileShop
 {
@@ -11,6 +12,8 @@ namespace TileShop
     {
         string CodecDirectoryPath = "D:\\Projects\\TileShop\\codecs\\";
         string PaletteDirectoryPath = "D:\\Projects\\TileShop\\pal\\";
+        string PluginDirectoryPath = "D:\\Projects\\TileShop\\plugins";
+        //string PluginDirectoryPath = @"D:\VS Projects\TileShop\TIMParserPlugin\bin\Debug\";
 
         public string ProjectFileName
         {
@@ -25,6 +28,7 @@ namespace TileShop
 
         ProjectExplorerControl pec;
         PixelEditorForm pef;
+        PluginManager pm = new PluginManager();
 
         public TileShopForm()
         {
@@ -33,6 +37,7 @@ namespace TileShop
             LoadCodecs(CodecDirectoryPath);
             LoadPalettes(PaletteDirectoryPath);
             LoadCursors();
+            LoadPlugins();
 
             this.Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
 
@@ -105,6 +110,92 @@ namespace TileShop
 
             Cursor PickerCursor = CustomCursor.LoadCursorFromBitmap(Properties.Resources.PickerCursor, new Point(2, 19));
             FileManager.Instance.AddCursor("PickerCursor", PickerCursor);
+        }
+
+        private void LoadPlugins()
+        {
+            pm.LoadPlugins(PluginDirectoryPath);
+
+            // Create menu options for each loaded file parser plugin
+            foreach(Lazy<IFileParserContract, IFileParserData> plugin in pm.ParserPlugins)
+            {
+                // TODO: Error checking for valid variable string characters in name [A-Z][a-z][0-9]
+                string strippedName = plugin.Metadata.Name.Replace(" ", "");
+
+                ToolStripMenuItem nameItem = new ToolStripMenuItem(plugin.Metadata.Name);
+                nameItem.Name = strippedName + "MenuItem";
+                nameItem.Tag = plugin.Metadata.Name;
+                nameItem.Visible = true;
+                pluginsToolStripMenuItem.DropDownItems.Add(nameItem);
+
+                ToolStripMenuItem runItem = new ToolStripMenuItem("Run");
+                runItem.Name = strippedName + "RunPluginMenuItem";
+                runItem.Tag = plugin.Metadata.Name;
+                runItem.Click += RunFileParserPlugin_Click;
+                runItem.Visible = true;
+                nameItem.DropDownItems.Add(runItem);
+
+                ToolStripMenuItem viewItem = new ToolStripMenuItem("View Plugin Info");
+                viewItem.Name = strippedName + "ViewInfoMenuItem";
+                viewItem.Tag = plugin.Metadata.Name;
+                viewItem.Click += ViewFileParserPlugin_Click;
+                viewItem.Visible = true;
+                nameItem.DropDownItems.Add(viewItem);
+            }
+        }
+
+        private void RunFileParserPlugin_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem viewItem = (ToolStripMenuItem)sender;
+            string pluginName = (string)viewItem.Tag;
+
+            foreach (Lazy<IFileParserContract, IFileParserData> plugin in pm.ParserPlugins)
+            {
+                if (plugin.Metadata.Name != pluginName)
+                    continue;
+
+                if (!plugin.Value.DisplayPluginInterface()) // If no arrangers/palettes to add
+                    break;
+
+                List<Arranger> arrangers = plugin.Value.RetrieveArrangers();
+                List<Palette> palettes = plugin.Value.RetrievePalettes();
+
+                if (arrangers == null)
+                {
+                    MessageBox.Show("Plugin returned null for RetrieveArrangers");
+                    return;
+                }
+                if(palettes == null)
+                {
+                    MessageBox.Show("Plugin returned null for RetrievePalettes");
+                    return;
+                }
+
+                foreach (Arranger arr in arrangers)
+                    pec.AddArranger(arr.Clone(), false);
+
+                foreach (Palette pal in palettes)
+                    pec.AddPalette(pal.Clone());
+            }
+        }
+
+        private void ViewFileParserPlugin_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem viewItem = (ToolStripMenuItem)sender;
+            string pluginName = (string)viewItem.Tag;
+
+            foreach (Lazy<IFileParserContract, IFileParserData> plugin in pm.ParserPlugins)
+            {
+                if(plugin.Metadata.Name == pluginName)
+                {
+                    MessageBox.Show("Name: " + plugin.Metadata.Name +
+                        "\nAuthor: " + plugin.Metadata.Author +
+                        "\nVersion: " + plugin.Metadata.Version +
+                        "\nDescription: " + plugin.Metadata.Description,
+                        "Plugin Information");
+                    break;
+                }
+            }
         }
 
         private void DebugToolStripMenuItem_Click(object sender, EventArgs e)

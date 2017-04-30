@@ -53,6 +53,7 @@
             this.FileOffsetLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.dockTheme = new WeifenLuo.WinFormsUI.Docking.VS2013BlueTheme();
             this.DockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
+            this.pluginsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -62,6 +63,7 @@
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.addToolStripMenuItem,
+            this.pluginsToolStripMenuItem,
             this.DebugToolStripMenuItem,
             this.DebugXmlToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
@@ -249,6 +251,12 @@
             this.DockPanel.TabIndex = 4;
             this.DockPanel.Theme = this.dockTheme;
             // 
+            // pluginsToolStripMenuItem
+            // 
+            this.pluginsToolStripMenuItem.Name = "pluginsToolStripMenuItem";
+            this.pluginsToolStripMenuItem.Size = new System.Drawing.Size(58, 20);
+            this.pluginsToolStripMenuItem.Text = "&Plugins";
+            // 
             // TileShopForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -262,7 +270,7 @@
             this.IsMdiContainer = true;
             this.MainMenuStrip = this.menuStrip;
             this.Name = "TileShopForm";
-            this.Text = "TileShop 0.02d";
+            this.Text = "TileShop";
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.statusStrip.ResumeLayout(false);
@@ -299,6 +307,7 @@
         private System.Windows.Forms.ToolStripMenuItem NewPaletteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem NewScatteredArrangerToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem CloseProjectToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pluginsToolStripMenuItem;
     }
 }
 

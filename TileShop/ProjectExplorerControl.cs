@@ -48,8 +48,13 @@ namespace TileShop
             ProjectTreeView.Nodes.Add(arrangersNode);
         }
 
-        // Full filename with path
-        public bool AddFile(string Filename, bool Show)
+        /// <summary>
+        /// Adds a file to the TreeView and to FileManager
+        /// </summary>
+        /// <param name="Filename">Filename of the file to add</param>
+        /// <param name="Show">Optionally displays the file using a sequential arranger immediately</param>
+        /// <returns></returns>
+        public bool AddFile(string Filename, bool Show = false)
         {
             // Ensure the file has not been previously added
             foreach(FileNode node in filesNode.Nodes)
@@ -77,7 +82,11 @@ namespace TileShop
             return true;
         }
 
-        // Full filename with path
+        /// <summary>
+        /// Removes a file from the TreeView
+        /// </summary>
+        /// <param name="Filename">Fully qualified filename</param>
+        /// <returns></returns>
         public bool RemoveFile(string Filename)
         {
             foreach(FileNode fn in filesNode.Nodes)
@@ -92,7 +101,13 @@ namespace TileShop
             return false;
         }
 
-        public bool AddArranger(Arranger arr, bool Show)
+        /// <summary>
+        /// Adds an arranger to the TreeView and to FileManager
+        /// </summary>
+        /// <param name="arr">Arranger to add</param>
+        /// <param name="Show">Optionally shows the arranger immediately</param>
+        /// <returns></returns>
+        public bool AddArranger(Arranger arr, bool Show = false)
         {
             ArrangerNode an = new ArrangerNode()
             {
@@ -116,6 +131,11 @@ namespace TileShop
             return true;
         }
 
+        /// <summary>
+        /// Removes an arranger from the TreeView
+        /// </summary>
+        /// <param name="ArrangerName">Name of the arranger to remove</param>
+        /// <returns></returns>
         public bool RemoveArranger(string ArrangerName)
         {
             foreach (ArrangerNode an in arrangersNode.Nodes)
