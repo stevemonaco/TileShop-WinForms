@@ -155,7 +155,7 @@ namespace TileShop
 
         // Pixel remap operations
 
-        GraphicsFormat()
+        public GraphicsFormat()
         {
             ImagePropertyList = new List<ImageProperty>();
         }
