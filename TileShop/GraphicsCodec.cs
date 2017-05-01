@@ -46,25 +46,27 @@ namespace TileShop
         /// <summary>
         /// Decoding routine to decode indexed (palette-based) graphics
         /// </summary>
-        /// <param name="bmp"></param>
-        /// <param name="el"></param>
+        /// <param name="bmp">Destination bitmap</param>
+        /// <param name="el">Element to decode</param>
         unsafe static void IndexedDecode(Bitmap bmp, ArrangerElement el)
         {
             FileStream fs = FileManager.Instance.GetFileStream(el.FileName);
             GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
 
-            if (el.FileAddress + format.Size() > fs.Length * 8) // Element would contain data past the end of the file
+            format.Resize(el.Width, el.Height);
+
+            if (el.FileAddress + el.StorageSize > fs.Length * 8) // Element would contain data past the end of the file
             {
                 DecodeBlank(bmp, el);
                 return;
             }
 
-            byte[] Data = fs.ReadUnshifted(el.FileAddress, format.Size(), true);
+            byte[] Data = fs.ReadUnshifted(el.FileAddress, el.StorageSize, true);
 
             //for (int i = 0; i < Data.Length; i++)
             //    Data[i] = (byte)(((Data[i] & 0xF) << 4) | (Data[i] >> 4));
 
-            BitStream bs = BitStream.OpenRead(Data, format.Size()); // TODO: Change to account for first bit alignment
+            BitStream bs = BitStream.OpenRead(Data, el.StorageSize); // TODO: Change to account for first bit alignment
 
             int plane = 0;
             int pos = 0;
@@ -75,12 +77,12 @@ namespace TileShop
                 pos = 0;
                 if (ip.RowInterlace)
                 {
-                    for (int y = 0; y < format.Height; y++)
+                    for (int y = 0; y < el.Height; y++)
                     {
                         for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
                         {
-                            pos = y * format.Height;
-                            for (int x = 0; x < format.Width; x++)
+                            pos = y * el.Height;
+                            for (int x = 0; x < el.Width; x++)
                                 el.ElementData[format.MergePriority[curPlane]][pos + ip.RowExtendedPixelPattern[x]] = (byte)bs.ReadBit();
                         }
                     }
@@ -263,7 +265,7 @@ namespace TileShop
             }
 
             // Loop over planes and putbit to data buffer with proper interlacing
-            BitStream bs = BitStream.OpenWrite(format.Size(), 8);
+            BitStream bs = BitStream.OpenWrite(el.StorageSize, 8);
             int plane = 0;
 
 
@@ -273,14 +275,14 @@ namespace TileShop
 
                 if (ip.RowInterlace)
                 {
-                    for (int y = 0; y < format.Height; y++)
+                    for (int y = 0; y < el.Height; y++)
                     {
                         for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
                         {
-                            pos = y * format.Height;
+                            pos = y * el.Height;
                             //for (int x = 0; x < format.Width; x++, pos++)
                             //    bs.WriteBit(el.TileData[curPlane][pos]);
-                            for (int x = 0; x < format.Width; x++)
+                            for (int x = 0; x < el.Width; x++)
                                 bs.WriteBit(el.ElementData[curPlane][pos + ip.RowPixelPattern[x]]);
                         }
                     }
@@ -294,9 +296,9 @@ namespace TileShop
                                 bs.WriteBit(el.TileData[curPlane][pos]);
                     }*/
 
-                    for (int y = 0; y < format.Height; y++, pos+=format.Width)
+                    for (int y = 0; y < el.Height; y++, pos += el.Width)
                     {
-                        for (int x = 0; x < format.Width; x++)
+                        for (int x = 0; x < el.Width; x++)
                             for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
                                 bs.WriteBit(el.ElementData[curPlane][pos + ip.RowPixelPattern[x]]);
                     }

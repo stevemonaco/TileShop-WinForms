@@ -163,7 +163,6 @@ namespace TileShop
             FileBitAddress address = GetInitialSequentialFileAddress();
 
             ElementList = new ArrangerElement[ElementsX, ElementsY];
-            ArrangerBitSize = ElementsX * ElementsY * format.Size();
             int x = 0;
             int y = 0;
 
@@ -177,10 +176,10 @@ namespace TileShop
                         FileAddress = address,
                         X1 = x,
                         Y1 = y,
-                        X2 = x + format.Width - 1,
-                        Y2 = y + format.Height - 1,
-                        Width = format.Width,
-                        Height = format.Height,
+                        X2 = x + ElementPixelSize.Width - 1,
+                        Y2 = y + ElementPixelSize.Height - 1,
+                        Width = ElementPixelSize.Width,
+                        Height = ElementPixelSize.Height,
                         FileName = Filename,
                         FormatName = format.Name,
                         PaletteName = "Default"
@@ -191,19 +190,21 @@ namespace TileShop
                     ElementList[j, i] = el;
 
                     if (format.Layout == ImageLayout.Tiled)
-                        address += format.Size();
+                        address += el.StorageSize;
                     else // Linear
-                        address += (format.Width + format.RowStride) * format.ColorDepth / 4; // TODO: Fix sequential arranger offsets to be bit-wise
+                        address += (ElementPixelSize.Width + format.RowStride) * format.ColorDepth / 4; // TODO: Fix sequential arranger offsets to be bit-wise
 
-                    x += format.Width;
+                    x += ElementPixelSize.Width;
                 }
-                y += format.Height;
+                y += ElementPixelSize.Height;
             }
 
             ArrangerElement LastElem = ElementList[ElementsX - 1, ElementsY - 1];
             ArrangerPixelSize = new Size(LastElem.X2 + 1, LastElem.Y2 + 1);
             ArrangerElementSize = new Size(ElementsX, ElementsY);
-            ElementPixelSize = new Size(format.Width, format.Height);
+            ElementPixelSize = new Size(ElementPixelSize.Width, ElementPixelSize.Height);
+
+            ArrangerBitSize = ElementsX * ElementsY * LastElem.StorageSize;
 
             address = GetInitialSequentialFileAddress();
             address = Move(address);
@@ -388,27 +389,27 @@ namespace TileShop
                     address -= 8;
                     break;
                 case ArrangerMoveType.RowDown:
-                    delta = ArrangerElementSize.Width * FileManager.Instance.GetGraphicsFormat(ElementList[0, 0].FormatName).Size();
+                    delta = ArrangerElementSize.Width * ElementList[0, 0].StorageSize;
                     address += delta;
                     break;
                 case ArrangerMoveType.RowUp:
-                    delta = ArrangerElementSize.Width * FileManager.Instance.GetGraphicsFormat(ElementList[0, 0].FormatName).Size();
+                    delta = ArrangerElementSize.Width * ElementList[0, 0].StorageSize;
                     address -= delta;
                     break;
                 case ArrangerMoveType.ColRight:
-                    delta = FileManager.Instance.GetGraphicsFormat(ElementList[0, 0].FormatName).Size();
+                    delta = ElementList[0, 0].StorageSize;
                     address += delta;
                     break;
                 case ArrangerMoveType.ColLeft:
-                    delta = FileManager.Instance.GetGraphicsFormat(ElementList[0, 0].FormatName).Size();
+                    delta = ElementList[0, 0].StorageSize;
                     address -= delta;
                     break;
                 case ArrangerMoveType.PageDown:
-                    delta = ArrangerElementSize.Width * FileManager.Instance.GetGraphicsFormat(ElementList[0, 0].FormatName).Size() * ArrangerElementSize.Height / 2;
+                    delta = ArrangerElementSize.Width * ElementList[0, 0].StorageSize * ArrangerElementSize.Height / 2;
                     address += delta;
                     break;
                 case ArrangerMoveType.PageUp:
-                    delta = ArrangerElementSize.Width * FileManager.Instance.GetGraphicsFormat(ElementList[0, 0].FormatName).Size() * ArrangerElementSize.Height / 2;
+                    delta = ArrangerElementSize.Width * ElementList[0, 0].StorageSize * ArrangerElementSize.Height / 2;
                     address -= delta;
                     break;
                 case ArrangerMoveType.Home:
@@ -463,12 +464,14 @@ namespace TileShop
             if (Mode != ArrangerMode.SequentialArranger)
                 throw new InvalidOperationException();
 
+            int ElementStorageSize = ElementList[0, 0].StorageSize;
+
             for (int i = 0; i < ArrangerElementSize.Height; i++)
             {
                 for (int j = 0; j < ArrangerElementSize.Width; j++)
                 {
                     ElementList[j, i].FileAddress = FileAddress;
-                    FileAddress += FileManager.Instance.GetGraphicsFormat(ElementList[j, i].FormatName).Size();
+                    FileAddress += ElementStorageSize;
                 }
             }
         }
@@ -489,7 +492,7 @@ namespace TileShop
             return ElementList[0, 0].FormatName;
         }
 
-        public bool SetGraphicsFormat(string Format)
+        public bool SetGraphicsFormat(string Format, Size ElementSize)
         {
             if (ElementList == null)
                 throw new NullReferenceException();
@@ -500,9 +503,9 @@ namespace TileShop
             FileBitAddress address = ElementList[0, 0].FileAddress;
             GraphicsFormat fmt = FileManager.Instance.GetGraphicsFormat(Format);
 
-            ElementPixelSize = new Size(fmt.Width, fmt.Height);
+            ElementPixelSize = ElementSize;
 
-            int elembitsize = fmt.Size();
+            int elembitsize = fmt.StorageSize(ElementSize.Width, ElementSize.Height);
             ArrangerBitSize = ArrangerElementSize.Width * ArrangerElementSize.Height * elembitsize;
 
             if (FileSize * 8 < address + ArrangerBitSize)
@@ -514,12 +517,12 @@ namespace TileShop
                 {
                     ElementList[j, i].FileAddress = address;
                     ElementList[j, i].FormatName = Format;
-                    ElementList[j, i].Width = fmt.Width;
-                    ElementList[j, i].Height = fmt.Height;
-                    ElementList[j, i].X1 = j * fmt.Width;
-                    ElementList[j, i].X2 = j * fmt.Width + (fmt.Width - 1);
-                    ElementList[j, i].Y1 = i * fmt.Height;
-                    ElementList[j, i].Y2 = i * fmt.Height + (fmt.Height - 1);
+                    ElementList[j, i].Width = ElementPixelSize.Width;
+                    ElementList[j, i].Height = ElementPixelSize.Height;
+                    ElementList[j, i].X1 = j * ElementPixelSize.Width;
+                    ElementList[j, i].X2 = j * ElementPixelSize.Width + (ElementPixelSize.Width - 1);
+                    ElementList[j, i].Y1 = i * ElementPixelSize.Height;
+                    ElementList[j, i].Y2 = i * ElementPixelSize.Height + (ElementPixelSize.Height - 1);
                     ElementList[j, i].AllocateBuffers();
                     address += elembitsize;
                 }
@@ -665,7 +668,8 @@ namespace TileShop
                 X1 = X1,
                 Y1 = Y1,
                 X2 = X2,
-                Y2 = Y2
+                Y2 = Y2,
+                StorageSize = StorageSize
             };
 
             // Copy MergedData

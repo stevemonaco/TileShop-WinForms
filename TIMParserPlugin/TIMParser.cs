@@ -128,7 +128,7 @@ namespace TIMParserPlugin
                     if (td.ImageDataSize != td.ImageWidth * td.ImageHeight * td.ColorDepth / 8)
                         continue;
 
-                    if (fs.Position + td.ImageDataSize < fs.Length) // Ensure enough bytes remaining for image data
+                    if (fs.Position + td.ImageDataSize > fs.Length) // Ensure enough bytes remaining for image data
                         break;
 
                     td.ImageDataOffset = fs.Position;
@@ -163,7 +163,7 @@ namespace TIMParserPlugin
             return palettes;
         }
 
-        public void Arrange(TimData td, string TimFileName, string BaseName)
+        void Arrange(TimData td, string TimFileName, string BaseName)
         {
             if (td == null)
                 throw new ArgumentNullException();
@@ -173,50 +173,47 @@ namespace TIMParserPlugin
             for (int i = 0; i < td.ClutCount; i++)
             {
                 Palette pal = new Palette(String.Format("{0}.CLUT.{1}", BaseName, i));
-                pal.LoadPalette(TimFileName, new FileBitAddress(td.ClutOffsets[i], 0), PaletteColorFormat.BGR15, td.ClutColors);
+                pal.LoadPalette(TimFileName, new FileBitAddress(td.ClutOffsets[i], 0), PaletteColorFormat.BGR15, false, td.ClutColors);
                 palettes.Add(pal);
             }
 
-            Arranger arr = Arranger.NewScatteredArranger(1, td.ImageHeight, td.ImageWidth, 1);
+            Arranger arr = Arranger.NewScatteredArranger(1, 1, td.ImageWidth, td.ImageHeight);
             arr.Name = BaseName;
 
-            for (int i = 0; i < td.ImageHeight; i++)
+            ArrangerElement el = arr.GetElement(0, 0);
+
+            el.FileName = TimFileName;
+            el.PaletteName = InitialPaletteName;
+            el.FileAddress = new FileBitAddress(td.ImageDataOffset, 0);
+            el.Height = td.ImageHeight;
+            el.Width = td.ImageWidth;
+
+            el.X1 = 0;
+            el.X2 = td.ImageWidth - 1;
+            el.Y1 = 0;
+            el.Y2 = td.ImageHeight - 1;
+
+            switch (td.ColorDepth)
             {
-                ArrangerElement el = arr.GetElement(0, i);
-
-                el.FileName = TimFileName;
-                el.PaletteName = InitialPaletteName;
-                el.FileAddress = new FileBitAddress(td.ImageDataOffset + td.ImageWidth * i * td.ColorDepth / 8, 0);
-                el.Height = 1;
-                el.Width = td.ImageWidth;
-
-                el.X1 = 0;
-                el.X2 = td.ImageWidth - 1;
-                el.Y1 = i;
-                el.Y2 = i;
-
-                switch(td.ColorDepth)
-                {
-                    case 4:
-                        el.FormatName = "PSX 4bpp";
-                        break;
-                    case 8:
-                        el.FormatName = "PSX 8bpp";
-                        break;
-                    case 16:
-                        el.FormatName = "PSX 16bpp";
-                        break;
-                    case 24:
-                        el.FormatName = "PSX 24bpp";
-                        break;
-                    default:
-                        throw new InvalidOperationException(String.Format("ColorDepth {0} is not supported", td.ColorDepth));
-                }
-
-                el.AllocateBuffers();
-
-                arr.SetElement(el, 0, i);
+                case 4:
+                    el.FormatName = "PSX 4bpp";
+                    break;
+                case 8:
+                    el.FormatName = "PSX 8bpp";
+                    break;
+                case 16:
+                    el.FormatName = "PSX 16bpp";
+                    break;
+                case 24:
+                    el.FormatName = "PSX 24bpp";
+                    break;
+                default:
+                    throw new InvalidOperationException(String.Format("ColorDepth {0} is not supported", td.ColorDepth));
             }
+
+            el.AllocateBuffers();
+
+            arr.SetElement(el, 0, 0);
 
             arrangers.Add(arr);
         }

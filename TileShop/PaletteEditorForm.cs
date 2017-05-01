@@ -301,7 +301,7 @@ namespace TileShop
 
             SetPaletteNumericBounds(format);
 
-            pal.LoadPalette(pal.FileName, pal.FileAddress, format, pal.Entries);
+            pal.LoadPalette(pal.FileName, pal.FileAddress, format, pal.ZeroIndexTransparent, pal.Entries);
             SwatchControl.Invalidate();
         }
 

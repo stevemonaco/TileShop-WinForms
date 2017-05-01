@@ -249,11 +249,11 @@ namespace TileShop
 
             Directory.SetCurrentDirectory(path);
 
-            var settings = xe.Descendants("settings")
+            /*var settings = xe.Descendants("settings")
                 .Select(e => new
                 {
                     numberformat = e.Descendants("filelocationnumberformat").First().Value
-                });
+                });*/
 
             var datafiles = xe.Descendants("file")
                 .Select(e => new
@@ -272,7 +272,8 @@ namespace TileShop
                     bitoffset = e.Attribute("bitoffset"),
                     datafile = e.Attribute("datafile").Value,
                     entries = int.Parse(e.Attribute("entries").Value),
-                    format = e.Attribute("format").Value
+                    format = e.Attribute("format").Value,
+                    zeroindextransparent = bool.Parse(e.Attribute("zeroindextransparent").Value)
                 });
 
 
@@ -288,7 +289,7 @@ namespace TileShop
                 else
                     address.BitOffset = 0;
 
-                pal.LoadPalette(palette.datafile, address, format, palette.entries);
+                pal.LoadPalette(palette.datafile, address, format, palette.zeroindextransparent, palette.entries);
                 AddPalette(pal);
             }
 
@@ -364,9 +365,9 @@ namespace TileShop
 
             // Save settings
             XElement settings = new XElement("settings");
-            XElement numberformat = new XElement("filelocationnumberformat");
-            numberformat.SetValue("hexadecimal");
-            settings.Add(numberformat);
+            //XElement numberformat = new XElement("filelocationnumberformat");
+            //numberformat.SetValue("hexadecimal");
+            //settings.Add(numberformat);
 
             root.Add(settings);
 
@@ -388,19 +389,20 @@ namespace TileShop
             foreach(PaletteNode pn in palettesNode.Nodes)
             {
                 Palette pal = FileManager.Instance.GetPersistentPalette(pn.Text);
-                XElement el = new XElement("palette");
-                el.SetAttributeValue("name", pal.Name);
-                el.SetAttributeValue("fileoffset", String.Format("{0:X}", pal.FileAddress.FileOffset));
-                el.SetAttributeValue("bitoffset", String.Format("{0:X}", pal.FileAddress.BitOffset));
-                el.SetAttributeValue("datafile", pal.FileName);
-                el.SetAttributeValue("format", Palette.ColorFormatToString(pal.ColorFormat));
-                el.SetAttributeValue("entries", pal.Entries);
-                palettes.Add(el);
+                XElement xmlpal = new XElement("palette");
+                xmlpal.SetAttributeValue("name", pal.Name);
+                xmlpal.SetAttributeValue("fileoffset", String.Format("{0:X}", pal.FileAddress.FileOffset));
+                xmlpal.SetAttributeValue("bitoffset", String.Format("{0:X}", pal.FileAddress.BitOffset));
+                xmlpal.SetAttributeValue("datafile", pal.FileName);
+                xmlpal.SetAttributeValue("format", Palette.ColorFormatToString(pal.ColorFormat));
+                xmlpal.SetAttributeValue("entries", pal.Entries);
+                xmlpal.SetAttributeValue("zeroindextransparent", pal.ZeroIndexTransparent);
+                palettes.Add(xmlpal);
             }
 
             root.Add(palettes);
 
-            // Save each arranger
+            // Save Arrangers
             XElement arrangers = new XElement("arrangers");
             
             foreach(ArrangerNode an in arrangersNode.Nodes)

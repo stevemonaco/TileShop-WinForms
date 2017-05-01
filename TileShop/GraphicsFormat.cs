@@ -46,7 +46,7 @@ namespace TileShop
 
         public void ExtendRowPattern(int Width)
         {
-            if (RowExtendedPixelPattern.Length == Width) // Previously sized
+            if (RowExtendedPixelPattern.Length >= Width) // Previously sized to be at least as large
                 return;
 
             int cycles = (Width + RowPixelPattern.Length - 1) / RowPixelPattern.Length;
@@ -100,16 +100,18 @@ namespace TileShop
         /// </summary>
         public bool FixedSize { get; private set; }
 
-        //public string ImageType; // "tiled" or "linear"
+        /// <summary>
+        /// Specifies if the graphic is rendered and manipulated as a tiled grid or not
+        /// </summary>
         public ImageLayout Layout { get; private set; }
 
         /// <summary>
-        /// The color depth of the format
+        /// The color depth of the format in bits per pixel
         /// </summary>
         public int ColorDepth;
 
         /// <summary>
-        /// ColorType defines how pixel data is translated into color data (values: "indexed" or "direct")
+        /// ColorType defines how pixel data is translated into color data
         /// </summary>
         public PixelColorType ColorType;
 
@@ -121,14 +123,24 @@ namespace TileShop
         public int[] MergePriority;
 
         /// <summary>
-        /// Current Width of the graphics format
+        /// Current width of the elements to encode/decode
         /// </summary>
         public int Width { get; private set; }
 
         /// <summary>
-        /// Current Height of the graphics format
+        /// Current height of elements to encode/decode
         /// </summary>
         public int Height { get; private set; }
+
+        /// <summary>
+        /// Default width of an element as specified by the XML file
+        /// </summary>
+        public int DefaultWidth { get; private set; }
+
+        /// <summary>
+        /// Default height of an element as specified by the XML file
+        /// </summary>
+        public int DefaultHeight { get; private set; }
 
         /// <summary>
         /// Number of bits to skip after each row
@@ -144,7 +156,8 @@ namespace TileShop
         /// Storage size of an element in bits
         /// </summary>
         /// <returns></returns>
-        public int Size() { return (Width + RowStride) * Height * ColorDepth + ElementStride; }
+        //public int Size() { return (Width + RowStride) * Height * ColorDepth + ElementStride; }
+        public int StorageSize(int width, int height) { return (width + RowStride) * height * ColorDepth + ElementStride; }
 
         public List<ImageProperty> ImagePropertyList { get; private set; }
 
@@ -179,8 +192,8 @@ namespace TileShop
                     colortype = e.Descendants("colortype").First().Value,
                     colordepth = e.Descendants("colordepth").First().Value,
                     layout = e.Descendants("layout").First().Value,
-                    height = e.Descendants("height").First().Value,
-                    width = e.Descendants("width").First().Value,
+                    height = e.Descendants("defaultheight").First().Value,
+                    width = e.Descendants("defaultwidth").First().Value,
                     fixedsize = e.Descendants("fixedsize").First().Value,
                     mergepriority = e.Descendants("mergepriority").First().Value
                 }).First();
@@ -201,8 +214,10 @@ namespace TileShop
             else
                 throw new XmlException(String.Format("Unsupported layout '{0}'", codecs.layout));
 
-            Width = int.Parse(codecs.width);
-            Height = int.Parse(codecs.height);
+            DefaultWidth = int.Parse(codecs.width);
+            DefaultHeight = int.Parse(codecs.height);
+            Width = DefaultWidth;
+            Height = DefaultHeight;
             FixedSize = bool.Parse(codecs.fixedsize);
 
             string mergestring = codecs.mergepriority;

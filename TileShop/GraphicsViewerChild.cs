@@ -378,7 +378,8 @@ namespace TileShop
             if (index == prevFormatIndex) // No need to change formats and clear cache
                 return;
 
-            arranger.SetGraphicsFormat((string)FormatSelectBox.SelectedItem);
+            GraphicsFormat format = FileManager.Instance.GetGraphicsFormat((string)FormatSelectBox.SelectedItem);
+            arranger.SetGraphicsFormat((string)FormatSelectBox.SelectedItem, new Size(format.DefaultWidth, format.DefaultHeight));
             ElementSize = arranger.ElementPixelSize;
 
             UpdateAddressLabel();

@@ -171,11 +171,11 @@ namespace TileShop
                     return;
                 }
 
-                foreach (Arranger arr in arrangers)
-                    pec.AddArranger(arr.Clone(), false);
-
                 foreach (Palette pal in palettes)
                     pec.AddPalette(pal.Clone());
+
+                foreach (Arranger arr in arrangers)
+                    pec.AddArranger(arr.Clone(), false);
             }
         }
 
@@ -315,7 +315,7 @@ namespace TileShop
             if(DialogResult.OK == npf.ShowDialog())
             {
                 Palette pal = new Palette(npf.PaletteName);
-                pal.LoadPalette(npf.FileName, new FileBitAddress(npf.FileOffset, 0), npf.ColorFormat, npf.Entries); // TODO: Refactor for new FileBitAddress
+                pal.LoadPalette(npf.FileName, new FileBitAddress(npf.FileOffset, 0), npf.ColorFormat, true, npf.Entries); // TODO: Refactor for new FileBitAddress, 0-index transparency
                 pec.AddPalette(pal);
             }
         }

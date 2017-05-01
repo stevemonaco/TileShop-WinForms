@@ -72,7 +72,6 @@ namespace TileShop
                     }
 
                     GraphicsCodec.Decode(Image, el);
-                    //GraphicsCodec.Decode(Image, el.X1, el.Y1, FileManager.Instance.GetGraphicsFormat(el.FormatName), br, FileManager.Instance.GetPalette(el.PaletteName));
                 }
             }
 

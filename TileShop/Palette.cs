@@ -28,21 +28,45 @@ namespace TileShop
 
     public class Palette
     {
+        /// <summary>
+        /// Identifying name of the palette
+        /// </summary>
         public string Name { get; private set; }
-        public PaletteColorFormat ColorFormat { get; private set; }
-        public FileBitAddress FileAddress { get; private set; }
-        //public long FileOffset { get; private set; }
-        public string FileName { get; private set; }
-        public int Entries { get; private set; }
-        public bool HasAlpha { get; private set; }
-        public bool ZeroIndexTransparent { get; private set; }
-        public PaletteStorageSource StorageSource { get; private set; }
 
         /// <summary>
-        /// Gets the state expressing if palette settings specific to the project structure has been modified since last save
-        /// This only includes the palette colors if they are stored in the project structure file
+        /// ColorFormat of the palette
         /// </summary>
-        public bool IsProjectModified { get; private set; }
+        public PaletteColorFormat ColorFormat { get; private set; }
+
+        /// <summary>
+        /// FileName which contains the palette
+        /// </summary>
+        public string FileName { get; private set; }
+
+        /// <summary>
+        /// Address of the palette within the file
+        /// </summary>
+        public FileBitAddress FileAddress { get; private set; }
+
+        /// <summary>
+        /// Number of color entries in the palette
+        /// </summary>
+        public int Entries { get; private set; }
+
+        /// <summary>
+        /// Specifies if the Palette has an alpha channel
+        /// </summary>
+        public bool HasAlpha { get; private set; }
+
+        /// <summary>
+        /// Specifies if the palette's 0-index is automatically treated as transparent
+        /// </summary>
+        public bool ZeroIndexTransparent { get; private set; }
+
+        /// <summary>
+        /// Specifies the palette's storage source
+        /// </summary>
+        public PaletteStorageSource StorageSource { get; private set; }
 
         /// <summary>
         /// Gets the internal palette containing local ARGB32 colors
@@ -68,7 +92,6 @@ namespace TileShop
         /// Constructs a new named Palette object
         /// </summary>
         /// <param name="PaletteName">Name of the palette</param>
-
         public Palette(string PaletteName)
         {
             Name = PaletteName;
@@ -76,9 +99,7 @@ namespace TileShop
             HasAlpha = false;
             Entries = 0;
             FileName = null;
-            //FileOffset = 0;
             ZeroIndexTransparent = true;
-            IsProjectModified = false;
         }
 
         /// <summary>
@@ -87,7 +108,7 @@ namespace TileShop
         /// <returns></returns>
         public bool Reload()
         {
-            return LoadPalette(FileName, FileAddress, ColorFormat, Entries);
+            return LoadPalette(FileName, FileAddress, ColorFormat, ZeroIndexTransparent, Entries);
         }
 
         /// <summary>
@@ -118,7 +139,6 @@ namespace TileShop
 
             ColorFormat = PaletteColorFormat.ARGB32;
             FileAddress = new FileBitAddress(0, 0);
-            //FileOffset = 0;
             FileName = filename;
             Entries = entrySize;
             StorageSource = PaletteStorageSource.File;
@@ -130,12 +150,12 @@ namespace TileShop
         /// Load palette from a previously opened file
         /// </summary>
         /// <param name="fileId">Id of file in FileManager</param>
-        /// <param name="offset">File offset to the beginning of the palette</param>
+        /// <param name="address">File address to the beginning of the palette</param>
         /// <param name="format">Color format of the palette</param>
+        /// <param name="zeroIndexTransparent">If the 0-index of the palette is automatically transparent</param>
         /// <param name="numEntries">Number of entries the palette contains</param>
         /// <returns>Success value</returns>
-        //public bool LoadPalette(string fileId, long offset, PaletteColorFormat format, int numEntries)
-        public bool LoadPalette(string fileId, FileBitAddress address, PaletteColorFormat format, int numEntries)
+        public bool LoadPalette(string fileId, FileBitAddress address, PaletteColorFormat format, bool zeroIndexTransparent, int numEntries)
         {
             if (numEntries > 256)
                 throw new ArgumentException("Maximum palette size must be 256 entries or less");
@@ -144,7 +164,6 @@ namespace TileShop
             foreignPalette = new UInt32[numEntries];
 
             FileStream fs = FileManager.Instance.GetFileStream(fileId);
-            //BinaryReader br = new BinaryReader(fs);
 
             int readSize;
 
@@ -172,7 +191,6 @@ namespace TileShop
 
             byte[] tempPalette = fs.ReadUnshifted(address, readSize * 8 * numEntries, true);
             BitStream bs = BitStream.OpenRead(tempPalette, readSize * 8 * numEntries);
-            //fs.Seek(offset, SeekOrigin.Begin);
 
             for (int i = 0; i < numEntries; i++)
             {
@@ -203,16 +221,16 @@ namespace TileShop
 
                 uint localColor = ForeignToLocalArgb(foreignColor, format);
                 foreignPalette[i] = foreignColor;
-
-                if (i == 0)
-                    localPalette[i] = localColor & 0x00FFFFFF; // Make first entry transparent TODO: Use ZeroIndexTransparent instead
-                else
-                    localPalette[i] = localColor;
+                localPalette[i] = localColor;
             }
+
+            ZeroIndexTransparent = zeroIndexTransparent;
+
+            if (ZeroIndexTransparent)
+                localPalette[0] &= 0x00FFFFFF;
 
             ColorFormat = format;
             FileAddress = address;
-            //FileOffset = offset;
             FileName = fileId;
             Entries = numEntries;
             StorageSource = PaletteStorageSource.File;
@@ -681,13 +699,11 @@ namespace TileShop
             {
                 ColorFormat = ColorFormat,
                 FileAddress = FileAddress,
-                //FileOffset = FileOffset,
                 FileName = FileName,
                 Entries = Entries,
                 HasAlpha = HasAlpha,
                 ZeroIndexTransparent = ZeroIndexTransparent,
                 StorageSource = StorageSource,
-                IsProjectModified = IsProjectModified,
                 LocalPalette = new uint[Entries],
                 ForeignPalette = new uint[Entries]
             };
