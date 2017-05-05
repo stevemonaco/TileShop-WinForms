@@ -172,10 +172,10 @@ namespace TileShop
                 }
 
                 foreach (Palette pal in palettes)
-                    pec.AddPalette(pal.Clone());
+                    pec.AddPalette(pal.Clone(), "temp");
 
                 foreach (Arranger arr in arrangers)
-                    pec.AddArranger(arr.Clone(), false);
+                    pec.AddArranger(arr.Clone(), "temp");
             }
         }
 
@@ -204,7 +204,7 @@ namespace TileShop
 
             string s = @"D:\Projects\ff2.sfc";
 
-            if(!pec.AddFile(s, true))
+            if(!pec.AddFile(s, "Debug", true))
                 MessageBox.Show("Could not open file " + s);
         }
 
@@ -243,11 +243,6 @@ namespace TileShop
 
             ProjectFileName = "D:\\Projects\\ff2.xml";
             pec.LoadProject(ProjectFileName);
-
-            /*GraphicsViewerMdiChild gv = new GraphicsViewerMdiChild(this, "Font");
-            gv.WindowState = FormWindowState.Maximized;
-            gv.SetZoom(6);
-            gv.Show(dockPanel, DockState.Document);*/
         }
 
         private void SaveProjectToolStripMenuItem_Click(object sender, EventArgs e)
@@ -315,8 +310,8 @@ namespace TileShop
             if(DialogResult.OK == npf.ShowDialog())
             {
                 Palette pal = new Palette(npf.PaletteName);
-                pal.LoadPalette(npf.FileName, new FileBitAddress(npf.FileOffset, 0), npf.ColorFormat, true, npf.Entries); // TODO: Refactor for new FileBitAddress, 0-index transparency
-                pec.AddPalette(pal);
+                pal.LoadPalette(npf.FileName, new FileBitAddress(npf.FileOffset, 0), npf.ColorFormat, true, npf.Entries); // TODO: Refactor for new FileBitAddress
+                pec.AddPalette(pal, "");
             }
         }
 
@@ -341,7 +336,7 @@ namespace TileShop
 
                 Arranger arr = Arranger.NewScatteredArranger(ArrSize.Width, ArrSize.Height, TileSize.Width, TileSize.Height);
                 arr.Name = nsaf.GetArrangerName();
-                pec.AddArranger(arr, true);
+                pec.AddArranger(arr, "temp", true);
             }
         }
 
@@ -454,7 +449,7 @@ namespace TileShop
                 }
                 else
                 {
-                    if (!pec.AddFile(ofd.FileName, true))
+                    if (!pec.AddFile(ofd.FileName, "", true))
                     {
                         MessageBox.Show("Could not open file " + ofd.FileName);
                         return;
@@ -465,7 +460,7 @@ namespace TileShop
 
         private void CloseProjectToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if(pec.IsProjectModified)
+            /*if(pec.IsProjectModified)
             {
                 DialogResult dr = MessageBox.Show("The project has been modified. Save?", "Save Project", MessageBoxButtons.YesNoCancel);
                 if (dr == DialogResult.Yes && !String.IsNullOrEmpty(ProjectFileName)) // Project has a filename due to being previously saved or opened
@@ -494,7 +489,7 @@ namespace TileShop
                 }
                 else if (dr == DialogResult.Cancel)
                     return;
-            }
+            }*/
 
             List<EditorDockContent> CloseList = new List<EditorDockContent>();
 

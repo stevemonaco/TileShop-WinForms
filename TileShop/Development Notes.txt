@@ -5,17 +5,19 @@ Implement new PaletteColorFormats
 Test UI features for detecting modifications to arrangers/palettes/etc
 Add more tools to the pixel editor
 Add direct encoding/decoding
-Support for palettes with scattered color locations
 Add support to attach palettes to tiles in the arranger
 Add support for palettes in pixel editor (gray out pixels that cannot be edited using the current palette)
-Change fixedsize in codec to fixedwidth and fixedheight
+Change fixedsize in codec to fixedwidth and fixedheight (might not be necessary)
 For drag+drop of elements from a ScatteredArranger->SequentialArranger, create a new temp Arranger with adjusted addresses, render, and save
 Crashing bug when selecting a blank element in a ScatteredArranger (editing) -> Selection contains blank element and cannot be edited MessageBox popup
 Test encoding support for rowpixelpattern
 Add encoding support for mergepriority
+Restructure TreeView folders for files
+Switch file i/o to just-in-time for editing
 
 Longer term TODO:
 Implement editing support geared specifically towards linear graphics
+Support for palettes with scattered color locations
 
 Testing:
 FF5 8x12 1bpp font @ 3EB00
