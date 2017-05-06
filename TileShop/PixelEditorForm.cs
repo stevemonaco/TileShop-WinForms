@@ -28,7 +28,6 @@ namespace TileShop
         int Zoom = 24;
         PixelDrawState DrawState = PixelDrawState.PencilState;
         bool RenderTransparency = true;
-        bool ShowGridlines = false;
         bool PencilDragActive = false;
 
         /// <summary>
@@ -55,6 +54,33 @@ namespace TileShop
             SetDrawState(PixelDrawState.PencilState);
             ContentSourceName = "Pixel Editor";
             SwatchControl.Hide();
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == Keys.G) // Toggle Gridlines
+            {
+                GridlinesButton.Checked ^= true;
+                PixelPanel.Invalidate();
+                return true;
+            }
+            else if (keyData == Keys.Z) // Zoom in
+            {
+                Zoom++;
+                ResizePanels();
+                return true;
+            }
+            else if (keyData == Keys.X) // Zoom out
+            {
+                if (Zoom > 1)
+                {
+                    Zoom--;
+                    ResizePanels();
+                }
+                return true;
+            }
+
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         public override bool ReloadContent()
@@ -116,15 +142,21 @@ namespace TileShop
                 return;
             }
 
-            DisplayRect.Size = new Size(EditArranger.ArrangerPixelSize.Width * Zoom, EditArranger.ArrangerPixelSize.Height * Zoom);
-            PixelPanel.Height = EditArranger.ArrangerPixelSize.Height * Zoom + PixelMargin.Height;
-            PixelPanel.Invalidate();
+            ResizePanels();
 
             string palName = EditArranger.GetElement(0, 0).PaletteName;
             string formatName = EditArranger.GetElement(0, 0).FormatName;
             SwatchControl.ShowPalette(FileManager.Instance.GetPalette(palName), 1 << FileManager.Instance.GetGraphicsFormat(formatName).ColorDepth);
             SwatchControl.SelectedIndex = 0;
             SwatchControl.Show();
+        }
+
+        private void ResizePanels()
+        {
+            DisplayRect.Size = new Size(EditArranger.ArrangerPixelSize.Width * Zoom, EditArranger.ArrangerPixelSize.Height * Zoom);
+            PixelPanel.Height = EditArranger.ArrangerPixelSize.Height * Zoom + PixelMargin.Height;
+            PixelPanel.Invalidate();
+            Invalidate();
         }
 
         private void PixelPanel_Paint(object sender, PaintEventArgs e)
@@ -154,7 +186,7 @@ namespace TileShop
             e.Graphics.FillRectangle(TransparentBrush, DisplayRect);
             e.Graphics.DrawImage(rm.Image, dest, src, GraphicsUnit.Pixel);
 
-            if(ShowGridlines)
+            if(GridlinesButton.Checked)
                 DrawPixelGridlines(e.Graphics);
         }
 
@@ -203,7 +235,6 @@ namespace TileShop
 
         private void GridlinesButton_Click(object sender, EventArgs e)
         {
-            ShowGridlines ^= true;
             PixelPanel.Invalidate();
         }
 
