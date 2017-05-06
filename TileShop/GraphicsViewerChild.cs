@@ -31,7 +31,7 @@ namespace TileShop
         }
         int zoom;
 
-        bool showGridlines = true;
+        //bool showGridlines = true;
 
         Size DisplayElements; // The number of elements in the entire display
         Size ElementSize; // The size of each element in unzoomed pixels
@@ -364,6 +364,11 @@ namespace TileShop
                     FormatSelectBox.SelectedIndex--;
                 return true;
             }
+            else if(keyData == Keys.G) // Toggle Gridlines
+            {
+                ShowGridlinesButton.Checked ^= true;
+                RenderPanel.Invalidate();
+            }
 
             return base.ProcessCmdKey(ref msg, keyData);
         }
@@ -412,7 +417,7 @@ namespace TileShop
 
         private void DrawGridlines(Graphics g)
         {
-            if (showGridlines)
+            if (ShowGridlinesButton.Checked)
             {
                 for (int y = 0; y <= DisplayElements.Height; y++) // Draw horizontal lines
                     g.DrawLine(Pens.White, 0, y * ElementSize.Height * Zoom + 1,
@@ -452,11 +457,6 @@ namespace TileShop
 
         private void ShowGridlinesButton_Click(object sender, EventArgs e)
         {
-            showGridlines ^= true;
-            if (showGridlines)
-                ShowGridlinesButton.Checked = true;
-            else
-                ShowGridlinesButton.Checked = false;
             RenderPanel.Invalidate();
         }
 

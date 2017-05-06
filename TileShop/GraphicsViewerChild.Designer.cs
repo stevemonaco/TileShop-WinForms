@@ -77,6 +77,7 @@
             // ShowGridlinesButton
             // 
             this.ShowGridlinesButton.Checked = true;
+            this.ShowGridlinesButton.CheckOnClick = true;
             this.ShowGridlinesButton.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ShowGridlinesButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.ShowGridlinesButton.Image = global::TileShop.Properties.Resources.gridlines;
