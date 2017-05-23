@@ -87,13 +87,8 @@ namespace TileShop
                         }
                     }
                 }
-                else
+                else // Non-interlaced
                 {
-                    /*for (int y = 0; y < format.Height; y++, pos+=format.Width)
-                        for (int x = 0; x < format.Width; x++)
-                            for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
-                                el.TileData[format.MergePriority[curPlane]][pos + ip.RowExtendedPixelPattern[x]] = (byte)bs.ReadBit();*/
-
                     for (int y = 0; y < el.Height; y++, pos += el.Width)
                         for (int x = 0; x < el.Width; x++)
                             for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
@@ -103,16 +98,15 @@ namespace TileShop
                 plane += ip.ColorDepth;
             }
 
-            // Merge into foreign colors
-            byte foreignColor = 0;
+            // Merge into foreign pixel data
+            byte foreignPixelData = 0;
 
             for (pos = 0; pos < el.MergedData.Length; pos++)
             {
-                foreignColor = 0;
+                foreignPixelData = 0;
                 for (int i = 0; i < format.ColorDepth; i++)
-                    foreignColor |= (byte)(el.ElementData[i][pos] << i); // Works for SNES palettes
-                    //foreignColor |= (byte)(el.TileData[i][pos] << (format.ColorDepth - i - 1)); // Works for TIM palettes
-                el.MergedData[pos] = foreignColor;
+                    foreignPixelData |= (byte)(el.ElementData[i][pos] << i); // Works for SNES palettes
+                el.MergedData[pos] = foreignPixelData;
             }
 
             // Translate foreign colors to local colors and draw to bitmap
@@ -268,7 +262,6 @@ namespace TileShop
             BitStream bs = BitStream.OpenWrite(el.StorageSize, 8);
             int plane = 0;
 
-
             foreach (ImageProperty ip in format.ImagePropertyList)
             {
                 int pos = 0;
@@ -283,24 +276,24 @@ namespace TileShop
                             //for (int x = 0; x < format.Width; x++, pos++)
                             //    bs.WriteBit(el.TileData[curPlane][pos]);
                             for (int x = 0; x < el.Width; x++)
-                                bs.WriteBit(el.ElementData[curPlane][pos + ip.RowPixelPattern[x]]);
+                                bs.WriteBit(el.ElementData[format.MergePriority[curPlane]][pos + ip.RowPixelPattern[x]]);
                         }
                     }
                 }
                 else
                 {
-                    /*for (int y = 0; y < format.Height; y++)
+                    /*for (int y = 0; y < el.Height; y++, pos += el.Width)
                     {
-                        for (int x = 0; x < format.Width; x++, pos++)
+                        for (int x = 0; x < el.Width; x++)
                             for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
-                                bs.WriteBit(el.TileData[curPlane][pos]);
+                                bs.WriteBit(el.ElementData[curPlane][pos + ip.RowPixelPattern[x]]);
                     }*/
 
                     for (int y = 0; y < el.Height; y++, pos += el.Width)
                     {
                         for (int x = 0; x < el.Width; x++)
                             for (int curPlane = plane; curPlane < plane + ip.ColorDepth; curPlane++)
-                                bs.WriteBit(el.ElementData[curPlane][pos + ip.RowPixelPattern[x]]);
+                                bs.WriteBit(el.ElementData[format.MergePriority[curPlane]][pos + ip.RowPixelPattern[x]]);
                     }
                 }
 

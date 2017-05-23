@@ -59,7 +59,7 @@ namespace TileShop
                     ArrangerElement el = arranger.ElementList[j, i];
                     if (!arranger.IsSequential) // Non-sequential requires a seek for each element rendered
                     {
-                        if (el.FormatName == "") // Empty format means a blank tile
+                        if (el.IsBlank())
                         {
                             GraphicsCodec.DecodeBlank(Image, el);
                             continue;
