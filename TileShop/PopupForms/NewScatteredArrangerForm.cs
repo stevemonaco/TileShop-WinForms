@@ -13,7 +13,7 @@ namespace TileShop
     public partial class NewScatteredArrangerForm : Form
     {
         public Size ArrangerSize { get; private set; }
-        public Size TileSize { get; private set; }
+        public Size ElementPixelSize { get; private set; }
         public string ArrangerName { get; private set; }
 
         public NewScatteredArrangerForm()
@@ -25,22 +25,28 @@ namespace TileShop
             ActiveControl = NameTextBox;
         }
 
-        public void SetDefaults(int TileWidth, int TileHeight, int ArrangerTilesX, int ArrangerTilesY)
+        public void SetDefaults(int ElementWidth, int ElementHeight, int ArrangerElementsWidth, int ArrangerElementsHeight)
         {
-            TileWidthBox.Text = TileWidth.ToString();
-            TileHeightBox.Text = TileHeight.ToString();
-            TilesXBox.Text = ArrangerTilesX.ToString();
-            TilesYBox.Text = ArrangerTilesY.ToString();
+            if (ElementWidth < 0 || ElementHeight < 0 || ArrangerElementsWidth < 0 || ArrangerElementsHeight < 0)
+                throw new ArgumentOutOfRangeException();
 
-            ArrangerSize = new Size(ArrangerTilesX, ArrangerTilesY);
-            TileSize = new Size(TileWidth, TileHeight);
+            ArrangerWidthBox.Value = ArrangerElementsWidth;
+            ArrangerHeightBox.Value = ArrangerElementsHeight;
+            ElementWidthBox.Value = ElementWidth;
+            ElementHeightBox.Value = ElementHeight;
+
+            ArrangerSize = new Size(ArrangerElementsWidth, ArrangerElementsHeight);
+            ElementPixelSize = new Size(ElementWidth, ElementHeight);
         }
 
-        public Size GetTileSize()
+        public Size GetElementSize()
         {
-            Size s = new Size();
-            s.Width = int.Parse(TileWidthBox.Text);
-            s.Height = int.Parse(TileHeightBox.Text);
+            Size s = new Size()
+            {
+                Width = (int)ElementWidthBox.Value,
+                Height = (int)ElementHeightBox.Value
+            };
+
             return s;
         }
 
@@ -48,8 +54,8 @@ namespace TileShop
         {
             Size s = new Size()
             {
-                Width = int.Parse(TilesXBox.Text),
-                Height = int.Parse(TilesYBox.Text)
+                Width = (int)ArrangerWidthBox.Value,
+                Height = (int)ArrangerHeightBox.Value
             };
             return s;
         }
@@ -63,9 +69,9 @@ namespace TileShop
         {
             DialogResult = DialogResult.None;
 
-            if (NameTextBox.Text == "" || TilesXBox.Text == "" || TilesYBox.Text == "" || TileHeightBox.Text == "" || TileWidthBox.Text == "")
+            if (NameTextBox.Text == "")
             {
-                MessageBox.Show("All fields must be completed before adding an arranger to the project");
+                MessageBox.Show("The arranger must be named before adding it to the project.");
                 return;
             }
             if (FileManager.Instance.HasArranger(NameTextBox.Text))
@@ -75,12 +81,13 @@ namespace TileShop
             }
 
             ArrangerName = NameTextBox.Text;
-            ArrangerSize = new Size(int.Parse(TilesXBox.Text), int.Parse(TilesYBox.Text));
-            TileSize = new Size(int.Parse(TileWidthBox.Text), int.Parse(TileHeightBox.Text));
+            ArrangerSize = GetArrangerSize();
+            ElementPixelSize = GetElementSize();
 
-            if(TileSize.Width == 0 || TileSize.Height == 0 || ArrangerSize.Width == 0 || ArrangerSize.Height == 0)
+            if(ElementPixelSize.Width == 0 || ElementPixelSize.Height == 0 || ArrangerSize.Width == 0 || ArrangerSize.Height == 0)
             {
                 MessageBox.Show("All numeric fields must be nonzero to create a new arranger");
+                return;
             }
 
             DialogResult = DialogResult.OK;

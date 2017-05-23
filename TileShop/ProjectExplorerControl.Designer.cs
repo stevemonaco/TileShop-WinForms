@@ -28,9 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ProjectExplorerControl));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.projectTabPage = new System.Windows.Forms.TabPage();
             this.ProjectTreeView = new System.Windows.Forms.TreeView();
+            this.nodeImageList = new System.Windows.Forms.ImageList(this.components);
             this.tabControl1.SuspendLayout();
             this.projectTabPage.SuspendLayout();
             this.SuspendLayout();
@@ -59,13 +62,34 @@
             // 
             // ProjectTreeView
             // 
+            this.ProjectTreeView.AllowDrop = true;
             this.ProjectTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ProjectTreeView.ImageIndex = 0;
+            this.ProjectTreeView.ImageList = this.nodeImageList;
+            this.ProjectTreeView.LabelEdit = true;
             this.ProjectTreeView.Location = new System.Drawing.Point(0, 0);
             this.ProjectTreeView.Name = "ProjectTreeView";
+            this.ProjectTreeView.SelectedImageIndex = 0;
             this.ProjectTreeView.Size = new System.Drawing.Size(261, 347);
             this.ProjectTreeView.TabIndex = 0;
+            this.ProjectTreeView.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.ProjectTreeView_AfterLabelEdit);
+            this.ProjectTreeView.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.ProjectTreeView_BeforeCollapse);
+            this.ProjectTreeView.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.ProjectTreeView_BeforeExpand);
+            this.ProjectTreeView.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.ProjectTreeView_ItemDrag);
             this.ProjectTreeView.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.ProjectTreeView_NodeMouseClick);
             this.ProjectTreeView.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.ProjectTreeView_NodeMouseDoubleClick);
+            this.ProjectTreeView.DragDrop += new System.Windows.Forms.DragEventHandler(this.ProjectTreeView_DragDrop);
+            this.ProjectTreeView.DragEnter += new System.Windows.Forms.DragEventHandler(this.ProjectTreeView_DragEnter);
+            // 
+            // nodeImageList
+            // 
+            this.nodeImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("nodeImageList.ImageStream")));
+            this.nodeImageList.TransparentColor = System.Drawing.Color.Black;
+            this.nodeImageList.Images.SetKeyName(0, "folder_Closed_16xLG.png");
+            this.nodeImageList.Images.SetKeyName(1, "folder_Open_16xLG.png");
+            this.nodeImageList.Images.SetKeyName(2, "CodeSnippet_6225_32.bmp");
+            this.nodeImageList.Images.SetKeyName(3, "ImageButton_735_32.bmp");
+            this.nodeImageList.Images.SetKeyName(4, "ChooseColorHS.bmp");
             // 
             // ProjectExplorerControl
             // 
@@ -87,5 +111,6 @@
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage projectTabPage;
         private System.Windows.Forms.TreeView ProjectTreeView;
+        private System.Windows.Forms.ImageList nodeImageList;
     }
 }

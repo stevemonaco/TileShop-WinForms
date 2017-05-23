@@ -17,9 +17,6 @@ namespace TileShop
     public partial class ProjectExplorerControl : DockContent
     {
         TileShopForm tsf = null;
-        //FileFolderNode filesNode = new FileFolderNode();
-        //PaletteFolderNode palettesNode = new PaletteFolderNode();
-        //ArrangerFolderNode arrangersNode = new ArrangerFolderNode();
         ContextMenu contextMenu = new ContextMenu();
 
         public ProjectExplorerControl(TileShopForm tileShopForm)
@@ -27,14 +24,6 @@ namespace TileShop
             tsf = tileShopForm ?? throw new ArgumentNullException();
 
             InitializeComponent();
-
-            /*filesNode.Text = "Files";
-            palettesNode.Text = "Palettes";
-            arrangersNode.Text = "Arrangers";
-
-            ProjectTreeView.Nodes.Add(filesNode);
-            ProjectTreeView.Nodes.Add(palettesNode);
-            ProjectTreeView.Nodes.Add(arrangersNode);*/
         }
 
         /// <summary>
@@ -59,12 +48,13 @@ namespace TileShop
             if (!FileManager.Instance.LoadFile(Filename))
                 return false;
 
-            FolderNode folderNode = AddFolderNode(NodePath);
-
-            if (folderNode == null) // Add to root
+            if (NodePath == "") // Add to root
                 ProjectTreeView.Nodes.Add(fileNode);
-            else // Add to subfolder
+            else // Add to folder
+            {
+                FolderNode folderNode = AddFolderNode(NodePath);
                 folderNode.Nodes.Add(fileNode);
+            }
 
             if (Show)
             {
@@ -91,6 +81,7 @@ namespace TileShop
                 throw new InvalidOperationException("Attempted to RemoveFile on a TreeView node that is not a FileNode");
 
             tn.Remove();
+            FileManager.Instance.RemoveFile(Filename);
 
             return true;
         }
@@ -115,8 +106,13 @@ namespace TileShop
                 Tag = arr.Name
             };
 
-            FolderNode folderNode = AddFolderNode(NodePath);
-            folderNode.Nodes.Add(an);
+            if (NodePath == "") // Add to root
+                ProjectTreeView.Nodes.Add(an);
+            else
+            {
+                FolderNode folderNode = AddFolderNode(NodePath);
+                folderNode.Nodes.Add(an);
+            }
 
             FileManager.Instance.AddArranger(arr);
 
@@ -157,29 +153,40 @@ namespace TileShop
             pn.Text = pal.Name;
             pn.Tag = pal.Name;
 
-            FolderNode folderNode = AddFolderNode(NodePath);
-            
-            folderNode.Nodes.Add(pn);
+            if (NodePath == "") // Add to root
+                ProjectTreeView.Nodes.Add(pn);
+            else
+            {
+                FolderNode folderNode = AddFolderNode(NodePath);
+                folderNode.Nodes.Add(pn);
+            }
+
             FileManager.Instance.AddPalette(pal);
 
             return true;
         }
 
-        public bool RemovePalette(string PaletteName, string NodePath)
+        public bool RemovePalette(PaletteNode pn)
         {
-            TreeNode tn = FindNode(PaletteName, NodePath);
+            if (pn == null)
+                throw new ArgumentNullException("PaletteNode cannot be null");
 
-            if (tn == null)
-                return false;
+            FileManager.Instance.RemovePalette(pn.Text);
+            pn.Remove();
 
-            if (tn.GetType() != typeof(PaletteNode))
-                throw new InvalidOperationException("Attempted to RemovePalette on a TreeView node that is not an PaletteNode");
-
-            return false;
+            return true;
         }
 
         public bool ShowSequentialArranger(string Filename)
         {
+            List<EditorDockContent> activeEditors = tsf.GetActiveEditors();
+
+            foreach(EditorDockContent dc in activeEditors) // Return if an editor is already opened
+            {
+                if (dc.ContentSourceName == Filename && dc.GetType() == typeof(GraphicsViewerChild))
+                    return false;
+            }
+
             if (FileManager.Instance.LoadSequentialArrangerFromFilename(Filename))
             {
                 GraphicsViewerChild gv = new GraphicsViewerChild(Filename);
@@ -194,6 +201,14 @@ namespace TileShop
 
         public bool ShowScatteredArranger(string ArrangerName)
         {
+            List<EditorDockContent> activeEditors = tsf.GetActiveEditors();
+
+            foreach (EditorDockContent dc in activeEditors) // Return if an editor is already opened
+            {
+                if (dc.ContentSourceName == ArrangerName && dc.GetType() == typeof(GraphicsViewerChild))
+                    return false;
+            }
+
             GraphicsViewerChild gv = new GraphicsViewerChild(ArrangerName);
             gv.WindowState = FormWindowState.Maximized;
 
@@ -211,6 +226,14 @@ namespace TileShop
         {
             if (!FileManager.Instance.HasPalette(PaletteName))
                 return false;
+
+            List<EditorDockContent> activeEditors = tsf.GetActiveEditors();
+
+            foreach (EditorDockContent dc in activeEditors) // Return if an editor is already opened
+            {
+                if (dc.ContentSourceName == PaletteName && dc.GetType() == typeof(PaletteEditorForm))
+                    return false;
+            }
 
             PaletteEditorForm pef = new PaletteEditorForm(PaletteName);
             pef.ContentModified += tsf.ContentModified;
@@ -361,10 +384,10 @@ namespace TileShop
         /// <returns></returns>
         public bool SaveProject(string XmlFileName)
         {
-            XElement root = new XElement("gdf");
+            var root = new XElement("gdf");
 
             // Save settings
-            XElement settings = new XElement("settings");
+            var settings = new XElement("settings");
             //XElement numberformat = new XElement("filelocationnumberformat");
             //numberformat.SetValue("hexadecimal");
             //settings.Add(numberformat);
@@ -372,24 +395,27 @@ namespace TileShop
             root.Add(settings);
 
             // Save each data file
-            XElement datafiles = new XElement("datafiles");
-            XElement palettes = new XElement("palettes");
-            XElement arrangers = new XElement("arrangers");
+            var datafiles = new XElement("datafiles");
+            var palettes = new XElement("palettes");
+            var arrangers = new XElement("arrangers");
 
-            foreach (TreeNode tn in ProjectTreeView.Nodes)
+            foreach (TreeNode tn in ProjectTreeView.GetAllNodes())
             {
                 if(tn.GetType() == typeof(FileNode))
                 {
-                    XElement el = new XElement("file");
-                    el.SetAttributeValue("location", tn.Text);
-                    datafiles.Add(el);
+                    FileNode fn = (FileNode)tn;
+                    var xmlfile = new XElement("file");
+                    xmlfile.SetAttributeValue("location", fn.Text);
+                    xmlfile.SetAttributeValue("folder", fn.GetNodePath());
+                    datafiles.Add(xmlfile);
                 }
                 else if(tn.GetType() == typeof(PaletteNode))
                 {
                     PaletteNode pn = (PaletteNode)tn;
                     Palette pal = FileManager.Instance.GetPersistentPalette(pn.Text);
-                    XElement xmlpal = new XElement("palette");
+                    var xmlpal = new XElement("palette");
                     xmlpal.SetAttributeValue("name", pal.Name);
+                    xmlpal.SetAttributeValue("folder", pn.GetNodePath());
                     xmlpal.SetAttributeValue("fileoffset", String.Format("{0:X}", pal.FileAddress.FileOffset));
                     xmlpal.SetAttributeValue("bitoffset", String.Format("{0:X}", pal.FileAddress.BitOffset));
                     xmlpal.SetAttributeValue("datafile", pal.FileName);
@@ -402,8 +428,9 @@ namespace TileShop
                 {
                     ArrangerNode an = (ArrangerNode)tn;
                     Arranger arr = FileManager.Instance.GetPersistentArranger(an.Text);
-                    XElement xmlarr = new XElement("arranger");
+                    var xmlarr = new XElement("arranger");
                     xmlarr.SetAttributeValue("name", arr.Name);
+                    xmlarr.SetAttributeValue("folder", an.GetNodePath());
                     xmlarr.SetAttributeValue("elementsx", arr.ArrangerElementSize.Width);
                     xmlarr.SetAttributeValue("elementsy", arr.ArrangerElementSize.Height);
                     xmlarr.SetAttributeValue("width", arr.ElementPixelSize.Width);
@@ -421,7 +448,7 @@ namespace TileShop
                     {
                         for (int x = 0; x < arr.ArrangerElementSize.Width; x++)
                         {
-                            XElement graphic = new XElement("graphic");
+                            var graphic = new XElement("graphic");
                             ArrangerElement el = arr.GetElement(x, y);
 
                             graphic.SetAttributeValue("fileoffset", String.Format("{0:X}", el.FileAddress.FileOffset));
@@ -522,7 +549,6 @@ namespace TileShop
 
         private void ProjectTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            //tsf.openExistingArranger(e.Node.Text);
             if (e.Node.GetType() == typeof(FileNode))
             {
                 ShowSequentialArranger((string)e.Node.Tag);
@@ -566,6 +592,7 @@ namespace TileShop
             TreeNodeCollection deepestCollection = ProjectTreeView.Nodes;
             FolderNode fn = null;
             int idx = 0; // Index of nodepath to start adding nodes with
+            string currentPath = "";
 
             foreach (string path in nodepaths)
             {
@@ -577,6 +604,7 @@ namespace TileShop
                         deepestCollection = tn.Nodes;
                         fn = (FolderNode)tn;
                         nodeExists = true;
+                        currentPath = currentPath + nodepaths[idx] + "\\";
                         idx++;
                         break;
                     }
@@ -586,9 +614,13 @@ namespace TileShop
                     break;
             }
 
+            if (currentPath != "")
+                currentPath.Remove(currentPath.Length - 1, 1);
+
             for (int i = idx; i < nodepaths.Length; i++)
             {
                 FolderNode fnadd = new FolderNode();
+                currentPath = currentPath + "\\" + nodepaths[i];
                 fnadd.Text = nodepaths[i];
                 deepestCollection.Add(fnadd);
                 deepestCollection = fnadd.Nodes;
@@ -637,7 +669,6 @@ namespace TileShop
             return matchedNode;
         }
 
-
         /// <summary>
         /// Finds a node within the ProjectTreeView
         /// </summary>
@@ -659,83 +690,204 @@ namespace TileShop
 
             return null;
         }
+
+        private void ProjectTreeView_ItemDrag(object sender, ItemDragEventArgs e)
+        {
+            DoDragDrop(e.Item, DragDropEffects.Move);
+        }
+
+        private void ProjectTreeView_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Move;
+        }
+
+        private void ProjectTreeView_DragDrop(object sender, DragEventArgs e)
+        {
+            ProjectTreeNode dragNode = null;
+            bool moveChildren = false;
+
+            if(e.Data.GetDataPresent(typeof(FileNode)))
+                dragNode = (FileNode)e.Data.GetData(typeof(FileNode));
+            if (e.Data.GetDataPresent(typeof(FolderNode)))
+                dragNode = (FolderNode)e.Data.GetData(typeof(FolderNode));
+            if (e.Data.GetDataPresent(typeof(PaletteNode)))
+            {
+                dragNode = (PaletteNode)e.Data.GetData(typeof(PaletteNode));
+                moveChildren = true;
+            }
+            if (e.Data.GetDataPresent(typeof(ArrangerNode)))
+                dragNode = (ArrangerNode)e.Data.GetData(typeof(ArrangerNode));
+            else
+                return;
+
+            Point p = ((TreeView)sender).PointToClient(new Point(e.X, e.Y));
+            ProjectTreeNode dropNode = (ProjectTreeNode)((TreeView)sender).GetNodeAt(p);
+
+            if (moveChildren) // FolderNode dragdrop
+            {
+                if (dropNode.GetType() != typeof(FolderNode))
+                    return;
+
+                dragNode.Remove();
+                dropNode.Nodes.Add((TreeNode)dragNode);
+            }
+            else // ArrangerNode, FileNode, PaletteNode all must be moved into a folder node (or root)
+            {
+                if (dropNode.GetType() != typeof(FolderNode)) // All nodes must be attached to a folder node
+                    return;
+
+                dragNode.Remove();
+                dropNode.Nodes.Add((TreeNode)dragNode);
+            }
+        }
+
+        private void ProjectTreeView_BeforeCollapse(object sender, TreeViewCancelEventArgs e)
+        {
+            if (e.Node.GetType() != typeof(FolderNode))
+                throw new InvalidOperationException("ProjectTreeView attempted to collapse a node that isn't a FolderNode");
+
+            FolderNode fn = (FolderNode)e.Node;
+            fn.ImageIndex = 0;
+            fn.SelectedImageIndex = 0;
+        }
+
+        private void ProjectTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
+        {
+            if (e.Node.GetType() != typeof(FolderNode))
+                throw new InvalidOperationException("ProjectTreeView attempted to expand a node that isn't a FolderNode");
+
+            FolderNode fn = (FolderNode)e.Node;
+            fn.ImageIndex = 1;
+            fn.SelectedImageIndex = 1;
+        }
+
+        private void ProjectTreeView_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
+        {
+            // Check for naming conflicts
+        }
+    }
+
+    /// <summary>
+    /// Extension methods for TreeView
+    /// </summary>
+    public static class TreeViewExtensions
+    {
+        public static List<TreeNode> GetAllNodes(this TreeView _self)
+        {
+            List<TreeNode> result = new List<TreeNode>();
+            foreach (TreeNode child in _self.Nodes)
+            {
+                result.AddRange(child.GetAllNodes());
+            }
+            return result;
+        }
+
+        public static List<TreeNode> GetAllNodes(this TreeNode _self)
+        {
+            List<TreeNode> result = new List<TreeNode>();
+            result.Add(_self);
+            foreach (TreeNode child in _self.Nodes)
+            {
+                result.AddRange(child.GetAllNodes());
+            }
+            return result;
+        }
+    }
+
+    /// <summary>
+    /// Extension methods for TreeNode
+    /// </summary>
+    public static class TreeNodeExtensions
+    {
+        public static string GetNodePath(this TreeNode node)
+        {
+            string path = "";
+            TreeNode currentNode = node.Parent;
+
+            while (currentNode != null) // Traverse up parent nodes to build the node path
+            {
+                if (path == "")
+                    path = currentNode.Text;
+                else
+                    path = currentNode.Text + "\\" + path;
+
+                currentNode = currentNode.Parent;
+            }
+
+            return path;
+        }
     }
 
     public abstract class ProjectTreeNode : TreeNode
     {
         public abstract void BuildContextMenu(ContextMenu Menu);
+
+        /// <summary>
+        /// Path to folder where the node is contained
+        /// </summary>
+        /*protected string folderPath;
+
+        public string FolderPath
+        {
+            get { return folderPath; }
+            set
+            {
+                folderPath = value;
+                MoveNodeToPath();
+            }
+        }
+
+        private void MoveNodeToPath()
+        {
+            TreeView parentTree = this.TreeView;
+
+
+        }*/
     }
 
     public class FolderNode : ProjectTreeNode
     {
         public FolderNode()
         {
-        }
-
-        public override void BuildContextMenu(ContextMenu Menu)
-        {
-            //Menu.MenuItems.Clear();
-
-            //Menu.MenuItems.Add(new MenuItem("Add Existing File to Project", AddFile_Click));
-        }
-
-        public void AddFile_Click(object sender, System.EventArgs e)
-        {
-
-        }
-    }
-
-    public class FileFolderNode : ProjectTreeNode
-    {
-        public FileFolderNode()
-        {
+            ImageIndex = 0;
+            SelectedImageIndex = 0;
         }
 
         public override void BuildContextMenu(ContextMenu Menu)
         {
             Menu.MenuItems.Clear();
-
-            Menu.MenuItems.Add(new MenuItem("Add Existing File to Project", AddFile_Click));
+            Menu.MenuItems.Add(new MenuItem("Add New Folder", AddFolder_Click));
+            Menu.MenuItems.Add(new MenuItem("Remove Folder", RemoveFolder_Click));
         }
 
-        public void AddFile_Click(object sender, System.EventArgs e)
+        public void AddFolder_Click(object sender, System.EventArgs e)
         {
 
         }
-    }
 
-    public class PaletteFolderNode : ProjectTreeNode
-    {
-        public override void BuildContextMenu(ContextMenu Menu)
+        public void RemoveFolder_Click(object sender, System.EventArgs e)
         {
-            Menu.MenuItems.Clear();
+            if (this.Nodes.Count > 0) // This folder contains child nodes that will also need to be removed; warn user
+            {
+                DialogResult dr = MessageBox.Show("Folder contains subitems that will also be removed. Continue?", "Remove Folder", MessageBoxButtons.YesNo);
+                if (dr == DialogResult.No)
+                    return;
 
-            Menu.MenuItems.Add(new MenuItem("Add Palette from File to Project", AddPalette_Click));
-        }
 
-        public void AddPalette_Click(object sender, System.EventArgs e)
-        {
-
-        }
-    }
-
-    public class ArrangerFolderNode : ProjectTreeNode
-    {
-        public override void BuildContextMenu(ContextMenu Menu)
-        {
-            Menu.MenuItems.Clear();
-
-            Menu.MenuItems.Add(new MenuItem("Add New Scattered Arranger to Project", AddScatteredArranger_Click));
-        }
-
-        public void AddScatteredArranger_Click(object sender, System.EventArgs e)
-        {
-
+            }
+            else
+                this.Remove();
         }
     }
 
     public class FileNode : ProjectTreeNode
     {
+        public FileNode()
+        {
+            ImageIndex = 2;
+            SelectedImageIndex = 2;
+        }
+
         public override void BuildContextMenu(ContextMenu Menu)
         {
             Menu.MenuItems.Clear();
@@ -751,12 +903,18 @@ namespace TileShop
 
         public void RemoveFile_Click(object sender, System.EventArgs e)
         {
-
+            this.Remove();
         }
     }
 
     public class PaletteNode : ProjectTreeNode
     {
+        public PaletteNode()
+        {
+            ImageIndex = 4;
+            SelectedImageIndex = 4;
+        }
+
         public override void BuildContextMenu(ContextMenu Menu)
         {
             Menu.MenuItems.Clear();
@@ -775,11 +933,18 @@ namespace TileShop
         public void RemovePalette_Click(object sender, System.EventArgs e)
         {
 
+            this.Remove();
         }
     }
 
     public class ArrangerNode : ProjectTreeNode
     {
+        public ArrangerNode()
+        {
+            ImageIndex = 3;
+            SelectedImageIndex = 3;
+        }
+
         public override void BuildContextMenu(ContextMenu Menu)
         {
             Menu.MenuItems.Clear();
@@ -808,7 +973,7 @@ namespace TileShop
 
         public void RemoveArranger_Click(object sender, System.EventArgs e)
         {
-
+            this.Remove();
         }
     }
 

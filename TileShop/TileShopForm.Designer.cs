@@ -45,6 +45,7 @@
             this.addToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.NewPaletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.NewScatteredArrangerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pluginsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.DebugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.DebugXmlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainToolStrip = new System.Windows.Forms.ToolStrip();
@@ -53,7 +54,6 @@
             this.FileOffsetLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.dockTheme = new WeifenLuo.WinFormsUI.Docking.VS2013BlueTheme();
             this.DockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
-            this.pluginsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -190,6 +190,12 @@
             this.NewScatteredArrangerToolStripMenuItem.Text = "New Scattered Arranger...";
             this.NewScatteredArrangerToolStripMenuItem.Click += new System.EventHandler(this.NewScatteredArrangerToolStripMenuItem_Click);
             // 
+            // pluginsToolStripMenuItem
+            // 
+            this.pluginsToolStripMenuItem.Name = "pluginsToolStripMenuItem";
+            this.pluginsToolStripMenuItem.Size = new System.Drawing.Size(58, 20);
+            this.pluginsToolStripMenuItem.Text = "&Plugins";
+            // 
             // DebugToolStripMenuItem
             // 
             this.DebugToolStripMenuItem.Name = "DebugToolStripMenuItem";
@@ -229,15 +235,15 @@
             // 
             this.SelectionLabel.BackColor = System.Drawing.SystemColors.Control;
             this.SelectionLabel.Name = "SelectionLabel";
-            this.SelectionLabel.Size = new System.Drawing.Size(58, 17);
-            this.SelectionLabel.Text = "Selection ";
+            this.SelectionLabel.Size = new System.Drawing.Size(22, 17);
+            this.SelectionLabel.Text = "     ";
             // 
             // FileOffsetLabel
             // 
             this.FileOffsetLabel.BackColor = System.Drawing.SystemColors.Control;
             this.FileOffsetLabel.Name = "FileOffsetLabel";
             this.FileOffsetLabel.Overflow = System.Windows.Forms.ToolStripItemOverflow.Always;
-            this.FileOffsetLabel.Size = new System.Drawing.Size(890, 17);
+            this.FileOffsetLabel.Size = new System.Drawing.Size(895, 17);
             this.FileOffsetLabel.Spring = true;
             this.FileOffsetLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -250,12 +256,6 @@
             this.DockPanel.Size = new System.Drawing.Size(963, 554);
             this.DockPanel.TabIndex = 4;
             this.DockPanel.Theme = this.dockTheme;
-            // 
-            // pluginsToolStripMenuItem
-            // 
-            this.pluginsToolStripMenuItem.Name = "pluginsToolStripMenuItem";
-            this.pluginsToolStripMenuItem.Size = new System.Drawing.Size(58, 20);
-            this.pluginsToolStripMenuItem.Text = "&Plugins";
             // 
             // TileShopForm
             // 
