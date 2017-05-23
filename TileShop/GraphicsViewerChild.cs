@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Reflection;
+using TileShop.PopupForms;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace TileShop
@@ -30,8 +31,6 @@ namespace TileShop
             }
         }
         int zoom;
-
-        //bool showGridlines = true;
 
         Size DisplayElements; // The number of elements in the entire display
         Size ElementSize; // The size of each element in unzoomed pixels
@@ -99,6 +98,7 @@ namespace TileShop
             }
             else
             {
+                JumpButton.Visible = false;
                 toolStripSeparator1.Visible = false;
                 FormatSelectBox.Visible = false;
                 offsetLabel.Visible = false;
@@ -337,18 +337,18 @@ namespace TileShop
                 RenderPanel.Invalidate();
                 return true;
             }
-            else if(keyData == Keys.Z) // Zoom in
+            else if (keyData == Keys.Z) // Zoom in
             {
                 Zoom++;
                 return true;
             }
-            else if(keyData == Keys.X) // Zoom out
+            else if (keyData == Keys.X) // Zoom out
             {
                 if (Zoom > 1)
                     Zoom--;
                 return true;
             }
-            else if(keyData == Keys.A && arranger.Mode == ArrangerMode.SequentialArranger) // Next codec
+            else if (keyData == Keys.A && arranger.Mode == ArrangerMode.SequentialArranger) // Next codec
             {
                 if (FormatSelectBox.SelectedIndex + 1 == FormatSelectBox.Items.Count)
                     FormatSelectBox.SelectedIndex = 0;
@@ -356,7 +356,7 @@ namespace TileShop
                     FormatSelectBox.SelectedIndex++;
                 return true;
             }
-            else if(keyData == Keys.S && arranger.Mode == ArrangerMode.SequentialArranger) // Previous codec
+            else if (keyData == Keys.S && arranger.Mode == ArrangerMode.SequentialArranger) // Previous codec
             {
                 if (FormatSelectBox.SelectedIndex == 0)
                     FormatSelectBox.SelectedIndex = FormatSelectBox.Items.Count - 1;
@@ -364,11 +364,13 @@ namespace TileShop
                     FormatSelectBox.SelectedIndex--;
                 return true;
             }
-            else if(keyData == Keys.G) // Toggle Gridlines
+            else if (keyData == Keys.G) // Toggle Gridlines
             {
                 ShowGridlinesButton.Checked ^= true;
                 RenderPanel.Invalidate();
             }
+            else if (keyData == Keys.J) // Show jump dialog
+                ShowJumpDialog();
 
             return base.ProcessCmdKey(ref msg, keyData);
         }
@@ -394,7 +396,14 @@ namespace TileShop
 
             rm.Invalidate();
             RenderPanel.Invalidate();
+            RenderPanel.Focus(); // Removes the focus from the FormatSelectBox
+
             return;
+        }
+
+        private void FormatSelectBox_DropDownClosed(object sender, EventArgs e)
+        {
+            //this.BeginInvoke(new Action(() => { FormatSelectBox.Select(FormatSelectBox.Text.Length, 0); }));
         }
 
         private void UpdateAddressLabel()
@@ -654,6 +663,25 @@ namespace TileShop
         private void SaveButton_Click(object sender, EventArgs e)
         {
             SaveContent();
+        }
+
+        private void JumpButton_Click(object sender, EventArgs e)
+        {
+            ShowJumpDialog();
+        }
+
+        private void ShowJumpDialog()
+        {
+            JumpToAddressForm jtaf = new JumpToAddressForm();
+            DialogResult dr = jtaf.ShowDialog();
+
+            if (dr == DialogResult.OK)
+            {
+                long address = jtaf.Address;
+                arranger.Move(address * 8);
+                UpdateAddressLabel();
+            }
+            ReloadArranger();
         }
     }
 }

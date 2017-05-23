@@ -39,6 +39,7 @@
             this.SaveLoadSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.SaveButton = new System.Windows.Forms.ToolStripButton();
             this.RenderPanel = new System.Windows.Forms.Panel();
+            this.JumpButton = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -53,7 +54,8 @@
             this.EditModeButton,
             this.ReloadButton,
             this.SaveLoadSeparator,
-            this.SaveButton});
+            this.SaveButton,
+            this.JumpButton});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(3, 0, 0, 0);
@@ -67,6 +69,7 @@
             this.FormatSelectBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.FormatSelectBox.Name = "FormatSelectBox";
             this.FormatSelectBox.Size = new System.Drawing.Size(121, 25);
+            this.FormatSelectBox.DropDownClosed += new System.EventHandler(this.FormatSelectBox_DropDownClosed);
             this.FormatSelectBox.SelectedIndexChanged += new System.EventHandler(this.FormatSelectBox_SelectedIndexChanged);
             // 
             // toolStripSeparator1
@@ -156,6 +159,17 @@
             this.RenderPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.RenderPanel_MouseMove);
             this.RenderPanel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.RenderPanel_MouseUp);
             // 
+            // JumpButton
+            // 
+            this.JumpButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.JumpButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.JumpButton.Image = ((System.Drawing.Image)(resources.GetObject("JumpButton.Image")));
+            this.JumpButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.JumpButton.Name = "JumpButton";
+            this.JumpButton.Size = new System.Drawing.Size(40, 22);
+            this.JumpButton.Text = "Jump";
+            this.JumpButton.Click += new System.EventHandler(this.JumpButton_Click);
+            // 
             // GraphicsViewerChild
             // 
             this.AllowDrop = true;
@@ -188,5 +202,6 @@
         private System.Windows.Forms.ToolStripButton SaveButton;
         private System.Windows.Forms.ToolStripButton ReloadButton;
         private System.Windows.Forms.ToolStripSeparator SaveLoadSeparator;
+        private System.Windows.Forms.ToolStripButton JumpButton;
     }
 }
