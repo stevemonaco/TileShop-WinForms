@@ -30,6 +30,12 @@ namespace TileShop.Plugins
         /// </summary>
         /// <returns></returns>
         List<Palette> RetrievePalettes();
+
+        /// <summary>
+        /// The host requests filenames for the files necessary for the previously generated palettes and arrangers;
+        /// </summary>
+        /// <returns></returns>
+        List<string> RetrieveFiles();
     }
 
     /// <summary>
