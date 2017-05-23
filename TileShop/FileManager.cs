@@ -197,7 +197,7 @@ namespace TileShop
             {
                 if (!FileList.ContainsKey(Filename))
                 {
-                    FileStream fs = File.Open(Filename, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+                    FileStream fs = File.Open(Filename, FileMode.Open, FileAccess.ReadWrite);
                     AddFileStream(Filename, fs);
                 }
             }

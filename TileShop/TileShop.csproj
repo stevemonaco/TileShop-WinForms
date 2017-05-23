@@ -86,22 +86,16 @@
     <Compile Include="IntegerTextBox.Designer.cs">
       <DependentUpon>IntegerTextBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="PopupForms\JumpToAddressForm.cs">
+    <Compile Include="NewPaletteForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="PopupForms\JumpToAddressForm.Designer.cs">
-      <DependentUpon>JumpToAddressForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="PopupForms\NewPaletteForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="PopupForms\NewPaletteForm.Designer.cs">
+    <Compile Include="NewPaletteForm.Designer.cs">
       <DependentUpon>NewPaletteForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="PopupForms\NewScatteredArrangerForm.cs">
+    <Compile Include="NewScatteredArrangerForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="PopupForms\NewScatteredArrangerForm.Designer.cs">
+    <Compile Include="NewScatteredArrangerForm.Designer.cs">
       <DependentUpon>NewScatteredArrangerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="PaletteEditorForm.cs">
@@ -125,10 +119,10 @@
     </Compile>
     <Compile Include="GraphicsCodec.cs" />
     <Compile Include="GraphicsFormat.cs" />
-    <Compile Include="PopupForms\NewTileArrangerForm.cs">
+    <Compile Include="NewTileArrangerForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="PopupForms\NewTileArrangerForm.Designer.cs">
+    <Compile Include="NewTileArrangerForm.Designer.cs">
       <DependentUpon>NewTileArrangerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="OldGraphicsCodec.cs" />
@@ -170,13 +164,10 @@
     <EmbeddedResource Include="IntegerTextBox.resx">
       <DependentUpon>IntegerTextBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PopupForms\JumpToAddressForm.resx">
-      <DependentUpon>JumpToAddressForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="PopupForms\NewPaletteForm.resx">
+    <EmbeddedResource Include="NewPaletteForm.resx">
       <DependentUpon>NewPaletteForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PopupForms\NewScatteredArrangerForm.resx">
+    <EmbeddedResource Include="NewScatteredArrangerForm.resx">
       <DependentUpon>NewScatteredArrangerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PaletteEditorForm.resx">
@@ -191,7 +182,7 @@
     <EmbeddedResource Include="GraphicsViewerChild.resx">
       <DependentUpon>GraphicsViewerChild.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PopupForms\NewTileArrangerForm.resx">
+    <EmbeddedResource Include="NewTileArrangerForm.resx">
       <DependentUpon>NewTileArrangerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">

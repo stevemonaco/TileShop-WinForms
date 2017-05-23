@@ -34,8 +34,6 @@ namespace TileShop
         {
             InitializeComponent();
 
-            MainToolStrip.Visible = false;
-
             LoadCodecs(CodecDirectoryPath);
             LoadPalettes(PaletteDirectoryPath);
             LoadCursors();
@@ -161,7 +159,6 @@ namespace TileShop
 
                 List<Arranger> arrangers = plugin.Value.RetrieveArrangers();
                 List<Palette> palettes = plugin.Value.RetrievePalettes();
-                List<string> files = plugin.Value.RetrieveFiles();
 
                 if (arrangers == null)
                 {
@@ -175,13 +172,10 @@ namespace TileShop
                 }
 
                 foreach (Palette pal in palettes)
-                    pec.AddPalette(pal.Clone(), pluginName);
+                    pec.AddPalette(pal.Clone(), "temp");
 
                 foreach (Arranger arr in arrangers)
-                    pec.AddArranger(arr.Clone(), pluginName);
-
-                foreach (string filename in files)
-                    pec.AddFile(filename, pluginName);
+                    pec.AddArranger(arr.Clone(), "temp");
             }
         }
 
@@ -338,11 +332,11 @@ namespace TileShop
             if (DialogResult.OK == nsaf.ShowDialog())
             {
                 Size ArrSize = nsaf.GetArrangerSize();
-                Size TileSize = nsaf.GetElementSize();
+                Size TileSize = nsaf.GetTileSize();
 
                 Arranger arr = Arranger.NewScatteredArranger(ArrSize.Width, ArrSize.Height, TileSize.Width, TileSize.Height);
                 arr.Name = nsaf.GetArrangerName();
-                pec.AddArranger(arr, "", true);
+                pec.AddArranger(arr, "temp", true);
             }
         }
 
@@ -497,15 +491,6 @@ namespace TileShop
                     return;
             }*/
 
-            CloseEditors();
-
-            ProjectFileName = "";
-            pec.CloseProject();
-            LoadPalettes(PaletteDirectoryPath);
-        }
-
-        private void CloseEditors()
-        {
             List<EditorDockContent> CloseList = new List<EditorDockContent>();
 
             // Find all EditorDockContents within all Panes and populate the CloseList
@@ -520,23 +505,10 @@ namespace TileShop
 
             foreach (EditorDockContent edc in CloseList)
                 edc.Close();
-        }
 
-        public List<EditorDockContent> GetActiveEditors()
-        {
-            List<EditorDockContent> editorList = new List<EditorDockContent>();
-
-            // Find all EditorDockContents within all Panes and populate the CloseList
-            foreach (DockPane dp in DockPanel.Panes)
-            {
-                foreach (DockContent dc in dp.Contents)
-                {
-                    if (dc.GetType().IsSubclassOf(typeof(EditorDockContent)) && dc.GetType() != typeof(PixelEditorForm))
-                        editorList.Add((EditorDockContent)dc);
-                }
-            }
-
-            return editorList;
+            ProjectFileName = "";
+            pec.CloseProject();
+            LoadPalettes(PaletteDirectoryPath);
         }
     }
 }

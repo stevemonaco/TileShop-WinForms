@@ -182,6 +182,7 @@ namespace TileShop
                         Height = ElementPixelSize.Height,
                         FileName = Filename,
                         FormatName = format.Name,
+                        PaletteName = "Default"
                     };
                     if (el.ElementData.Count == 0 || el.MergedData == null)
                         el.AllocateBuffers();
@@ -225,54 +226,6 @@ namespace TileShop
             return ResizeSequentialArranger(ElementsX, ElementsY, ElementList[0, 0].FileName, FileManager.Instance.GetGraphicsFormat(ElementList[0, 0].FormatName));
         }
 
-        /// <summary>
-        /// Resizes a scattered arranger to the specified number of elements and default initializes any new elements
-        /// </summary>
-        /// <param name="ElementsX">Number of elements in width</param>
-        /// <param name="ElementsY">Number of elements in height</param>
-        public void ResizeScatteredArranger(int ElementsX, int ElementsY)
-        {
-            if (Mode != ArrangerMode.ScatteredArranger)
-                throw new ArgumentException();
-
-            ArrangerElement[,] newList = new ArrangerElement[ElementsX, ElementsY];
-
-            int xCopy = Math.Min(ElementsX, ArrangerElementSize.Width);
-            int yCopy = Math.Min(ElementsY, ArrangerElementSize.Height);
-            int Width = ArrangerPixelSize.Width;
-            int Height = ArrangerPixelSize.Height;
-
-            for(int y = 0; y < yCopy; y++)
-                for(int x = 0; x < xCopy; x++)
-                    newList[x, y] = ElementList[x, y].Clone();
-
-            for (int y = yCopy; yCopy < ElementsY; y++)
-            {
-                for (int x = 0; x < ElementsX; x++)
-                {
-                    ArrangerElement el = new ArrangerElement()
-                    {
-                        X1 = x,
-                        Y1 = y,
-                        X2 = x + Width - 1,
-                        Y2 = y + Height - 1,
-                        Width = Width,
-                        Height = Height,
-                    };
-
-                    newList[x, y] = el;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Creates a new scattered arranger with default initialized elements
-        /// </summary>
-        /// <param name="ElementsX">Number of elements in width</param>
-        /// <param name="ElementsY">Number of elements in height</param>
-        /// <param name="Width">Width of each element</param>
-        /// <param name="Height">Height of each element</param>
-        /// <returns></returns>
         public static Arranger NewScatteredArranger(int ElementsX, int ElementsY, int Width, int Height)
         {
             Arranger arr = new Arranger();
@@ -291,12 +244,16 @@ namespace TileShop
                 {
                     ArrangerElement el = new ArrangerElement()
                     {
+                        FileName = "",
+                        FileAddress = new FileBitAddress(0, 0),
                         X1 = x,
                         Y1 = y,
                         X2 = x + Width - 1,
                         Y2 = y + Height - 1,
                         Width = Width,
                         Height = Height,
+                        FormatName = "",
+                        PaletteName = "Default"
                     };
                     arr.ElementList[j, i] = el;
 
@@ -480,7 +437,7 @@ namespace TileShop
         /// </summary>
         /// <param name="AbsoluteAddress">Specified address to move the arranger to</param>
         /// <returns></returns>
-        public FileBitAddress Move(FileBitAddress AbsoluteAddress)
+        FileBitAddress Move(FileBitAddress AbsoluteAddress)
         {
             if (Mode != ArrangerMode.SequentialArranger)
                 throw new InvalidOperationException();
@@ -666,9 +623,6 @@ namespace TileShop
         /// </summary>
         public void AllocateBuffers()
         {
-            if (IsBlank())
-                return;
-
             GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(FormatName);
             ElementData.Clear();
             for (int i = 0; i < format.ColorDepth; i++)
@@ -718,9 +672,6 @@ namespace TileShop
                 StorageSize = StorageSize
             };
 
-            if (IsBlank()) // Blank elements have no data buffers to copy
-                return el;
-
             // Copy MergedData
             el.AllocateBuffers();
             for (int i = 0; i < MergedData.Length; i++)
@@ -733,18 +684,6 @@ namespace TileShop
                     el.ElementData[i][j] = ElementData[i][j];
 
             return el;
-        }
-
-        /// <summary>
-        /// Detects if the ArrangerElement is a blank element
-        /// </summary>
-        /// <returns>True if blank, false if not</returns>
-        public bool IsBlank()
-        {
-            if (FormatName == "")
-                return true;
-            else
-                return false;
         }
     }
 }
