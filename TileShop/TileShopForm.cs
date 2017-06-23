@@ -220,7 +220,7 @@ namespace TileShop
 
             if (ActiveMdiChild != null)
             {
-                if (ActiveMdiChild.GetType() == typeof(GraphicsViewerChild))
+                if (ActiveMdiChild is GraphicsViewerChild)
                 {
                     GraphicsViewerChild gv = (GraphicsViewerChild)ActiveMdiChild;
 
@@ -258,7 +258,7 @@ namespace TileShop
             {
                 foreach (DockContent dc in dp.Contents)
                 {
-                    if (dc.GetType().IsSubclassOf(typeof(EditorDockContent)))
+                    if(dc is EditorDockContent)
                         ((EditorDockContent)dc).SaveContent();
                 }
             }
@@ -289,7 +289,7 @@ namespace TileShop
             {
                 foreach (DockContent dc in dp.Contents)
                 {
-                    if (dc.GetType().IsSubclassOf(typeof(EditorDockContent)))
+                    if (dc is EditorDockContent)
                         ((EditorDockContent)dc).SaveContent();
                 }
             }
@@ -327,7 +327,7 @@ namespace TileShop
 
             if (ActiveMdiChild != null)
             {
-                if (ActiveMdiChild.GetType() == typeof(GraphicsViewerChild))
+                if (ActiveMdiChild is GraphicsViewerChild)
                 {
                     GraphicsViewerChild gv = (GraphicsViewerChild)ActiveMdiChild;
                     Size ElementSize = gv.arranger.ElementPixelSize;
@@ -375,7 +375,7 @@ namespace TileShop
             {
                 foreach (DockContent dc in dp.Contents)
                 {
-                    if (dc.GetType().IsSubclassOf(typeof(EditorDockContent)))
+                    if (dc is EditorDockContent)
                         ((EditorDockContent)dc).RefreshContent();
                 }
             }
@@ -394,7 +394,7 @@ namespace TileShop
             {
                 foreach (DockContent dc in dp.Contents)
                 {
-                    if (dc.GetType().IsSubclassOf(typeof(EditorDockContent)) && dc != sender)
+                    if (dc is EditorDockContent && dc != sender)
                         ((EditorDockContent)dc).RefreshContent();
                 }
             }
@@ -413,7 +413,7 @@ namespace TileShop
             {
                 foreach (DockContent dc in dp.Contents)
                 {
-                    if (dc.GetType().IsSubclassOf(typeof(EditorDockContent)) && dc != sender)
+                    if (dc is EditorDockContent && dc != sender)
                         ((EditorDockContent)dc).ReloadContent();
                 }
             }
@@ -513,7 +513,7 @@ namespace TileShop
             {
                 foreach (DockContent dc in dp.Contents)
                 {
-                    if (dc.GetType().IsSubclassOf(typeof(EditorDockContent)))
+                    if (dc is EditorDockContent)
                         CloseList.Add((EditorDockContent)dc);
                 }
             }
@@ -531,7 +531,7 @@ namespace TileShop
             {
                 foreach (DockContent dc in dp.Contents)
                 {
-                    if (dc.GetType().IsSubclassOf(typeof(EditorDockContent)) && dc.GetType() != typeof(PixelEditorForm))
+                    if (dc is EditorDockContent && !(dc is PixelEditorForm))
                         editorList.Add((EditorDockContent)dc);
                 }
             }

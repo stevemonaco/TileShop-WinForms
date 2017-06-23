@@ -77,7 +77,7 @@ namespace TileShop
             if (tn == null) // Not found
                 return false;
 
-            if (tn.GetType() != typeof(FileNode))
+            if(!(tn is FileNode))
                 throw new InvalidOperationException("Attempted to RemoveFile on a TreeView node that is not a FileNode");
 
             tn.Remove();
@@ -141,7 +141,7 @@ namespace TileShop
             if (tn == null)
                 return false;
 
-            if(tn.GetType() != typeof(ArrangerNode))
+            if(!(tn is ArrangerNode))
                 throw new InvalidOperationException("Attempted to RemoveArranger on a TreeView node that is not an ArrangerNode");
 
             return false;
@@ -183,7 +183,7 @@ namespace TileShop
 
             foreach(EditorDockContent dc in activeEditors) // Return if an editor is already opened
             {
-                if (dc.ContentSourceName == Filename && dc.GetType() == typeof(GraphicsViewerChild))
+                if (dc.ContentSourceName == Filename && dc is GraphicsViewerChild)
                     return false;
             }
 
@@ -205,7 +205,7 @@ namespace TileShop
 
             foreach (EditorDockContent dc in activeEditors) // Return if an editor is already opened
             {
-                if (dc.ContentSourceName == ArrangerName && dc.GetType() == typeof(GraphicsViewerChild))
+                if (dc.ContentSourceName == ArrangerName && dc is GraphicsViewerChild)
                     return false;
             }
 
@@ -231,7 +231,7 @@ namespace TileShop
 
             foreach (EditorDockContent dc in activeEditors) // Return if an editor is already opened
             {
-                if (dc.ContentSourceName == PaletteName && dc.GetType() == typeof(PaletteEditorForm))
+                if (dc.ContentSourceName == PaletteName && dc is PaletteEditorForm)
                     return false;
             }
 
@@ -401,7 +401,7 @@ namespace TileShop
 
             foreach (TreeNode tn in ProjectTreeView.GetAllNodes())
             {
-                if(tn.GetType() == typeof(FileNode))
+                if(tn is FileNode)
                 {
                     FileNode fn = (FileNode)tn;
                     var xmlfile = new XElement("file");
@@ -409,7 +409,7 @@ namespace TileShop
                     xmlfile.SetAttributeValue("folder", fn.GetNodePath());
                     datafiles.Add(xmlfile);
                 }
-                else if(tn.GetType() == typeof(PaletteNode))
+                else if(tn is PaletteNode)
                 {
                     PaletteNode pn = (PaletteNode)tn;
                     Palette pal = FileManager.Instance.GetPersistentPalette(pn.Text);
@@ -424,7 +424,7 @@ namespace TileShop
                     xmlpal.SetAttributeValue("zeroindextransparent", pal.ZeroIndexTransparent);
                     palettes.Add(xmlpal);
                 }
-                else if(tn.GetType() == typeof(ArrangerNode))
+                else if(tn is ArrangerNode)
                 {
                     ArrangerNode an = (ArrangerNode)tn;
                     Arranger arr = FileManager.Instance.GetPersistentArranger(an.Text);
@@ -510,15 +510,14 @@ namespace TileShop
 
             foreach (TreeNode tn in ProjectTreeView.Nodes)
             {
-                if (tn.GetType() == typeof(FolderNode))
+                if (tn is FolderNode)
                 {
                     List<string> nodeFileNameList = GetChildFileNames(tn);
                     foreach (string s in nodeFileNameList)
                         list.Add(s);
                 }
-                else if (tn.GetType() == typeof(FileNode))
+                else if (tn is FileNode)
                     list.Add(tn.Text);
-
             }
 
             return list;
@@ -534,13 +533,13 @@ namespace TileShop
             List<string> ret = new List<string>();
             foreach(TreeNode childNode in parentNode.Nodes)
             {
-                if (childNode.GetType() == typeof(FolderNode))
+                if (childNode is FolderNode)
                 {
                     List<string> childFileNames = GetChildFileNames(childNode);
                     foreach (string s in childFileNames)
                         ret.Add(s);
                 }
-                else if (childNode.GetType() == typeof(FileNode))
+                else if (childNode is FileNode)
                     ret.Add(childNode.Text);
             }
 
@@ -549,15 +548,15 @@ namespace TileShop
 
         private void ProjectTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            if (e.Node.GetType() == typeof(FileNode))
+            if (e.Node is FileNode)
             {
                 ShowSequentialArranger((string)e.Node.Tag);
             }
-            else if (e.Node.GetType() == typeof(PaletteNode))
+            else if (e.Node is PaletteNode)
             {
                 ShowPaletteEditor((string)e.Node.Tag);
             }
-            else if (e.Node.GetType() == typeof(ArrangerNode))
+            else if (e.Node is ArrangerNode)
             {
                 ShowScatteredArranger((string)e.Node.Tag);
             }
@@ -599,7 +598,7 @@ namespace TileShop
                 bool nodeExists = false;
                 foreach (TreeNode tn in deepestCollection)
                 {
-                    if (tn.Text == path && tn.GetType() == typeof(FolderNode)) // Found next segment of path
+                    if (tn.Text == path && tn is FolderNode) // Found next segment of path
                     {
                         deepestCollection = tn.Nodes;
                         fn = (FolderNode)tn;
@@ -653,7 +652,7 @@ namespace TileShop
                 bool nodeExists = false;
                 foreach (TreeNode tn in nodeLevel)
                 {
-                    if (tn.Text == path && tn.GetType() == typeof(FolderNode)) // Found next segment of path
+                    if (tn.Text == path && tn is FolderNode) // Found next segment of path
                     {
                         matchedNode = (FolderNode)tn;
                         nodeLevel = tn.Nodes;
@@ -725,7 +724,7 @@ namespace TileShop
 
             if (moveChildren) // FolderNode dragdrop
             {
-                if (dropNode.GetType() != typeof(FolderNode))
+                if (!(dropNode is FolderNode))
                     return;
 
                 dragNode.Remove();
@@ -733,7 +732,7 @@ namespace TileShop
             }
             else // ArrangerNode, FileNode, PaletteNode all must be moved into a folder node (or root)
             {
-                if (dropNode.GetType() != typeof(FolderNode)) // All nodes must be attached to a folder node
+                if (!(dropNode is FolderNode)) // All nodes must be attached to a folder node
                     return;
 
                 dragNode.Remove();
@@ -743,7 +742,7 @@ namespace TileShop
 
         private void ProjectTreeView_BeforeCollapse(object sender, TreeViewCancelEventArgs e)
         {
-            if (e.Node.GetType() != typeof(FolderNode))
+            if (!(e.Node is FolderNode))
                 throw new InvalidOperationException("ProjectTreeView attempted to collapse a node that isn't a FolderNode");
 
             FolderNode fn = (FolderNode)e.Node;
@@ -753,7 +752,7 @@ namespace TileShop
 
         private void ProjectTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
-            if (e.Node.GetType() != typeof(FolderNode))
+            if (!(e.Node is FolderNode))
                 throw new InvalidOperationException("ProjectTreeView attempted to expand a node that isn't a FolderNode");
 
             FolderNode fn = (FolderNode)e.Node;
