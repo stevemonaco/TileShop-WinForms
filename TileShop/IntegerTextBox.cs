@@ -8,8 +8,11 @@ namespace TileShop
 {
     public partial class IntegerTextBox : TextBox
     {
-        [DllImport("user32.dll")]
-        public static extern bool GetCaretPos(out System.Drawing.Point lpPoint);
+        internal static class NativeMethods
+        {
+            [DllImport("user32.dll")]
+            public static extern bool GetCaretPos(out System.Drawing.Point lpPoint);
+        }
 
         public int Minimum { set; get; }
         public int Maximum { set; get; }
@@ -74,7 +77,6 @@ namespace TileShop
 
             e.Handled = true;
         }
-
 
         /*protected override void WndProc(ref System.Windows.Forms.Message m)
         {
@@ -171,11 +173,6 @@ namespace TileShop
             }
 
             return false; // The caller should reject the erroneous input
-        }
-
-        private void timer_Tick(object sender, System.EventArgs e)
-        {
-
         }
     }
 }

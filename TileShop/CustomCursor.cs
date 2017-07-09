@@ -18,17 +18,20 @@ namespace TileShop
             public IntPtr ColorBitmap;
         };
 
-        [DllImport("user32.dll")]
-        public static extern bool GetIconInfo(IntPtr hIcon, out ICONINFO piconinfo);
+        internal static class NativeMethods
+        {
+            [DllImport("user32.dll")]
+            public static extern bool GetIconInfo(IntPtr hIcon, out ICONINFO piconinfo);
 
-        [DllImport("user32.dll")]
-        public static extern IntPtr CreateIconIndirect([In] ref ICONINFO piconinfo);
+            [DllImport("user32.dll")]
+            public static extern IntPtr CreateIconIndirect([In] ref ICONINFO piconinfo);
 
-        [DllImport("gdi32.dll")]
-        public static extern bool DeleteObject(IntPtr hObject);
+            [DllImport("gdi32.dll")]
+            public static extern bool DeleteObject(IntPtr hObject);
 
-        [DllImport("gdi32.dll")]
-        public static extern IntPtr CreateBitmap(int nWidth, int nHeight, uint cPlanes, uint cBitsPerPel, IntPtr lpvBits);
+            [DllImport("gdi32.dll")]
+            public static extern IntPtr CreateBitmap(int nWidth, int nHeight, uint cPlanes, uint cBitsPerPel, IntPtr lpvBits);
+        }
 
         // Load from a Bitmap with transparency
         public static Cursor LoadCursorFromBitmap(Bitmap bitmap, Point hotSpot)
@@ -38,14 +41,14 @@ namespace TileShop
 
             try
             {
-                if (!GetIconInfo(bitmap.GetHicon(), out iconInfo))
+                if (!NativeMethods.GetIconInfo(bitmap.GetHicon(), out iconInfo))
                     throw new Exception("GetIconInfo() failed.");
 
                 iconInfo.xHotspot = hotSpot.X;
                 iconInfo.yHotspot = hotSpot.Y;
                 iconInfo.IsIcon = false;
 
-                IntPtr cursorPtr = CreateIconIndirect(ref iconInfo);
+                IntPtr cursorPtr = NativeMethods.CreateIconIndirect(ref iconInfo);
                 if (cursorPtr == IntPtr.Zero)
                     throw new Exception("CreateIconIndirect() failed.");
 
@@ -54,9 +57,9 @@ namespace TileShop
             finally
             {
                 if (iconInfo.ColorBitmap != IntPtr.Zero)
-                    DeleteObject(iconInfo.ColorBitmap);
+                    NativeMethods.DeleteObject(iconInfo.ColorBitmap);
                 if (iconInfo.MaskBitmap != IntPtr.Zero)
-                    DeleteObject(iconInfo.MaskBitmap);
+                    NativeMethods.DeleteObject(iconInfo.MaskBitmap);
             }
         }
     }
