@@ -112,6 +112,16 @@ namespace TileShop
         }
 
         /// <summary>
+        /// Sets the Filename source. Does not reload.
+        /// </summary>
+        /// <param name="filename">New filename</param>
+        /// <returns></returns>
+        public void SetFileName(string filename)
+        {
+            FileName = filename;
+        }
+
+        /// <summary>
         /// Load a 256-entry palette from a new file in ARGB32 format
         /// </summary>
         /// <param name="filename">Path to the palette file</param>
@@ -141,6 +151,100 @@ namespace TileShop
             FileAddress = new FileBitAddress(0, 0);
             FileName = filename;
             Entries = entrySize;
+            StorageSource = PaletteStorageSource.File;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Load palette from an unopened file
+        /// </summary>
+        /// <param name="fileName">Name of the file on disk</param>
+        /// <param name="address">File address to the beginning of the palette</param>
+        /// <param name="format">Color format of the palette</param>
+        /// <param name="zeroIndexTransparent">If the 0-index of the palette is automatically transparent</param>
+        /// <param name="numEntries">Number of entries the palette contains</param>
+        /// <returns>Success value</returns>
+        public bool LoadPaletteFromFileName(string fileName, FileBitAddress address, PaletteColorFormat format, bool zeroIndexTransparent, int numEntries)
+        {
+            if (numEntries > 256)
+                throw new ArgumentException("Maximum palette size must be 256 entries or less");
+
+            localPalette = new UInt32[numEntries];
+            foreignPalette = new UInt32[numEntries];
+
+            using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+            {
+                int readSize;
+
+                switch (format)
+                {
+                    case PaletteColorFormat.BGR15:
+                    case PaletteColorFormat.RGB15:
+                        readSize = 2;
+                        HasAlpha = false;
+                        break;
+                    case PaletteColorFormat.ABGR16:
+                        readSize = 2;
+                        HasAlpha = true;
+                        break;
+                    case PaletteColorFormat.RGB24:
+                        readSize = 3;
+                        HasAlpha = false;
+                        break;
+                    case PaletteColorFormat.ARGB32:
+                        readSize = 4;
+                        HasAlpha = true;
+                        break;
+                    default:
+                        throw new NotSupportedException("An unsupported palette format was attempted to be read");
+                }
+
+                byte[] tempPalette = fs.ReadUnshifted(address, readSize * 8 * numEntries, true);
+                BitStream bs = BitStream.OpenRead(tempPalette, readSize * 8 * numEntries);
+
+                for (int i = 0; i < numEntries; i++)
+                {
+                    uint foreignColor;
+
+                    if (readSize == 1)
+                        foreignColor = bs.ReadByte();
+                    else if (readSize == 2)
+                    {
+                        foreignColor = bs.ReadByte();
+                        foreignColor |= ((uint)bs.ReadByte()) << 8;
+                    }
+                    else if (readSize == 3)
+                    {
+                        foreignColor = bs.ReadByte();
+                        foreignColor |= ((uint)bs.ReadByte()) << 8;
+                        foreignColor |= ((uint)bs.ReadByte()) << 16;
+                    }
+                    else if (readSize == 4)
+                    {
+                        foreignColor = bs.ReadByte();
+                        foreignColor |= ((uint)bs.ReadByte()) << 8;
+                        foreignColor |= ((uint)bs.ReadByte()) << 16;
+                        foreignColor |= ((uint)bs.ReadByte()) << 24;
+                    }
+                    else
+                        throw new NotSupportedException("Palette formats with entry sizes larger than 4 bytes are not supported");
+
+                    uint localColor = ForeignToLocalArgb(foreignColor, format);
+                    foreignPalette[i] = foreignColor;
+                    localPalette[i] = localColor;
+                }
+            }
+
+            ZeroIndexTransparent = zeroIndexTransparent;
+
+            if (ZeroIndexTransparent)
+                localPalette[0] &= 0x00FFFFFF;
+
+            ColorFormat = format;
+            FileAddress = address;
+            FileName = fileName;
+            Entries = numEntries;
             StorageSource = PaletteStorageSource.File;
 
             return true;
