@@ -38,8 +38,9 @@
             this.ReloadButton = new System.Windows.Forms.ToolStripButton();
             this.SaveLoadSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.SaveButton = new System.Windows.Forms.ToolStripButton();
-            this.RenderPanel = new System.Windows.Forms.Panel();
             this.JumpButton = new System.Windows.Forms.ToolStripButton();
+            this.RenderPanel = new System.Windows.Forms.Panel();
+            this.ArrangerPropertiesButton = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -55,7 +56,8 @@
             this.ReloadButton,
             this.SaveLoadSeparator,
             this.SaveButton,
-            this.JumpButton});
+            this.JumpButton,
+            this.ArrangerPropertiesButton});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(3, 0, 0, 0);
@@ -141,6 +143,17 @@
             this.SaveButton.ToolTipText = "Save arranger to underlying source";
             this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
             // 
+            // JumpButton
+            // 
+            this.JumpButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.JumpButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.JumpButton.Image = ((System.Drawing.Image)(resources.GetObject("JumpButton.Image")));
+            this.JumpButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.JumpButton.Name = "JumpButton";
+            this.JumpButton.Size = new System.Drawing.Size(40, 22);
+            this.JumpButton.Text = "Jump";
+            this.JumpButton.Click += new System.EventHandler(this.JumpButton_Click);
+            // 
             // RenderPanel
             // 
             this.RenderPanel.AllowDrop = true;
@@ -159,16 +172,16 @@
             this.RenderPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.RenderPanel_MouseMove);
             this.RenderPanel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.RenderPanel_MouseUp);
             // 
-            // JumpButton
+            // ArrangerPropertiesButton
             // 
-            this.JumpButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.JumpButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.JumpButton.Image = ((System.Drawing.Image)(resources.GetObject("JumpButton.Image")));
-            this.JumpButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.JumpButton.Name = "JumpButton";
-            this.JumpButton.Size = new System.Drawing.Size(40, 22);
-            this.JumpButton.Text = "Jump";
-            this.JumpButton.Click += new System.EventHandler(this.JumpButton_Click);
+            this.ArrangerPropertiesButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.ArrangerPropertiesButton.Image = ((System.Drawing.Image)(resources.GetObject("ArrangerPropertiesButton.Image")));
+            this.ArrangerPropertiesButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ArrangerPropertiesButton.Name = "ArrangerPropertiesButton";
+            this.ArrangerPropertiesButton.Size = new System.Drawing.Size(64, 22);
+            this.ArrangerPropertiesButton.Text = "Properties";
+            this.ArrangerPropertiesButton.ToolTipText = "Arranger Properties";
+            this.ArrangerPropertiesButton.Click += new System.EventHandler(this.ArrangerPropertiesButton_Click);
             // 
             // GraphicsViewerChild
             // 
@@ -203,5 +216,6 @@
         private System.Windows.Forms.ToolStripButton ReloadButton;
         private System.Windows.Forms.ToolStripSeparator SaveLoadSeparator;
         private System.Windows.Forms.ToolStripButton JumpButton;
+        private System.Windows.Forms.ToolStripButton ArrangerPropertiesButton;
     }
 }
