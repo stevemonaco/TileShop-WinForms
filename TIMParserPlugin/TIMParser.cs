@@ -18,7 +18,7 @@ namespace TIMParserPlugin
     [ExportMetadata("Name", "TIM Parser Plugin")]
     [ExportMetadata("Author", "Klarth")]
     [ExportMetadata("Version", "0.1")]
-    [ExportMetadata("Description", "Parses a file or directory for TIMs and automatically creates the appropriate arrangers and palettes")]
+    [ExportMetadata("Description", "Parses file(s) for TIMs and automatically creates the appropriate arrangers and palettes")]
     public class TIMParser : IFileParserContract
     {
         List<Arranger> arrangers = new List<Arranger>();
@@ -33,11 +33,13 @@ namespace TIMParserPlugin
         /// <returns></returns>
         public bool DisplayPluginInterface()
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.CheckFileExists = true;
-            ofd.CheckPathExists = true;
-            ofd.Multiselect = true;
-            ofd.Title = "Select one or more files to parse for embedded TIM files";
+            OpenFileDialog ofd = new OpenFileDialog()
+            {
+                CheckFileExists = true,
+                CheckPathExists = true,
+                Multiselect = true,
+                Title = "Select one or more files to parse for embedded TIM files"
+            };
 
             if (ofd.ShowDialog() != DialogResult.OK)
                 return false;
@@ -176,50 +178,49 @@ namespace TIMParserPlugin
 
             for (int i = 0; i < td.ClutCount; i++)
             {
-                Palette pal = new Palette(String.Format("{0}.CLUT.{1}", BaseName, i));
-                pal.LoadPalette(TimFileName, new FileBitAddress(td.ClutOffsets[i], 0), PaletteColorFormat.BGR15, false, td.ClutColors);
+                string palName = String.Format("{0}.CLUT.{1}", BaseName, i);
+                Palette pal = new Palette(palName);
+                pal.LoadPaletteFromFileName(TimFileName, new FileBitAddress(td.ClutOffsets[i], 0), PaletteColorFormat.BGR15, false, td.ClutColors);
                 palettes.Add(pal);
+
+                Arranger arr = Arranger.NewScatteredArranger(ArrangerLayout.LinearArranger, 1, 1, td.ImageWidth, td.ImageHeight);
+                arr.Name = String.Format("{0}.{1}", BaseName, i);
+
+                ArrangerElement el = arr.GetElement(0, 0);
+
+                el.FileName = TimFileName;
+                el.PaletteName = palName;
+                el.FileAddress = new FileBitAddress(td.ImageDataOffset, 0);
+                el.Height = td.ImageHeight;
+                el.Width = td.ImageWidth;
+
+                el.X1 = 0;
+                el.X2 = td.ImageWidth - 1;
+                el.Y1 = 0;
+                el.Y2 = td.ImageHeight - 1;
+
+                switch (td.ColorDepth)
+                {
+                    case 4:
+                        el.FormatName = "PSX 4bpp";
+                        break;
+                    case 8:
+                        el.FormatName = "PSX 8bpp";
+                        break;
+                    case 16:
+                        el.FormatName = "PSX 16bpp";
+                        break;
+                    case 24:
+                        el.FormatName = "PSX 24bpp";
+                        break;
+                    default:
+                        throw new InvalidOperationException(String.Format("ColorDepth {0} is not supported", td.ColorDepth));
+                }
+
+                el.AllocateBuffers();
+                arr.SetElement(el, 0, 0);
+                arrangers.Add(arr);
             }
-
-            Arranger arr = Arranger.NewScatteredArranger(1, 1, td.ImageWidth, td.ImageHeight);
-            arr.Name = BaseName;
-
-            ArrangerElement el = arr.GetElement(0, 0);
-
-            el.FileName = TimFileName;
-            el.PaletteName = InitialPaletteName;
-            el.FileAddress = new FileBitAddress(td.ImageDataOffset, 0);
-            el.Height = td.ImageHeight;
-            el.Width = td.ImageWidth;
-
-            el.X1 = 0;
-            el.X2 = td.ImageWidth - 1;
-            el.Y1 = 0;
-            el.Y2 = td.ImageHeight - 1;
-
-            switch (td.ColorDepth)
-            {
-                case 4:
-                    el.FormatName = "PSX 4bpp";
-                    break;
-                case 8:
-                    el.FormatName = "PSX 8bpp";
-                    break;
-                case 16:
-                    el.FormatName = "PSX 16bpp";
-                    break;
-                case 24:
-                    el.FormatName = "PSX 24bpp";
-                    break;
-                default:
-                    throw new InvalidOperationException(String.Format("ColorDepth {0} is not supported", td.ColorDepth));
-            }
-
-            el.AllocateBuffers();
-
-            arr.SetElement(el, 0, 0);
-
-            arrangers.Add(arr);
         }
 
         public class TimData
