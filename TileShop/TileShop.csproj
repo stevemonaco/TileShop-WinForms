@@ -98,11 +98,11 @@
     <Compile Include="PopupForms\NewPaletteForm.Designer.cs">
       <DependentUpon>NewPaletteForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="PopupForms\NewScatteredArrangerForm.cs">
+    <Compile Include="PopupForms\ScatteredArrangerPropertiesForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="PopupForms\NewScatteredArrangerForm.Designer.cs">
-      <DependentUpon>NewScatteredArrangerForm.cs</DependentUpon>
+    <Compile Include="PopupForms\ScatteredArrangerPropertiesForm.Designer.cs">
+      <DependentUpon>ScatteredArrangerPropertiesForm.cs</DependentUpon>
     </Compile>
     <Compile Include="PaletteEditorForm.cs">
       <SubType>Form</SubType>
@@ -176,8 +176,8 @@
     <EmbeddedResource Include="PopupForms\NewPaletteForm.resx">
       <DependentUpon>NewPaletteForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PopupForms\NewScatteredArrangerForm.resx">
-      <DependentUpon>NewScatteredArrangerForm.cs</DependentUpon>
+    <EmbeddedResource Include="PopupForms\ScatteredArrangerPropertiesForm.resx">
+      <DependentUpon>ScatteredArrangerPropertiesForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PaletteEditorForm.resx">
       <DependentUpon>PaletteEditorForm.cs</DependentUpon>

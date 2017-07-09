@@ -124,24 +124,30 @@ namespace TileShop
                 // TODO: Error checking for valid variable string characters in name [A-Z][a-z][0-9]
                 string strippedName = plugin.Metadata.Name.Replace(" ", "");
 
-                ToolStripMenuItem nameItem = new ToolStripMenuItem(plugin.Metadata.Name);
-                nameItem.Name = strippedName + "MenuItem";
-                nameItem.Tag = plugin.Metadata.Name;
-                nameItem.Visible = true;
+                ToolStripMenuItem nameItem = new ToolStripMenuItem(plugin.Metadata.Name)
+                {
+                    Name = strippedName + "MenuItem",
+                    Tag = plugin.Metadata.Name,
+                    Visible = true
+                };
                 pluginsToolStripMenuItem.DropDownItems.Add(nameItem);
 
-                ToolStripMenuItem runItem = new ToolStripMenuItem("Run");
-                runItem.Name = strippedName + "RunPluginMenuItem";
-                runItem.Tag = plugin.Metadata.Name;
+                ToolStripMenuItem runItem = new ToolStripMenuItem("Run")
+                {
+                    Name = strippedName + "RunPluginMenuItem",
+                    Tag = plugin.Metadata.Name
+                };
                 runItem.Click += RunFileParserPlugin_Click;
                 runItem.Visible = true;
                 nameItem.DropDownItems.Add(runItem);
 
-                ToolStripMenuItem viewItem = new ToolStripMenuItem("View Plugin Info");
-                viewItem.Name = strippedName + "ViewInfoMenuItem";
-                viewItem.Tag = plugin.Metadata.Name;
+                ToolStripMenuItem viewItem = new ToolStripMenuItem("View Plugin Info")
+                {
+                    Name = strippedName + "ViewInfoMenuItem",
+                    Tag = plugin.Metadata.Name,
+                    Visible = true
+                };
                 viewItem.Click += ViewFileParserPlugin_Click;
-                viewItem.Visible = true;
                 nameItem.DropDownItems.Add(viewItem);
             }
         }
@@ -174,14 +180,14 @@ namespace TileShop
                     return;
                 }
 
+                foreach (string filename in files)
+                    pec.AddFile(filename, pluginName);
+
                 foreach (Palette pal in palettes)
                     pec.AddPalette(pal.Clone(), pluginName);
 
                 foreach (Arranger arr in arrangers)
                     pec.AddArranger(arr.Clone(), pluginName);
-
-                foreach (string filename in files)
-                    pec.AddFile(filename, pluginName);
             }
         }
 
@@ -218,20 +224,15 @@ namespace TileShop
         {
             NewTileArrangerForm ntaf = new NewTileArrangerForm();
 
-            if (ActiveMdiChild != null)
+            if (ActiveMdiChild is GraphicsViewerChild gv)
             {
-                if (ActiveMdiChild is GraphicsViewerChild)
+                Size ElementSize = gv.DisplayArranger.ElementPixelSize;
+                ntaf.SetDefaults(ElementSize.Width, ElementSize.Height, 16, 8);
+
+                if (gv.DisplayArranger.Mode == ArrangerMode.SequentialArranger)
                 {
-                    GraphicsViewerChild gv = (GraphicsViewerChild)ActiveMdiChild;
-
-                    Size ElementSize = gv.arranger.ElementPixelSize;
-                    ntaf.SetDefaults(ElementSize.Width, ElementSize.Height, 16, 8);
-
-                    if (gv.arranger.Mode == ArrangerMode.SequentialArranger)
-                    {
-                        GraphicsFormat fmt = FileManager.Instance.GetGraphicsFormat(gv.arranger.GetSequentialGraphicsFormat());
-                        ntaf.SetFormat(fmt.Name);
-                    }
+                    GraphicsFormat fmt = FileManager.Instance.GetGraphicsFormat(gv.DisplayArranger.GetSequentialGraphicsFormat());
+                    ntaf.SetFormat(fmt.Name);
                 }
             }
 
@@ -265,14 +266,16 @@ namespace TileShop
 
             if (String.IsNullOrEmpty(ProjectFileName)) // First save, need a filename
             {
-                SaveFileDialog sfd = new SaveFileDialog();
-                sfd.AddExtension = true;
-                sfd.DefaultExt = ".xml";
-                sfd.ValidateNames = true;
-                sfd.Filter = "Xml Project File|*.xml";
-                sfd.Title = "Save Project";
+                SaveFileDialog sfd = new SaveFileDialog()
+                {
+                    AddExtension = true,
+                    DefaultExt = ".xml",
+                    ValidateNames = true,
+                    Filter = "Xml Project File|*.xml",
+                    Title = "Save Project"
+                };
 
-                if(sfd.ShowDialog() == DialogResult.OK)
+                if (sfd.ShowDialog() == DialogResult.OK)
                 {
                     ProjectFileName = sfd.FileName;
                     pec.SaveProject(ProjectFileName);
@@ -294,14 +297,16 @@ namespace TileShop
                 }
             }
 
-            SaveFileDialog sfd = new SaveFileDialog();
-            sfd.AddExtension = true;
-            sfd.DefaultExt = ".xml";
-            sfd.ValidateNames = true;
-            sfd.Filter = "Xml Project File|*.xml";
-            sfd.Title = "Save Project";
-
-            if (sfd.ShowDialog() == DialogResult.OK)
+            SaveFileDialog sfd = new SaveFileDialog()
+            {
+                AddExtension = true,
+                DefaultExt = ".xml",
+                ValidateNames = true,
+                Filter = "Xml Project File|*.xml",
+                Title = "Save Project"
+            };
+            if (sfd.
+                ShowDialog() == DialogResult.OK)
             {
                 ProjectFileName = sfd.FileName;
                 pec.SaveProject(ProjectFileName);
@@ -323,25 +328,21 @@ namespace TileShop
 
         private void NewScatteredArrangerToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            NewScatteredArrangerForm nsaf = new NewScatteredArrangerForm();
+            ScatteredArrangerPropertiesForm sapf = new ScatteredArrangerPropertiesForm();
 
-            if (ActiveMdiChild != null)
+            if (ActiveMdiChild is GraphicsViewerChild gv) // Initialize with defaults from the active MDI window
             {
-                if (ActiveMdiChild is GraphicsViewerChild)
-                {
-                    GraphicsViewerChild gv = (GraphicsViewerChild)ActiveMdiChild;
-                    Size ElementSize = gv.arranger.ElementPixelSize;
-                    nsaf.SetDefaults(ElementSize.Width, ElementSize.Height, 16, 8);
-                }
+                Size ElementSize = gv.DisplayArranger.ElementPixelSize;
+                sapf.SetDefaults(true, "", new Size(ElementSize.Width, ElementSize.Height), new Size(16, 8), ArrangerLayout.TiledArranger);
             }
 
-            if (DialogResult.OK == nsaf.ShowDialog())
+            if (DialogResult.OK == sapf.ShowDialog())
             {
-                Size ArrSize = nsaf.GetArrangerSize();
-                Size TileSize = nsaf.GetElementSize();
+                Size ArrSize = sapf.ArrangerSize;
+                Size ElementSize = sapf.ElementPixelSize;
 
-                Arranger arr = Arranger.NewScatteredArranger(ArrSize.Width, ArrSize.Height, TileSize.Width, TileSize.Height);
-                arr.Name = nsaf.GetArrangerName();
+                Arranger arr = Arranger.NewScatteredArranger(sapf.ArrangerLayout, ArrSize.Width, ArrSize.Height, ElementSize.Width, ElementSize.Height);
+                arr.Name = sapf.ArrangerName;
                 pec.AddArranger(arr, "", true);
             }
         }
