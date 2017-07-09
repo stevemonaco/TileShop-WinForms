@@ -10,7 +10,7 @@ namespace TileShop
 {
     /// <summary>
     /// Singleton class that manages file and editor resources
-    /// Files loaded here are kept open always until ClearAll is called
+    /// Files loaded here are kept open always until CloseProject is called
     /// </summary>
     
     // TODO - Consider future implementation of lazy instantiation for some objects, especially for projects that have many, many files
@@ -293,6 +293,136 @@ namespace TileShop
 
             if (PersistentPaletteList.ContainsKey(PaletteName))
                 PersistentPaletteList.Remove(PaletteName);
+        }
+
+        /// <summary>
+        /// Renames a file that is currently loaded into the FileManager, renames it on disk, and remaps all references to it in the project
+        /// </summary>
+        /// <param name="FileName">FileManager file to be renamed</param>
+        /// <param name="NewFileName">Name that the file will be renamed to</param>
+        /// <returns>Success state</returns>
+        public bool RenameFile(string FileName, string NewFileName)
+        {
+            if (String.IsNullOrEmpty(FileName) || String.IsNullOrEmpty(NewFileName))
+                throw new ArgumentException("");
+
+            // Must contain FileName and must not contain NewFileName
+            if (HasFile(NewFileName) || !HasFile(FileName) || File.Exists(NewFileName))
+                return false;
+
+            // File must not already exist
+            if (File.Exists(NewFileName))
+                return false;
+
+            FileStream fs = GetFileStream(FileName);
+            string name = fs.Name;
+            fs.Close();
+
+            FileList.Remove(FileName);
+
+            File.Move(name, NewFileName);
+            FileStream newfs = File.Open(NewFileName, FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
+            FileList.Add(NewFileName, newfs);
+
+            // Rename references
+            foreach (Arranger arr in ArrangerList.Values)
+            {
+                foreach(ArrangerElement el in arr.ElementList)
+                {
+                    if (el.FileName == FileName)
+                        el.FileName = NewFileName;
+                }
+            }
+
+            foreach (Arranger arr in PersistentArrangerList.Values)
+            {
+                foreach (ArrangerElement el in arr.ElementList)
+                {
+                    if (el.FileName == FileName)
+                        el.FileName = NewFileName;
+                }
+            }
+
+            foreach (Palette pal in PaletteList.Values)
+            {
+                if (pal.FileName == FileName)
+                    pal.SetFileName(NewFileName);
+            }
+
+            foreach (Palette pal in PersistentPaletteList.Values)
+            {
+                if (pal.FileName == FileName)
+                    pal.SetFileName(NewFileName);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Renames an arranger that is currently loaded into the FileManager
+        /// </summary>
+        /// <param name="ArrangerName">Arranger to be renamed</param>
+        /// <param name="NewArrangerName">Name that the arranger will be renamed to</param>
+        /// <returns></returns>
+        public bool RenameArranger(string ArrangerName, string NewArrangerName)
+        {
+            if (!HasArranger(ArrangerName) || HasArranger(NewArrangerName))
+                return false;
+
+            Arranger arr = GetArranger(ArrangerName);
+            arr.Name = NewArrangerName;
+            ArrangerList.Remove(ArrangerName);
+            ArrangerList.Add(NewArrangerName, arr);
+
+            Arranger arr2 = GetPersistentArranger(ArrangerName);
+            arr2.Name = NewArrangerName;
+            PersistentArrangerList.Remove(ArrangerName);
+            PersistentArrangerList.Add(NewArrangerName, arr2);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Renames an palette that is currently loaded into the FileManager and remaps all references to it in the project
+        /// </summary>
+        /// <param name="PaletteName">Palette to be renamed</param>
+        /// <param name="NewPaletteName">Name that the palette will be renamed to</param>
+        /// <returns></returns>
+        public bool RenamePalette(string PaletteName, string NewPaletteName)
+        {
+            if (!HasPalette(PaletteName) || HasPalette(NewPaletteName))
+                return false;
+
+            Palette pal = GetPalette(PaletteName);
+            pal.SetFileName(NewPaletteName);
+            PaletteList.Remove(NewPaletteName);
+            PaletteList.Add(NewPaletteName, pal);
+
+            Palette pal2 = GetPersistentPalette(PaletteName);
+            pal2.SetFileName(NewPaletteName);
+            PersistentPaletteList.Remove(NewPaletteName);
+            PersistentPaletteList.Add(NewPaletteName, pal2);
+
+            // Rename references
+            foreach (Arranger arr in ArrangerList.Values)
+            {
+                foreach (ArrangerElement el in arr.ElementList)
+                {
+                    if (el.PaletteName == PaletteName)
+                        el.PaletteName = NewPaletteName;
+                }
+            }
+
+            foreach (Arranger arr in PersistentArrangerList.Values)
+            {
+                foreach (ArrangerElement el in arr.ElementList)
+                {
+                    if (el.PaletteName == PaletteName)
+                        el.PaletteName = NewPaletteName;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
