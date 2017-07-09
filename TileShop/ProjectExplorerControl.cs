@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,6 +31,7 @@ namespace TileShop
         /// Adds a file to the TreeView and to FileManager
         /// </summary>
         /// <param name="Filename">Filename of the file to add</param>
+        /// <param name="NodePath">Folder node path into the TreeView</param>
         /// <param name="Show">Optionally displays the file using a sequential arranger immediately</param>
         /// <returns></returns>
         public bool AddFile(string Filename, string NodePath, bool Show = false)
@@ -69,6 +71,7 @@ namespace TileShop
         /// Removes a file from the TreeView
         /// </summary>
         /// <param name="Filename">Fully qualified filename</param>
+        /// <param name="NodePath">Folder node path into the TreeView</param>
         /// <returns></returns>
         public bool RemoveFile(string Filename, string NodePath)
         {
@@ -77,7 +80,7 @@ namespace TileShop
             if (tn == null) // Not found
                 return false;
 
-            if(!(tn is FileNode))
+            if (!(tn is FileNode))
                 throw new InvalidOperationException("Attempted to RemoveFile on a TreeView node that is not a FileNode");
 
             tn.Remove();
@@ -87,9 +90,85 @@ namespace TileShop
         }
 
         /// <summary>
+        /// Renames a file's node, its entry in FileManager, filename on disk, and remaps all project references
+        /// </summary>
+        /// <param name="Filename">File to be renamed</param>
+        /// <param name="NodePath">Path to the file node</param>
+        /// <param name="NewFilename">Name that the file will be renamed to</param>
+        /// <returns></returns>
+        public bool RenameFile(string Filename, string NodePath, string NewFilename)
+        {
+            TreeNode tn = FindNode(Filename, NodePath);
+
+            if (tn == null) // Not found
+                return false;
+
+            if (!(tn is FileNode))
+                throw new InvalidOperationException("Attempted to RenameFile on a TreeView node that is not a FileNode");
+
+            if (!FileManager.Instance.RenameFile(Filename, NewFilename))
+                return false;
+
+            tn.Text = NewFilename;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Renames a palettes's node, its entry in FileManager, and remaps all project references
+        /// </summary>
+        /// <param name="PaletteName">Palette to be renamed</param>
+        /// <param name="NodePath">Path to the palette node</param>
+        /// <param name="NewPaletteName">Name that the palette will be renamed to</param>
+        /// <returns></returns>
+        public bool RenamePalette(string PaletteName, string NodePath, string NewPaletteName)
+        {
+            TreeNode tn = FindNode(PaletteName, NodePath);
+
+            if (tn == null) // Not found
+                return false;
+
+            if (!(tn is PaletteNode))
+                throw new InvalidOperationException("Attempted to RenamePalette on a TreeView node that is not a PaletteNode");
+
+            if (!FileManager.Instance.RenamePalette(PaletteName, NewPaletteName))
+                return false;
+
+            tn.Text = NewPaletteName;
+
+            return true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ArrangerName"></param>
+        /// <param name="NodePath"></param>
+        /// <param name="NewArrangerName"></param>
+        /// <returns></returns>
+        public bool RenameArranger(string ArrangerName, string NodePath, string NewArrangerName)
+        {
+            TreeNode tn = FindNode(ArrangerName, NodePath);
+
+            if (tn == null) // Not found
+                return false;
+
+            if (!(tn is ArrangerNode))
+                throw new InvalidOperationException("Attempted to RenameArranger on a TreeView node that is not an ArrangerNode");
+
+            if (!FileManager.Instance.RenameArranger(ArrangerName, NewArrangerName))
+                return false;
+
+            tn.Text = NewArrangerName;
+
+            return true;
+        }
+
+        /// <summary>
         /// Adds an arranger to the TreeView and to FileManager
         /// </summary>
         /// <param name="arr">Arranger to add</param>
+        /// <param name="NodePath">Folder node path into the TreeView</param>
         /// <param name="Show">Optionally shows the arranger immediately</param>
         /// <returns></returns>
         public bool AddArranger(Arranger arr, string NodePath, bool Show = false)
@@ -133,6 +212,7 @@ namespace TileShop
         /// Removes an arranger from the TreeView
         /// </summary>
         /// <param name="ArrangerName">Name of the arranger to remove</param>
+        /// <param name="NodePath">Folder node path into the TreeView</param>
         /// <returns></returns>
         public bool RemoveArranger(string ArrangerName, string NodePath)
         {
@@ -141,12 +221,18 @@ namespace TileShop
             if (tn == null)
                 return false;
 
-            if(!(tn is ArrangerNode))
+            if (!(tn is ArrangerNode))
                 throw new InvalidOperationException("Attempted to RemoveArranger on a TreeView node that is not an ArrangerNode");
 
             return false;
         }
 
+        /// <summary>
+        /// Adds an arranger to the TreeView and to FileManager
+        /// </summary>
+        /// <param name="pal">Palette to be added</param>
+        /// <param name="NodePath">Folder node path into the TreeView</param>
+        /// <returns></returns>
         public bool AddPalette(Palette pal, string NodePath)
         {
             PaletteNode pn = new PaletteNode();
@@ -166,22 +252,35 @@ namespace TileShop
             return true;
         }
 
-        public bool RemovePalette(PaletteNode pn)
+        /// <summary>
+        /// Removes a palette from the TreeView
+        /// </summary>
+        /// <param name="PaletteName">Name of the palette to remove</param>
+        /// <param name="NodePath">Folder node path into the TreeView</param>
+        /// <returns></returns>
+        public bool RemovePalette(string PaletteName, string NodePath)
         {
-            if (pn == null)
-                throw new ArgumentNullException("PaletteNode cannot be null");
+            TreeNode tn = FindNode(PaletteName, NodePath);
 
-            FileManager.Instance.RemovePalette(pn.Text);
-            pn.Remove();
+            if (tn == null)
+                return false;
 
-            return true;
+            if (!(tn is ArrangerNode))
+                throw new InvalidOperationException("Attempted to RemovePalette on a TreeView node that is not an PaletteNode");
+
+            return false;
         }
 
+        /// <summary>
+        /// Shows a sequential arranger for a Filename
+        /// </summary>
+        /// <param name="Filename">Filename on disk. Loads into FileManager if not previously loaded.</param>
+        /// <returns></returns>
         public bool ShowSequentialArranger(string Filename)
         {
             List<EditorDockContent> activeEditors = tsf.GetActiveEditors();
 
-            foreach(EditorDockContent dc in activeEditors) // Return if an editor is already opened
+            foreach (EditorDockContent dc in activeEditors) // Return if an editor is already opened
             {
                 if (dc.ContentSourceName == Filename && dc is GraphicsViewerChild)
                     return false;
@@ -199,6 +298,11 @@ namespace TileShop
                 return false;
         }
 
+        /// <summary>
+        /// Shows a scattered arranger
+        /// </summary>
+        /// <param name="ArrangerName">Name of arranger in FileManager to show</param>
+        /// <returns></returns>
         public bool ShowScatteredArranger(string ArrangerName)
         {
             List<EditorDockContent> activeEditors = tsf.GetActiveEditors();
@@ -222,6 +326,11 @@ namespace TileShop
             return true;
         }
 
+        /// <summary>
+        /// Shows a palette editor
+        /// </summary>
+        /// <param name="PaletteName">Name of palette in FileManager to show</param>
+        /// <returns></returns>
         public bool ShowPaletteEditor(string PaletteName)
         {
             if (!FileManager.Instance.HasPalette(PaletteName))
@@ -327,12 +436,23 @@ namespace TileShop
                     defaultfile = e.Attribute("defaultfile").Value,
                     defaultpalette = e.Attribute("defaultpalette").Value,
                     folder = e.Attribute("folder").Value,
-                    graphiclist = e.Descendants("graphic"),
+                    layout = e.Attribute("layout").Value,
+                    graphiclist = e.Descendants("graphic")
                 });
 
             foreach (var arranger in arrangers)
             {
-                Arranger arr = Arranger.NewScatteredArranger(arranger.elementsx, arranger.elementsy, arranger.width, arranger.height);
+                Arranger arr;
+                ArrangerLayout layout;
+
+                if (arranger.layout == "tiled")
+                    layout = ArrangerLayout.TiledArranger;
+                else if (arranger.layout == "linear")
+                    layout = ArrangerLayout.LinearArranger;
+                else
+                    throw new XmlException("Incorrect arranger layout type ('" + arranger.layout + "') for " + arranger.name);
+
+                arr = Arranger.NewScatteredArranger(layout, arranger.elementsx, arranger.elementsy, arranger.width, arranger.height);
                 arr.Name = arranger.name;
 
                 var graphics = arranger.graphiclist.Select(e => new
@@ -401,17 +521,15 @@ namespace TileShop
 
             foreach (TreeNode tn in ProjectTreeView.GetAllNodes())
             {
-                if(tn is FileNode)
+                if (tn is FileNode fn)
                 {
-                    FileNode fn = (FileNode)tn;
                     var xmlfile = new XElement("file");
                     xmlfile.SetAttributeValue("location", fn.Text);
                     xmlfile.SetAttributeValue("folder", fn.GetNodePath());
                     datafiles.Add(xmlfile);
                 }
-                else if(tn is PaletteNode)
+                else if (tn is PaletteNode pn)
                 {
-                    PaletteNode pn = (PaletteNode)tn;
                     Palette pal = FileManager.Instance.GetPersistentPalette(pn.Text);
                     var xmlpal = new XElement("palette");
                     xmlpal.SetAttributeValue("name", pal.Name);
@@ -424,9 +542,8 @@ namespace TileShop
                     xmlpal.SetAttributeValue("zeroindextransparent", pal.ZeroIndexTransparent);
                     palettes.Add(xmlpal);
                 }
-                else if(tn is ArrangerNode)
+                else if (tn is ArrangerNode an)
                 {
-                    ArrangerNode an = (ArrangerNode)tn;
                     Arranger arr = FileManager.Instance.GetPersistentArranger(an.Text);
                     var xmlarr = new XElement("arranger");
                     xmlarr.SetAttributeValue("name", arr.Name);
@@ -435,6 +552,11 @@ namespace TileShop
                     xmlarr.SetAttributeValue("elementsy", arr.ArrangerElementSize.Height);
                     xmlarr.SetAttributeValue("width", arr.ElementPixelSize.Width);
                     xmlarr.SetAttributeValue("height", arr.ElementPixelSize.Height);
+
+                    if (arr.Layout == ArrangerLayout.TiledArranger)
+                        xmlarr.SetAttributeValue("layout", "tiled");
+                    else if (arr.Layout == ArrangerLayout.LinearArranger)
+                        xmlarr.SetAttributeValue("layout", "linear");
 
                     string DefaultPalette = FindMostFrequentValue(arr, "PaletteName");
                     string DefaultFile = FindMostFrequentValue(arr, "FileName");
@@ -479,7 +601,12 @@ namespace TileShop
             return true;
         }
 
-        // Used to determine property defaults for XML
+        /// <summary>
+        /// Find most frequent of an attribute within an arranger's elements
+        /// </summary>
+        /// <param name="arr">Arranger to search</param>
+        /// <param name="attributeName">Name of the attribute to find most frequent value of</param>
+        /// <returns></returns>
         private string FindMostFrequentValue(Arranger arr, string attributeName)
         {
             Dictionary<string, int> freq = new Dictionary<string, int>();
@@ -504,6 +631,10 @@ namespace TileShop
             return max;
         }
 
+        /// <summary>
+        /// Gets a list of all filenames loaded into the FileManager
+        /// </summary>
+        /// <returns></returns>
         public List<string> GetFileNameList()
         {
             List<string> list = new List<string>();
@@ -531,7 +662,7 @@ namespace TileShop
         private List<string> GetChildFileNames(TreeNode parentNode)
         {
             List<string> ret = new List<string>();
-            foreach(TreeNode childNode in parentNode.Nodes)
+            foreach (TreeNode childNode in parentNode.Nodes)
             {
                 if (childNode is FolderNode)
                 {
@@ -575,7 +706,7 @@ namespace TileShop
         /// <summary>
         /// Adds a folder node (and any necessary parent folder nodes) to the TreeView
         /// </summary>
-        /// <param name="NodePath"></param>
+        /// <param name="FolderNodePath">Full path of the folder node to add</param>
         /// <returns>The FolderNode that was added or found on success. Null on failure.</returns>
         private FolderNode AddFolderNode(string FolderNodePath)
         {
@@ -681,7 +812,7 @@ namespace TileShop
             if (fn == null)
                 return null;
 
-            foreach(TreeNode tn in fn.Nodes)
+            foreach (TreeNode tn in fn.Nodes)
             {
                 if (tn.Text == NodeName)
                     return tn;
@@ -705,7 +836,7 @@ namespace TileShop
             ProjectTreeNode dragNode = null;
             bool moveChildren = false;
 
-            if(e.Data.GetDataPresent(typeof(FileNode)))
+            if (e.Data.GetDataPresent(typeof(FileNode)))
                 dragNode = (FileNode)e.Data.GetData(typeof(FileNode));
             if (e.Data.GetDataPresent(typeof(FolderNode)))
                 dragNode = (FolderNode)e.Data.GetData(typeof(FolderNode));
@@ -771,21 +902,30 @@ namespace TileShop
     /// </summary>
     public static class TreeViewExtensions
     {
-        public static List<TreeNode> GetAllNodes(this TreeView _self)
+        /// <summary>
+        /// Gets a flat list of all nodes in the tree
+        /// </summary>
+        /// <param name="Self"></param>
+        /// <returns></returns>
+        public static List<TreeNode> GetAllNodes(this TreeView Self)
         {
             List<TreeNode> result = new List<TreeNode>();
-            foreach (TreeNode child in _self.Nodes)
+            foreach (TreeNode child in Self.Nodes)
             {
                 result.AddRange(child.GetAllNodes());
             }
             return result;
         }
 
-        public static List<TreeNode> GetAllNodes(this TreeNode _self)
+        /// <summary>
+        /// Gets a flat list of all child nodes
+        /// </summary>
+        /// <param name="Self"></param>
+        /// <returns></returns>
+        public static List<TreeNode> GetAllNodes(this TreeNode Self)
         {
-            List<TreeNode> result = new List<TreeNode>();
-            result.Add(_self);
-            foreach (TreeNode child in _self.Nodes)
+            List<TreeNode> result = new List<TreeNode> { Self };
+            foreach (TreeNode child in Self.Nodes)
             {
                 result.AddRange(child.GetAllNodes());
             }
@@ -798,6 +938,11 @@ namespace TileShop
     /// </summary>
     public static class TreeNodeExtensions
     {
+        /// <summary>
+        /// Builds a node path for the specified node
+        /// </summary>
+        /// <param name="node">Specified node</param>
+        /// <returns>Node path</returns>
         public static string GetNodePath(this TreeNode node)
         {
             string path = "";
