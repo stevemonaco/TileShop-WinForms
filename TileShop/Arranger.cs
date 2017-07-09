@@ -5,12 +5,20 @@ using System.Drawing;
 namespace TileShop
 {
     /// <summary>
-    /// Arranger mode for the arranger.
+    /// Mode for the arranger.
     /// Sequential arrangers are for sequential file access
     /// Scattered arrangers are for accessing many files and file offsets in a single arranger
-    /// Memory arrangers are used as a scratchpad
+    /// Memory arrangers are used as a scratchpad (currently unimplemented)
     /// </summary>
     public enum ArrangerMode { SequentialArranger = 0, ScatteredArranger, MemoryArranger };
+
+    /// <summary>
+    /// Layout of graphics for the arranger
+    /// Each layout directs the UI to perform differently
+    /// TiledArranger will snap selection rectangles to tile boundaries
+    /// LinearArranger will snap selection rectangles to pixel boundaries
+    /// </summary>
+    public enum ArrangerLayout { TiledArranger = 0, LinearArranger };
 
     /// <summary>
     /// Move operations for sequential arrangers
@@ -46,6 +54,8 @@ namespace TileShop
         /// Gets the Mode of the arranger
         /// </summary>
         public ArrangerMode Mode { get; private set; }
+
+        public ArrangerLayout Layout { get; private set; }
 
         /// <summary>
         /// Gets or sets the name of the arranger
@@ -239,76 +249,114 @@ namespace TileShop
 
             int xCopy = Math.Min(ElementsX, ArrangerElementSize.Width);
             int yCopy = Math.Min(ElementsY, ArrangerElementSize.Height);
-            int Width = ArrangerPixelSize.Width;
-            int Height = ArrangerPixelSize.Height;
+            int Width = ElementPixelSize.Width;
+            int Height = ElementPixelSize.Height;
 
-            for(int y = 0; y < yCopy; y++)
-                for(int x = 0; x < xCopy; x++)
-                    newList[x, y] = ElementList[x, y].Clone();
+            /*for (int y = 0; y < yCopy; y++)
+            {
+                for (int x = 0; x < xCopy; x++)
+                {
+                    if((y < ArrangerElementSize.Height) && (x < ArrangerElementSize.Width))
+                        newList[x, y] = ElementList[x, y].Clone();
+                    else // Create new blank element
+                    {
 
-            for (int y = yCopy; yCopy < ElementsY; y++)
+                    }
+                }
+            }*/
+
+            for (int y = 0; y < ElementsY; y++)
             {
                 for (int x = 0; x < ElementsX; x++)
                 {
+                    if ((y < ArrangerElementSize.Height) && (x < ArrangerElementSize.Width)) // Copy from old arranger
+                        newList[x, y] = ElementList[x, y].Clone();
+                    else // Create new blank element
+                    {
+                        ArrangerElement el = new ArrangerElement()
+                        {
+                            X1 = x * Width,
+                            Y1 = y * Height,
+                            X2 = x * Width + Width - 1,
+                            Y2 = y * Height + Height - 1,
+                            Width = Width,
+                            Height = Height,
+                        };
+
+                        newList[x, y] = el;
+                    }
+                }
+            }
+
+            /*for (int y = yCopy; yCopy < ElementsY; y++)
+            {
+                for (int x = xCopy; x < ElementsX; x++)
+                {
                     ArrangerElement el = new ArrangerElement()
                     {
-                        X1 = x,
-                        Y1 = y,
-                        X2 = x + Width - 1,
-                        Y2 = y + Height - 1,
+                        X1 = x * Width,
+                        Y1 = y * Height,
+                        X2 = x * Width + Width - 1,
+                        Y2 = y * Height + Height - 1,
                         Width = Width,
                         Height = Height,
                     };
 
                     newList[x, y] = el;
                 }
-            }
+            }*/
+
+            ElementList = newList;
+            ArrangerElementSize = new Size(ElementsX, ElementsY);
+            ArrangerPixelSize = new Size(ElementsX * Width, ElementsY * Height);
         }
 
         /// <summary>
         /// Creates a new scattered arranger with default initialized elements
         /// </summary>
-        /// <param name="ElementsX">Number of elements in width</param>
-        /// <param name="ElementsY">Number of elements in height</param>
-        /// <param name="Width">Width of each element</param>
-        /// <param name="Height">Height of each element</param>
+        /// <param name="layout">Layout type of the arranger</param>
+        /// <param name="arrangerWidth">Number of elements in width</param>
+        /// <param name="arrangerHeight">Number of elements in height</param>
+        /// <param name="elementWidth">Width of each element</param>
+        /// <param name="elementHeight">Height of each element</param>
         /// <returns></returns>
-        public static Arranger NewScatteredArranger(int ElementsX, int ElementsY, int Width, int Height)
+        public static Arranger NewScatteredArranger(ArrangerLayout layout, int arrangerWidth, int arrangerHeight, int elementWidth, int elementHeight)
         {
             Arranger arr = new Arranger();
             arr.Mode = ArrangerMode.ScatteredArranger;
             arr.IsSequential = false;
+            arr.Layout = layout;
 
-            arr.ElementList = new ArrangerElement[ElementsX, ElementsY];
+            arr.ElementList = new ArrangerElement[arrangerWidth, arrangerHeight];
 
             int x = 0;
             int y = 0;
 
-            for (int i = 0; i < ElementsY; i++)
+            for (int i = 0; i < arrangerHeight; i++)
             {
                 x = 0;
-                for (int j = 0; j < ElementsX; j++)
+                for (int j = 0; j < arrangerWidth; j++)
                 {
                     ArrangerElement el = new ArrangerElement()
                     {
                         X1 = x,
                         Y1 = y,
-                        X2 = x + Width - 1,
-                        Y2 = y + Height - 1,
-                        Width = Width,
-                        Height = Height,
+                        X2 = x + elementWidth - 1,
+                        Y2 = y + elementHeight - 1,
+                        Width = elementWidth,
+                        Height = elementHeight,
                     };
                     arr.ElementList[j, i] = el;
 
-                    x += Width;
+                    x += elementWidth;
                 }
-                y += Height;
+                y += elementHeight;
             }
 
-            ArrangerElement LastElem = arr.ElementList[ElementsX - 1, ElementsY - 1];
+            ArrangerElement LastElem = arr.ElementList[arrangerWidth - 1, arrangerHeight - 1];
             arr.ArrangerPixelSize = new Size(LastElem.X2 + 1, LastElem.Y2 + 1);
-            arr.ArrangerElementSize = new Size(ElementsX, ElementsY);
-            arr.ElementPixelSize = new Size(Width, Height);
+            arr.ArrangerElementSize = new Size(arrangerWidth, arrangerHeight);
+            arr.ElementPixelSize = new Size(elementWidth, elementHeight);
 
             return arr;
         }
@@ -575,6 +623,21 @@ namespace TileShop
             ArrangerPixelSize = new Size(LastElem.X2 + 1, LastElem.Y2 + 1);
 
             return true;
+        }
+
+        /// <summary>
+        /// Tests the arranger elements to see if any elements are blank
+        /// </summary>
+        /// <returns></returns>
+        public bool ContainsBlankElements()
+        {
+            foreach(ArrangerElement el in ElementList)
+            {
+                if (el.IsBlank())
+                    return true;
+            }
+
+            return false;
         }
 
         /// <summary>
