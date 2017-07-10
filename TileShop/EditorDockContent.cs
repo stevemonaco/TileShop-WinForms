@@ -70,16 +70,26 @@ namespace TileShop
         public string ContentSourceName
         {
             get => contentSourceName;
+            protected set => contentSourceName = value;
+        }
+        protected string contentSourceName;
+
+        /// <summary>
+        /// Returns the key of the content source
+        /// </summary>
+        public string ContentSourceKey
+        {
+            get => contentSourceKey;
             protected set
             {
-                contentSourceName = value;
+                contentSourceKey = value;
                 if (containsModifiedContent)
                     Text = contentSourceName + "*";
                 else
                     Text = contentSourceName;
             }
         }
-        protected string contentSourceName;
+        protected string contentSourceKey;
 
         /// <summary>
         /// Saves content to underlying source

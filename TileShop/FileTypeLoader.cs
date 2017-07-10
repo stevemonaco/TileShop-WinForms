@@ -19,7 +19,11 @@ namespace TileShop
             //LookupDefaultFormat.Add("", "");
         }
 
-        // Retrieves default graphics format name from a filename
+        /// <summary>
+        /// Retrieves the default graphics format name for a given filename
+        /// </summary>
+        /// <param name="Filename"></param>
+        /// <returns></returns>
         public string GetDefaultFormatName(string Filename)
         {
             if (LookupDefaultFormat.ContainsKey(Path.GetExtension(Filename)))

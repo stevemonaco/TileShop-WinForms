@@ -54,7 +54,7 @@ namespace TileShop
         // UI Events
         public event EventHandler<EventArgs> EditArrangerChanged;
 
-        public GraphicsViewerChild(string ArrangerName)
+        public GraphicsViewerChild(string ArrangerKey)
         {
             InitializeComponent();
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.NonPublic, 
@@ -67,9 +67,10 @@ namespace TileShop
             MoveSelectionPen.Width = (float)Zoom;
 
             // Setup arranger variables
-            DisplayArranger = FileManager.Instance.GetArranger(ArrangerName);
+            ContentSourceKey = ArrangerKey;
+            DisplayArranger = FileManager.Instance.GetArranger(ArrangerKey);
             ReloadArranger();
-            selectionData = new ArrangerSelectionData(DisplayArranger.Name);
+            selectionData = new ArrangerSelectionData(ContentSourceKey);
             selectionData.Zoom = 1;
 
             if (DisplayArranger.Mode == ArrangerMode.SequentialArranger)
@@ -102,14 +103,13 @@ namespace TileShop
 
         public override bool ReloadContent()
         {
-            DisplayArranger = FileManager.Instance.ReloadArranger(DisplayArranger.Name);
+            DisplayArranger = FileManager.Instance.ReloadArranger(ContentSourceKey);
             EditArranger = null;
             DisplayElements = DisplayArranger.ArrangerElementSize;
             ElementSize = DisplayArranger.ElementPixelSize;
-            this.Text = DisplayArranger.Name;
-            selectionData = new ArrangerSelectionData(DisplayArranger.Name);
-            selectionData.Zoom = Zoom;
             ContentSourceName = DisplayArranger.Name;
+            selectionData = new ArrangerSelectionData(ContentSourceKey);
+            selectionData.Zoom = Zoom;
             DisplayRect = new Rectangle(0, 0, DisplayArranger.ArrangerPixelSize.Width * Zoom, DisplayArranger.ArrangerPixelSize.Height * Zoom);
 
             // Forces the render manager to do a full redraw
@@ -128,7 +128,7 @@ namespace TileShop
 
             MessageBox.Show("SaveContent");
 
-            FileManager.Instance.SaveArranger(DisplayArranger.Name);
+            FileManager.Instance.SaveArranger(ContentSourceKey);
 
             ContainsModifiedContent = false;
             return true;
@@ -151,7 +151,6 @@ namespace TileShop
             EditArranger = null;
             DisplayElements = DisplayArranger.ArrangerElementSize;
             ElementSize = DisplayArranger.ElementPixelSize;
-            this.Text = DisplayArranger.Name;
             ContentSourceName = DisplayArranger.Name;
             ContainsModifiedContent = false;
             DisplayRect = new Rectangle(0, 0, DisplayArranger.ArrangerPixelSize.Width * Zoom, DisplayArranger.ArrangerPixelSize.Height * Zoom);
@@ -698,18 +697,15 @@ namespace TileShop
         private void ArrangerPropertiesButton_Click(object sender, EventArgs e)
         {
             ScatteredArrangerPropertiesForm sapf = new ScatteredArrangerPropertiesForm();
-            sapf.SetDefaults(false, DisplayArranger.Name, DisplayArranger.ElementPixelSize, DisplayArranger.ArrangerElementSize, DisplayArranger.Layout);
+            sapf.SetDefaults(false, DisplayArranger.Name, ContentSourceKey, DisplayArranger.ElementPixelSize, DisplayArranger.ArrangerElementSize, DisplayArranger.Layout);
 
             if(DialogResult.OK == sapf.ShowDialog()) // Modify arranger properties
             {
                 Size newArrangerSize = sapf.ArrangerSize;
                 string newArrangerName = sapf.ArrangerName;
 
-                if (newArrangerName != DisplayArranger.Name) // Rename arranger
-                    
-
                 if (newArrangerSize.Width < DisplayArranger.ArrangerElementSize.Width || newArrangerSize.Height < DisplayArranger.ArrangerElementSize.Height)
-                    if (DialogResult.No == MessageBox.Show("Arranger elements will be lost due to a reduction in size. Continue?", "Resize Arranger", MessageBoxButtons.YesNo))
+                    if (DialogResult.Cancel == MessageBox.Show("Arranger elements will be lost due to a reduction in size. Continue?", "Resize Arranger", MessageBoxButtons.OKCancel))
                         return;
 
                 DisplayArranger.ResizeScatteredArranger(newArrangerSize.Width, newArrangerSize.Height);

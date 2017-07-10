@@ -46,7 +46,6 @@
             this.NewPaletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.NewScatteredArrangerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pluginsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.DebugToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.DebugXmlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainToolStrip = new System.Windows.Forms.ToolStrip();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
@@ -64,7 +63,6 @@
             this.fileToolStripMenuItem,
             this.addToolStripMenuItem,
             this.pluginsToolStripMenuItem,
-            this.DebugToolStripMenuItem,
             this.DebugXmlToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
@@ -196,13 +194,6 @@
             this.pluginsToolStripMenuItem.Size = new System.Drawing.Size(58, 20);
             this.pluginsToolStripMenuItem.Text = "&Plugins";
             // 
-            // DebugToolStripMenuItem
-            // 
-            this.DebugToolStripMenuItem.Name = "DebugToolStripMenuItem";
-            this.DebugToolStripMenuItem.Size = new System.Drawing.Size(54, 20);
-            this.DebugToolStripMenuItem.Text = "&Debug";
-            this.DebugToolStripMenuItem.Click += new System.EventHandler(this.DebugToolStripMenuItem_Click);
-            // 
             // DebugXmlToolStripMenuItem
             // 
             this.DebugXmlToolStripMenuItem.Name = "DebugXmlToolStripMenuItem";
@@ -243,7 +234,7 @@
             this.FileOffsetLabel.BackColor = System.Drawing.SystemColors.Control;
             this.FileOffsetLabel.Name = "FileOffsetLabel";
             this.FileOffsetLabel.Overflow = System.Windows.Forms.ToolStripItemOverflow.Always;
-            this.FileOffsetLabel.Size = new System.Drawing.Size(895, 17);
+            this.FileOffsetLabel.Size = new System.Drawing.Size(926, 17);
             this.FileOffsetLabel.Spring = true;
             this.FileOffsetLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
@@ -295,7 +286,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem ExitToolStripMenuItem;
         private System.Windows.Forms.ToolStripStatusLabel SelectionLabel;
-        private System.Windows.Forms.ToolStripMenuItem DebugToolStripMenuItem;
         private WeifenLuo.WinFormsUI.Docking.VS2013BlueTheme dockTheme;
         private System.Windows.Forms.ToolStripMenuItem blankArrangerToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem DebugXmlToolStripMenuItem;

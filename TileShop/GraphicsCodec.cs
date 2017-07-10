@@ -50,7 +50,7 @@ namespace TileShop
         /// <param name="el">Element to decode</param>
         unsafe static void IndexedDecode(Bitmap bmp, ArrangerElement el)
         {
-            FileStream fs = FileManager.Instance.GetFileStream(el.FileName);
+            FileStream fs = FileManager.Instance.GetDataFile(el.DataFileKey).Stream;
             GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
 
             format.Resize(el.Width, el.Height);
@@ -195,7 +195,7 @@ namespace TileShop
 
                 int Height = el.Y2 - el.Y1 + 1;
                 int Width = el.X2 - el.X1 + 1;
-                Palette pal = FileManager.Instance.GetPalette(el.PaletteName);
+                Palette pal = FileManager.Instance.GetPalette(el.PaletteKey);
 
                 for (int y = 0; y < Height; y++)
                 {
@@ -222,7 +222,7 @@ namespace TileShop
         /// <param name="el">Element with specified coordinates</param>
         public static void DecodeBlank(Bitmap bmp, ArrangerElement el)
         {
-            Color c = Color.FromArgb(el.PaletteName[0]);
+            Color c = Color.FromArgb(el.PaletteKey[0]);
             Brush b = new SolidBrush(c);
             Rectangle r = new Rectangle(el.X1, el.Y1, (el.X2 - el.X1) + 1, (el.Y2 - el.Y1) + 1);
 
@@ -248,7 +248,7 @@ namespace TileShop
             // ReadBitmap for local->foreign color conversion into fmt.MergedData
             ReadBitmapIndexed(bmp, el);
 
-            FileStream fs = FileManager.Instance.GetFileStream(el.FileName);
+            FileStream fs = FileManager.Instance.GetDataFile(el.DataFileKey).Stream;
             GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
 
             // Loop over MergedData to split foreign colors into bit planes in fmt.TileData
@@ -331,7 +331,7 @@ namespace TileShop
 
                 int Height = el.Y2 - el.Y1 + 1;
                 int Width = el.X2 - el.X1 + 1;
-                Palette pal = FileManager.Instance.GetPalette(el.PaletteName);
+                Palette pal = FileManager.Instance.GetPalette(el.PaletteKey);
 
                 for (int y = 0; y < Height; y++)
                 {

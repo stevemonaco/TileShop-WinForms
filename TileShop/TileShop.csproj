@@ -74,11 +74,13 @@
     <Compile Include="ArrangerSelectionData.cs" />
     <Compile Include="BitStream.cs" />
     <Compile Include="CustomCursor.cs" />
+    <Compile Include="DataFile.cs" />
     <Compile Include="EditorDockContent.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="FileManager.cs" />
     <Compile Include="FileTypeLoader.cs" />
+    <Compile Include="GameDescriptor.cs" />
     <Compile Include="Plugins\IFileParserContract.cs" />
     <Compile Include="IntegerTextBox.cs">
       <SubType>Component</SubType>

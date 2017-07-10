@@ -8,9 +8,13 @@ General
 	x Revise code so that the same resource cannot be opened in two editors at once
 	x Disallow keyboard access to codec dropdown and remove highlight
 	- Test support for renaming items (and simultaneously renaming all references)
-	- Consider changing XML to tree layout
+	- Change XML to tree layout
 	- Change XML graphic -> element
 	- Remove required bitoffset XML exporting (default is 0)
+	- Design palette system (palette accessibility: TIMs need multiple bound palettes, tiles less so (only animations), stored in XML? How to add in UI?)
+		- Have TIM plugin create multiple images for TIMs with multiple palettes
+		- Apply palette button with drop-down menu showing available palettes (palettes already used elsewhere in the arranger)
+		- Drop-down menu with "Other" option that allows selecting a palette from elsewhere in the project
 
 GraphicsViewerChild
 	x Add jump/goto address button for GraphicsViewerChild navigation
@@ -18,7 +22,7 @@ GraphicsViewerChild
 	x Crashing bug when selecting a blank element in a ScatteredArranger (editing) -> Selection contains blank element and cannot be edited MessageBox popup
 	- For drag+drop of elements from a ScatteredArranger->SequentialArranger, create a new temp Arranger with adjusted addresses, render, and save
 	- Enforce drag+drop consistency between ScatteredArranger->SequentialArranger formats
-	- Allow user to resize number of ScatteredArranger elements in UI
+	x Allow user to resize number of ScatteredArranger elements in UI
 	- Add support to attach palettes to tiles for ScatteredArrangers
 	- RenderPanel size issue with swapping codecs to/from PSX (linear) graphics
 

@@ -11,9 +11,9 @@ namespace TileShop
     public class ArrangerSelectionData
     {
         /// <summary>
-        /// Name of the Arranger which holds the data to be copied
+        /// Key to the Arranger which holds the data to be copied
         /// </summary>
-        public string ArrangerName { get; private set; }
+        public string ArrangerKey { get; private set; }
 
         /// <summary>
         /// Upper left location of the selection, in element units
@@ -87,9 +87,9 @@ namespace TileShop
         /// </summary>
         public ArrangerElement[,] ElementList { get; private set; }
 
-        public ArrangerSelectionData(string arrangerName)
+        public ArrangerSelectionData(string arrangerKey)
         {
-            ArrangerName = arrangerName;
+            ArrangerKey = arrangerKey;
             ClearSelection();
         }
 
@@ -117,7 +117,7 @@ namespace TileShop
             if (!HasSelection)
                 return false;
 
-            Arranger arr = FileManager.Instance.GetArranger(ArrangerName);
+            Arranger arr = FileManager.Instance.GetArranger(ArrangerKey);
 
             ElementList = new ArrangerElement[SelectionSize.Width, SelectionSize.Height];
             for (int ysrc = SelectedElements.Y, ydest = 0; ydest < SelectionSize.Height; ydest++, ysrc++)
@@ -180,7 +180,7 @@ namespace TileShop
         public void EndSelection()
         {
             InSelection = false;
-            Arranger arr = FileManager.Instance.GetArranger(ArrangerName);
+            Arranger arr = FileManager.Instance.GetArranger(ArrangerKey);
             Rectangle testBounds = new Rectangle(new Point(0, 0), arr.ArrangerElementSize);
 
             if (!SelectedElements.IntersectsWith(testBounds)) // No intersection means no selection
@@ -216,14 +216,14 @@ namespace TileShop
         {
             Point unzoomed = new Point(Location.X / Zoom, Location.Y / Zoom);
 
-            Arranger arr = FileManager.Instance.GetArranger(ArrangerName);
+            Arranger arr = FileManager.Instance.GetArranger(ArrangerKey);
 
             // Search list for element
             for (int y = 0; y < arr.ArrangerElementSize.Height; y++)
             {
                 for (int x = 0; x < arr.ArrangerElementSize.Width; x++)
                 {
-                    ArrangerElement el = arr.ElementList[x, y];
+                    ArrangerElement el = arr.ElementGrid[x, y];
                     if (unzoomed.X >= el.X1 && unzoomed.X <= el.X2 && unzoomed.Y >= el.Y1 && unzoomed.Y <= el.Y2)
                         return new Point(x, y);
                 }
@@ -244,7 +244,7 @@ namespace TileShop
 
             SelectedClientRect = new Rectangle(unzoomedfull.X * Zoom, unzoomedfull.Y * Zoom, unzoomedfull.Width * Zoom, unzoomedfull.Height * Zoom);
 
-            Arranger arr = FileManager.Instance.GetArranger(ArrangerName);
+            Arranger arr = FileManager.Instance.GetArranger(ArrangerKey);
 
             SelectedElements = new Rectangle(unzoomedfull.X / arr.ElementPixelSize.Width, unzoomedfull.Y / arr.ElementPixelSize.Height,
                 unzoomedfull.Width / arr.ElementPixelSize.Width, unzoomedfull.Height / arr.ElementPixelSize.Height);
@@ -259,7 +259,7 @@ namespace TileShop
         /// <returns></returns>
         private Rectangle GetSelectionPixelRect(Rectangle r)
         {
-            Arranger arr = FileManager.Instance.GetArranger(ArrangerName);
+            Arranger arr = FileManager.Instance.GetArranger(ArrangerKey);
 
             int x1 = r.Left;
             int x2 = r.Right;
@@ -267,7 +267,7 @@ namespace TileShop
             int y2 = r.Bottom;
 
             // Extend rectangle to include the entirety of partially selected tiles
-            foreach (ArrangerElement el in arr.ElementList)
+            foreach (ArrangerElement el in arr.ElementGrid)
             {
                 if (x1 > el.X1 && x1 <= el.X2)
                     x1 = el.X1;

@@ -25,7 +25,6 @@ namespace TileShop
     /// Local colors are internally ARGB32
     /// Foreign colors are the same as the target system
     /// </summary>
-
     public class Palette
     {
         /// <summary>
@@ -39,9 +38,9 @@ namespace TileShop
         public PaletteColorFormat ColorFormat { get; private set; }
 
         /// <summary>
-        /// FileName which contains the palette
+        /// DataFile key which contains the palette
         /// </summary>
-        public string FileName { get; private set; }
+        public string DataFileKey { get; private set; }
 
         /// <summary>
         /// Address of the palette within the file
@@ -98,7 +97,7 @@ namespace TileShop
 
             HasAlpha = false;
             Entries = 0;
-            FileName = null;
+            DataFileKey = null;
             ZeroIndexTransparent = true;
         }
 
@@ -108,23 +107,23 @@ namespace TileShop
         /// <returns></returns>
         public bool Reload()
         {
-            return LoadPalette(FileName, FileAddress, ColorFormat, ZeroIndexTransparent, Entries);
+            return LoadPalette(DataFileKey, FileAddress, ColorFormat, ZeroIndexTransparent, Entries);
         }
 
         /// <summary>
-        /// Sets the Filename source. Does not reload.
+        /// Sets the DataFile key source. Does not reload.
         /// </summary>
-        /// <param name="filename">New filename</param>
+        /// <param name="fileKey">New DataFile key</param>
         /// <returns></returns>
-        public void SetFileName(string filename)
+        public void SetFileKey(string fileKey)
         {
-            FileName = filename;
+            DataFileKey = fileKey;
         }
 
         /// <summary>
         /// Load a 256-entry palette from a new file in ARGB32 format
         /// </summary>
-        /// <param name="filename">Path to the palette file</param>
+        /// <param name="filename">Path to the palette file on disk</param>
         /// <returns>Success value</returns>
         public bool LoadPalette(string filename)
         {
@@ -149,7 +148,7 @@ namespace TileShop
 
             ColorFormat = PaletteColorFormat.ARGB32;
             FileAddress = new FileBitAddress(0, 0);
-            FileName = filename;
+            DataFileKey = filename;
             Entries = entrySize;
             StorageSource = PaletteStorageSource.File;
 
@@ -243,7 +242,7 @@ namespace TileShop
 
             ColorFormat = format;
             FileAddress = address;
-            FileName = fileName;
+            DataFileKey = fileName; // TODO: Remove this and set key externally or through method
             Entries = numEntries;
             StorageSource = PaletteStorageSource.File;
 
@@ -253,13 +252,13 @@ namespace TileShop
         /// <summary>
         /// Load palette from a previously opened file
         /// </summary>
-        /// <param name="fileId">Id of file in FileManager</param>
+        /// <param name="dataFileKey">DataFile key in FileManager</param>
         /// <param name="address">File address to the beginning of the palette</param>
         /// <param name="format">Color format of the palette</param>
         /// <param name="zeroIndexTransparent">If the 0-index of the palette is automatically transparent</param>
         /// <param name="numEntries">Number of entries the palette contains</param>
         /// <returns>Success value</returns>
-        public bool LoadPalette(string fileId, FileBitAddress address, PaletteColorFormat format, bool zeroIndexTransparent, int numEntries)
+        public bool LoadPalette(string dataFileKey, FileBitAddress address, PaletteColorFormat format, bool zeroIndexTransparent, int numEntries)
         {
             if (numEntries > 256)
                 throw new ArgumentException("Maximum palette size must be 256 entries or less");
@@ -267,7 +266,7 @@ namespace TileShop
             localPalette = new UInt32[numEntries];
             foreignPalette = new UInt32[numEntries];
 
-            FileStream fs = FileManager.Instance.GetFileStream(fileId);
+            FileStream fs = FileManager.Instance.GetDataFile(dataFileKey).Stream;
 
             int readSize;
 
@@ -335,7 +334,7 @@ namespace TileShop
 
             ColorFormat = format;
             FileAddress = address;
-            FileName = fileId;
+            DataFileKey = dataFileKey;
             Entries = numEntries;
             StorageSource = PaletteStorageSource.File;
 
@@ -717,7 +716,7 @@ namespace TileShop
                         throw new NotSupportedException("An unsupported palette format was attempted to be read");
                 }
 
-                FileStream fs = FileManager.Instance.GetFileStream(FileName);
+                FileStream fs = FileManager.Instance.GetDataFile(DataFileKey).Stream;
                 BinaryWriter bw = new BinaryWriter(fs);
 
                 fs.Seek(FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Recode this for bitwise writing
@@ -803,7 +802,7 @@ namespace TileShop
             {
                 ColorFormat = ColorFormat,
                 FileAddress = FileAddress,
-                FileName = FileName,
+                DataFileKey = DataFileKey,
                 Entries = Entries,
                 HasAlpha = HasAlpha,
                 ZeroIndexTransparent = ZeroIndexTransparent,

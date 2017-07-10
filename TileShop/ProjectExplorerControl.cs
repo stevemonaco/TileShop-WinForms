@@ -28,27 +28,34 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Adds a file to the TreeView and to FileManager
+        /// Adds a DataFile to the ProjectTreeView and to FileManager
         /// </summary>
         /// <param name="Filename">Filename of the file to add</param>
         /// <param name="NodePath">Folder node path into the TreeView</param>
         /// <param name="Show">Optionally displays the file using a sequential arranger immediately</param>
         /// <returns></returns>
-        public bool AddFile(string Filename, string NodePath, bool Show = false)
+        public bool AddDataFile(DataFile df, string NodePath, bool Show = false)
         {
+            if (df == null || NodePath == null)
+                throw new ArgumentNullException();
+
             // Ensure the file has not been previously added
-            TreeNode tn = FindNode(Filename, NodePath);
+            TreeNode tn = FindNode(df.Name, NodePath); // Refactor to HasDataFile checks
 
             if (tn != null) // File has already been added
                 return false;
 
             FileNode fileNode = new FileNode()
             {
-                Text = Filename,
-                Tag = Filename
+                Text = df.Name,
+                Tag = df.Name
             };
-            if (!FileManager.Instance.LoadFile(Filename))
+
+            string fileKey = Path.Combine(NodePath, df.Name);
+            if (!FileManager.Instance.AddDataFile(df, fileKey))
                 return false;
+
+            // TODO: Refactor
 
             if (NodePath == "") // Add to root
                 ProjectTreeView.Nodes.Add(fileNode);
@@ -61,7 +68,7 @@ namespace TileShop
             if (Show)
             {
                 ProjectTreeView.SelectedNode = fileNode;
-                return ShowSequentialArranger(Filename);
+                return ShowSequentialArranger(fileKey);
             }
 
             return true;
@@ -115,7 +122,7 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Renames a palettes's node, its entry in FileManager, and remaps all project references
+        /// Renames a Palettes's node, its entry in FileManager, and remaps all project references
         /// </summary>
         /// <param name="PaletteName">Palette to be renamed</param>
         /// <param name="NodePath">Path to the palette node</param>
@@ -165,7 +172,7 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Adds an arranger to the TreeView and to FileManager
+        /// Adds an Arranger to the TreeView and to FileManager
         /// </summary>
         /// <param name="arr">Arranger to add</param>
         /// <param name="NodePath">Folder node path into the TreeView</param>
@@ -173,6 +180,12 @@ namespace TileShop
         /// <returns></returns>
         public bool AddArranger(Arranger arr, string NodePath, bool Show = false)
         {
+            if (arr == null || NodePath == null)
+                throw new ArgumentNullException();
+
+            if(arr.Mode != ArrangerMode.ScatteredArranger)
+                throw new NotSupportedException("AddArranger does not support arranger types other than ScatteredArranger");
+
             // Ensure arranger of the same name and path has not been previously added
             TreeNode tn = FindNode(arr.Name, NodePath);
 
@@ -193,23 +206,17 @@ namespace TileShop
                 folderNode.Nodes.Add(an);
             }
 
-            FileManager.Instance.AddArranger(arr);
+            string arrangerKey = Path.Combine(NodePath, arr.Name);
+            FileManager.Instance.AddArranger(arr, arrangerKey);
 
             if (Show)
-            {
-                if (arr.Mode == ArrangerMode.SequentialArranger)
-                    throw new InvalidOperationException("AddArranger is not meant for SequentialArrangers");
-                else if (arr.Mode == ArrangerMode.ScatteredArranger)
-                    return ShowScatteredArranger(arr.Name);
-                else
-                    throw new NotSupportedException("AddArranger does not support arranger types other than ScatteredArranger");
-            }
+                return ShowScatteredArranger(arrangerKey);
 
             return true;
         }
 
         /// <summary>
-        /// Removes an arranger from the TreeView
+        /// Removes an Arranger from the TreeView
         /// </summary>
         /// <param name="ArrangerName">Name of the arranger to remove</param>
         /// <param name="NodePath">Folder node path into the TreeView</param>
@@ -228,7 +235,7 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Adds an arranger to the TreeView and to FileManager
+        /// Adds an Arranger to the TreeView and to FileManager
         /// </summary>
         /// <param name="pal">Palette to be added</param>
         /// <param name="NodePath">Folder node path into the TreeView</param>
@@ -247,13 +254,14 @@ namespace TileShop
                 folderNode.Nodes.Add(pn);
             }
 
-            FileManager.Instance.AddPalette(pal);
+            string key = Path.Combine(NodePath, pal.Name);
+            FileManager.Instance.AddPalette(pal, key);
 
             return true;
         }
 
         /// <summary>
-        /// Removes a palette from the TreeView
+        /// Removes a Palette from the TreeView
         /// </summary>
         /// <param name="PaletteName">Name of the palette to remove</param>
         /// <param name="NodePath">Folder node path into the TreeView</param>
@@ -272,23 +280,23 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Shows a sequential arranger for a Filename
+        /// Shows a Sequential Arranger as a docked document tab if not already opened
         /// </summary>
-        /// <param name="Filename">Filename on disk. Loads into FileManager if not previously loaded.</param>
+        /// <param name="dataFileKey">Filename of a datafile previously added to FileManager</param>
         /// <returns></returns>
-        public bool ShowSequentialArranger(string Filename)
+        public bool ShowSequentialArranger(string dataFileKey)
         {
             List<EditorDockContent> activeEditors = tsf.GetActiveEditors();
 
             foreach (EditorDockContent dc in activeEditors) // Return if an editor is already opened
             {
-                if (dc.ContentSourceName == Filename && dc is GraphicsViewerChild)
+                if (dc.ContentSourceName == dataFileKey && dc is GraphicsViewerChild)
                     return false;
             }
 
-            if (FileManager.Instance.LoadSequentialArrangerFromFilename(Filename))
+            if (FileManager.Instance.LoadSequentialArranger(dataFileKey))
             {
-                GraphicsViewerChild gv = new GraphicsViewerChild(Filename);
+                GraphicsViewerChild gv = new GraphicsViewerChild(dataFileKey);
                 gv.WindowState = FormWindowState.Maximized;
                 gv.SetZoom(6);
                 gv.Show(tsf.DockPanel, DockState.Document);
@@ -299,21 +307,21 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Shows a scattered arranger
+        /// Shows a Scattered Arranger
         /// </summary>
-        /// <param name="ArrangerName">Name of arranger in FileManager to show</param>
+        /// <param name="ArrangerKey">Key of Arranger in FileManager to show</param>
         /// <returns></returns>
-        public bool ShowScatteredArranger(string ArrangerName)
+        public bool ShowScatteredArranger(string ArrangerKey)
         {
             List<EditorDockContent> activeEditors = tsf.GetActiveEditors();
 
             foreach (EditorDockContent dc in activeEditors) // Return if an editor is already opened
             {
-                if (dc.ContentSourceName == ArrangerName && dc is GraphicsViewerChild)
+                if (dc.ContentSourceKey == ArrangerKey && dc is GraphicsViewerChild)
                     return false;
             }
 
-            GraphicsViewerChild gv = new GraphicsViewerChild(ArrangerName);
+            GraphicsViewerChild gv = new GraphicsViewerChild(ArrangerKey);
             gv.WindowState = FormWindowState.Maximized;
 
             gv.SetZoom(6);
@@ -327,24 +335,24 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Shows a palette editor
+        /// Shows a Palette editor
         /// </summary>
-        /// <param name="PaletteName">Name of palette in FileManager to show</param>
+        /// <param name="PaletteKey">Key of Palette in FileManager to show</param>
         /// <returns></returns>
-        public bool ShowPaletteEditor(string PaletteName)
+        public bool ShowPaletteEditor(string PaletteKey)
         {
-            if (!FileManager.Instance.HasPalette(PaletteName))
+            if (!FileManager.Instance.HasPalette(PaletteKey))
                 return false;
 
             List<EditorDockContent> activeEditors = tsf.GetActiveEditors();
 
             foreach (EditorDockContent dc in activeEditors) // Return if an editor is already opened
             {
-                if (dc.ContentSourceName == PaletteName && dc is PaletteEditorForm)
+                if (dc.ContentSourceKey == PaletteKey && dc is PaletteEditorForm)
                     return false;
             }
 
-            PaletteEditorForm pef = new PaletteEditorForm(PaletteName);
+            PaletteEditorForm pef = new PaletteEditorForm(PaletteKey);
             pef.ContentModified += tsf.ContentModified;
             pef.ContentSaved += tsf.ContentSaved;
             pef.Show(tsf.DockPanel, DockState.Document);
@@ -361,138 +369,6 @@ namespace TileShop
         {
             ProjectTreeView.Nodes.Clear();
             FileManager.Instance.CloseProject();
-
-            return true;
-        }
-
-        /// <summary>
-        /// Loads data files, palettes, and arrangers from XML
-        /// Sets up the nodes in the project tree
-        /// The project should be previously cleared before calling
-        /// </summary>
-        /// <param name="XmlFileName"></param>
-        /// <returns></returns>
-        public bool LoadProject(string XmlFileName)
-        {
-            XElement xe = XElement.Load(XmlFileName);
-
-            string path = Path.GetDirectoryName(XmlFileName);
-
-            Directory.SetCurrentDirectory(path);
-
-            /*var settings = xe.Descendants("settings")
-                .Select(e => new
-                {
-                    numberformat = e.Descendants("filelocationnumberformat").First().Value
-                });*/
-
-            var datafiles = xe.Descendants("file")
-                .Select(e => new
-                {
-                    location = e.Attribute("location").Value,
-                    folder = e.Attribute("folder").Value
-                });
-
-            foreach (var datafile in datafiles)
-                AddFile(datafile.location, datafile.folder);
-
-            var palettes = xe.Descendants("palette")
-                .Select(e => new
-                {
-                    name = e.Attribute("name").Value,
-                    fileoffset = long.Parse(e.Attribute("fileoffset").Value, System.Globalization.NumberStyles.HexNumber),
-                    bitoffset = e.Attribute("bitoffset"),
-                    datafile = e.Attribute("datafile").Value,
-                    entries = int.Parse(e.Attribute("entries").Value),
-                    format = e.Attribute("format").Value,
-                    zeroindextransparent = bool.Parse(e.Attribute("zeroindextransparent").Value),
-                    folder = e.Attribute("folder").Value
-                });
-
-            foreach (var palette in palettes)
-            {
-                Palette pal = new Palette(palette.name);
-                PaletteColorFormat format = Palette.StringToColorFormat(palette.format);
-                FileBitAddress address = new FileBitAddress();
-                address.FileOffset = palette.fileoffset;
-                if (palette.bitoffset != null)
-                    address.BitOffset = int.Parse(palette.bitoffset.Value);
-                else
-                    address.BitOffset = 0;
-
-                pal.LoadPalette(palette.datafile, address, format, palette.zeroindextransparent, palette.entries);
-                AddPalette(pal, palette.folder);
-            }
-
-            var arrangers = xe.Descendants("arranger")
-                .Select(e => new
-                {
-                    name = e.Attribute("name").Value,
-                    elementsx = int.Parse(e.Attribute("elementsx").Value),
-                    elementsy = int.Parse(e.Attribute("elementsy").Value),
-                    height = int.Parse(e.Attribute("height").Value),
-                    width = int.Parse(e.Attribute("width").Value),
-                    defaultformat = e.Attribute("defaultformat").Value,
-                    defaultfile = e.Attribute("defaultfile").Value,
-                    defaultpalette = e.Attribute("defaultpalette").Value,
-                    folder = e.Attribute("folder").Value,
-                    layout = e.Attribute("layout").Value,
-                    graphiclist = e.Descendants("graphic")
-                });
-
-            foreach (var arranger in arrangers)
-            {
-                Arranger arr;
-                ArrangerLayout layout;
-
-                if (arranger.layout == "tiled")
-                    layout = ArrangerLayout.TiledArranger;
-                else if (arranger.layout == "linear")
-                    layout = ArrangerLayout.LinearArranger;
-                else
-                    throw new XmlException("Incorrect arranger layout type ('" + arranger.layout + "') for " + arranger.name);
-
-                arr = Arranger.NewScatteredArranger(layout, arranger.elementsx, arranger.elementsy, arranger.width, arranger.height);
-                arr.Name = arranger.name;
-
-                var graphics = arranger.graphiclist.Select(e => new
-                {
-                    fileoffset = long.Parse(e.Attribute("fileoffset").Value, System.Globalization.NumberStyles.HexNumber),
-                    bitoffset = e.Attribute("bitoffset"),
-                    posx = int.Parse(e.Attribute("posx").Value),
-                    posy = int.Parse(e.Attribute("posy").Value),
-                    format = e.Attribute("format"),
-                    palette = e.Attribute("palette"),
-                    file = e.Attribute("file")
-                });
-
-                foreach (var graphic in graphics)
-                {
-                    ArrangerElement el = arr.GetElement(graphic.posx, graphic.posy);
-
-                    el.FileName = graphic.file?.Value ?? arranger.defaultfile;
-                    el.PaletteName = graphic.palette?.Value ?? arranger.defaultpalette;
-                    el.FormatName = graphic.format?.Value ?? arranger.defaultformat;
-
-                    if (graphic.bitoffset != null)
-                        el.FileAddress = new FileBitAddress(graphic.fileoffset, int.Parse(graphic.bitoffset.Value));
-                    else
-                        el.FileAddress = new FileBitAddress(graphic.fileoffset, 0);
-
-                    el.Height = arranger.height;
-                    el.Width = arranger.width;
-                    el.X1 = graphic.posx * el.Width;
-                    el.Y1 = graphic.posy * el.Height;
-                    el.X2 = el.X1 + el.Width - 1;
-                    el.Y2 = el.Y1 + el.Height - 1;
-
-                    el.AllocateBuffers();
-
-                    arr.SetElement(el, graphic.posx, graphic.posy);
-                }
-
-                AddArranger(arr, arranger.folder);
-            }
 
             return true;
         }
@@ -536,7 +412,7 @@ namespace TileShop
                     xmlpal.SetAttributeValue("folder", pn.GetNodePath());
                     xmlpal.SetAttributeValue("fileoffset", String.Format("{0:X}", pal.FileAddress.FileOffset));
                     xmlpal.SetAttributeValue("bitoffset", String.Format("{0:X}", pal.FileAddress.BitOffset));
-                    xmlpal.SetAttributeValue("datafile", pal.FileName);
+                    xmlpal.SetAttributeValue("datafile", pal.DataFileKey);
                     xmlpal.SetAttributeValue("format", Palette.ColorFormatToString(pal.ColorFormat));
                     xmlpal.SetAttributeValue("entries", pal.Entries);
                     xmlpal.SetAttributeValue("zeroindextransparent", pal.ZeroIndexTransparent);
@@ -579,10 +455,10 @@ namespace TileShop
                             graphic.SetAttributeValue("posy", y);
                             if (el.FormatName != DefaultFormat)
                                 graphic.SetAttributeValue("format", el.FormatName);
-                            if (el.FileName != DefaultFile)
-                                graphic.SetAttributeValue("file", el.FileName);
-                            if (el.PaletteName != DefaultPalette)
-                                graphic.SetAttributeValue("palette", el.PaletteName);
+                            if (el.DataFileKey != DefaultFile)
+                                graphic.SetAttributeValue("file", el.DataFileKey);
+                            if (el.PaletteKey != DefaultPalette)
+                                graphic.SetAttributeValue("palette", el.PaletteKey);
 
                             xmlarr.Add(graphic);
                         }
@@ -613,7 +489,7 @@ namespace TileShop
             Type T = typeof(ArrangerElement);
             PropertyInfo P = T.GetProperty(attributeName);
 
-            foreach (ArrangerElement el in arr.ElementList)
+            foreach (ArrangerElement el in arr.ElementGrid)
             {
                 string s = (string)P.GetValue(el);
 
@@ -681,15 +557,16 @@ namespace TileShop
         {
             if (e.Node is FileNode)
             {
-                ShowSequentialArranger((string)e.Node.Tag);
+                ShowSequentialArranger(e.Node.FullPath);
+
             }
             else if (e.Node is PaletteNode)
             {
-                ShowPaletteEditor((string)e.Node.Tag);
+                ShowPaletteEditor(e.Node.FullPath);
             }
             else if (e.Node is ArrangerNode)
             {
-                ShowScatteredArranger((string)e.Node.Tag);
+                ShowScatteredArranger(e.Node.FullPath);
             }
         }
 
@@ -708,7 +585,7 @@ namespace TileShop
         /// </summary>
         /// <param name="FolderNodePath">Full path of the folder node to add</param>
         /// <returns>The FolderNode that was added or found on success. Null on failure.</returns>
-        private FolderNode AddFolderNode(string FolderNodePath)
+        public FolderNode AddFolderNode(string FolderNodePath)
         {
             if (FolderNodePath == null)
                 throw new ArgumentNullException();
@@ -716,7 +593,7 @@ namespace TileShop
             if (FolderNodePath == "")
                 return null;
 
-            string[] nodepaths = FolderNodePath.Split('\\');
+            string[] nodepaths = FolderNodePath.Split(new char[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
 
             // Find deepest node collection that matches as much of the path as possible
             TreeNodeCollection deepestCollection = ProjectTreeView.Nodes;
@@ -1017,7 +894,7 @@ namespace TileShop
                 if (dr == DialogResult.No)
                     return;
 
-
+                // TODO: Remove subitems
             }
             else
                 this.Remove();

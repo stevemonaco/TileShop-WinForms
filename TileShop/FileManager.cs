@@ -21,7 +21,7 @@ namespace TileShop
         /// <summary>
         /// List of in-use files that can be read or written to by subeditors such as the arranger or palette editor
         /// </summary>
-        private Dictionary<string, FileStream> FileList = new Dictionary<string, FileStream>();
+        private Dictionary<string, DataFile> DataFileList = new Dictionary<string, DataFile>();
 
         /// <summary>
         /// List of arrangers that may be edited by the user
@@ -61,47 +61,47 @@ namespace TileShop
         const int DefaultElementsX = 16;
         const int DefaultElementsY = 16;
 
-        public void AddFileStream(string FileName, FileStream fs)
-        {
-            FileList.Add(FileName, fs);
-        }
-
         public void AddGraphicsFormat(GraphicsFormat format)
         {
             FormatList.Add(format.Name, format);
         }
 
-        public void AddArranger(Arranger arr)
+        public void AddArranger(Arranger arr, string key)
         {
-            if (arr == null)
+            if (arr == null || key == null)
                 throw new ArgumentNullException();
 
-            if (!HasArranger(arr.Name))
+            if (!HasArranger(key))
             {
-                PersistentArrangerList.Add(arr.Name, arr);
-                ArrangerList.Add(arr.Name, arr.Clone());
+                PersistentArrangerList.Add(key, arr);
+                ArrangerList.Add(key, arr.Clone());
             }
         }
 
-        public void AddPalette(Palette pal)
+        public void AddPalette(Palette pal, string key)
         {
-            if (pal == null)
+            if (pal == null || key == null)
                 throw new ArgumentNullException();
 
             if (String.IsNullOrEmpty(pal.Name))
                 throw new ArgumentException();
 
-            if (!HasPalette(pal.Name))
+            if (!HasPalette(key))
             {
-                PersistentPaletteList.Add(pal.Name, pal);
-                PaletteList.Add(pal.Name, pal.Clone());
+                PersistentPaletteList.Add(key, pal);
+                PaletteList.Add(key, pal.Clone());
             }
         }
 
-        public FileStream GetFileStream(string FileName)
+        /// <summary>
+        /// Retrieves a DataFile by its key
+        /// </summary>
+        /// <param name="dataFileKey"></param>
+        /// <returns></returns>
+        public DataFile GetDataFile(string dataFileKey)
         {
-            if (FileList.ContainsKey(FileName))
-                return FileList[FileName];
+            if (DataFileList.ContainsKey(dataFileKey))
+                return DataFileList[dataFileKey];
             else
                 throw new KeyNotFoundException();
         }
@@ -158,9 +158,9 @@ namespace TileShop
                 throw new KeyNotFoundException(String.Format("Arranger {0} was not found in the PersistentArrangerList", ArrangerName));
         }
 
-        public bool HasFile(string Filename)
+        public bool HasDataFile(string Filename)
         {
-            return FileList.ContainsKey(Filename);
+            return DataFileList.ContainsKey(Filename);
         }
 
         public bool HasArranger(string ArrangerName)
@@ -190,37 +190,35 @@ namespace TileShop
             return keyList;
         }
 
-        public bool LoadFile(string Filename)
+        /// <summary>
+        /// Adds a data file to FileManager
+        /// </summary>
+        /// <param name="dataFile"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool AddDataFile(DataFile dataFile, string key)
         {
-            // TODO: Better error handling
-            try
+            if (dataFile == null || key == null)
+                throw new ArgumentNullException();
+
+            if (!HasDataFile(key))
             {
-                if (!FileList.ContainsKey(Filename))
-                {
-                    FileStream fs = File.Open(Filename, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-                    AddFileStream(Filename, fs);
-                }
-            }
-            catch(FileNotFoundException ex)
-            {
-                return false;
-            }
-            catch(IOException ex)
-            {
-                return false;
+                DataFileList[key] = dataFile;
             }
 
             return true;
         }
 
-        public bool LoadSequentialArrangerFromFilename(string Filename)
+        /// <summary>
+        /// Creates a sequential arranger from a data file
+        /// </summary>
+        /// <param name="dataFileKey">Key of a previously loaded data file</param>
+        /// <returns></returns>
+        public bool LoadSequentialArranger(string dataFileKey)
         {
-            if (!LoadFile(Filename))
-                return false;
-
-            string formatname = Loader.GetDefaultFormatName(Filename);
-            Arranger arranger = Arranger.NewSequentialArranger(DefaultElementsX, DefaultElementsY, Filename, GetGraphicsFormat(formatname));
-            AddArranger(arranger);
+            string formatname = Loader.GetDefaultFormatName(dataFileKey);
+            Arranger arranger = Arranger.NewSequentialArranger(DefaultElementsX, DefaultElementsY, dataFileKey, GetGraphicsFormat(formatname));
+            AddArranger(arranger, dataFileKey); // TODO: Ensure that Filename is local to the XML project file
 
             return true;
         }
@@ -235,6 +233,12 @@ namespace TileShop
             return true;
         }
 
+        /// <summary>
+        /// Loads and associates a palette within FileManager
+        /// </summary>
+        /// <param name="Filename">Filename to palette to be loaded</param>
+        /// <param name="PaletteName">Name associated to the palette within FileManager </param>
+        /// <returns></returns>
         public bool LoadPalette(string Filename, string PaletteName)
         {
             if (Filename == null || PaletteName == null)
@@ -244,9 +248,7 @@ namespace TileShop
             if (!pal.LoadPalette(Filename))
                 return false;
 
-            string palname = Path.GetFileNameWithoutExtension(Filename);
-
-            AddPalette(pal);
+            AddPalette(pal, pal.Name);
             return true;
         }
 
@@ -270,10 +272,10 @@ namespace TileShop
 
         public void RemoveFile(string FileName)
         {
-            if(FileList.ContainsKey(FileName))
+            if(DataFileList.ContainsKey(FileName))
             {
-                FileList[FileName].Close();
-                FileList.Remove(FileName);
+                DataFileList[FileName].Close();
+                DataFileList.Remove(FileName);
             }
         }
 
@@ -307,52 +309,52 @@ namespace TileShop
                 throw new ArgumentException("");
 
             // Must contain FileName and must not contain NewFileName
-            if (HasFile(NewFileName) || !HasFile(FileName) || File.Exists(NewFileName))
+            if (HasDataFile(NewFileName) || !HasDataFile(FileName) || File.Exists(NewFileName))
                 return false;
 
             // File must not already exist
             if (File.Exists(NewFileName))
                 return false;
 
-            FileStream fs = GetFileStream(FileName);
-            string name = fs.Name;
-            fs.Close();
+            DataFile df = GetDataFile(FileName);
+            string name = df.Stream.Name;
+            df.Stream.Close();
 
-            FileList.Remove(FileName);
+            DataFileList.Remove(FileName);
 
             File.Move(name, NewFileName);
-            FileStream newfs = File.Open(NewFileName, FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
-            FileList.Add(NewFileName, newfs);
+            df.Open(NewFileName);
+            DataFileList.Add(NewFileName, df);
 
             // Rename references
             foreach (Arranger arr in ArrangerList.Values)
             {
-                foreach(ArrangerElement el in arr.ElementList)
+                foreach(ArrangerElement el in arr.ElementGrid)
                 {
-                    if (el.FileName == FileName)
-                        el.FileName = NewFileName;
+                    if (el.DataFileKey == FileName)
+                        el.DataFileKey = NewFileName;
                 }
             }
 
             foreach (Arranger arr in PersistentArrangerList.Values)
             {
-                foreach (ArrangerElement el in arr.ElementList)
+                foreach (ArrangerElement el in arr.ElementGrid)
                 {
-                    if (el.FileName == FileName)
-                        el.FileName = NewFileName;
+                    if (el.DataFileKey == FileName)
+                        el.DataFileKey = NewFileName;
                 }
             }
 
             foreach (Palette pal in PaletteList.Values)
             {
-                if (pal.FileName == FileName)
-                    pal.SetFileName(NewFileName);
+                if (pal.DataFileKey == FileName)
+                    pal.SetFileKey(NewFileName);
             }
 
             foreach (Palette pal in PersistentPaletteList.Values)
             {
-                if (pal.FileName == FileName)
-                    pal.SetFileName(NewFileName);
+                if (pal.DataFileKey == FileName)
+                    pal.SetFileKey(NewFileName);
             }
 
             return true;
@@ -394,31 +396,31 @@ namespace TileShop
                 return false;
 
             Palette pal = GetPalette(PaletteName);
-            pal.SetFileName(NewPaletteName);
+            pal.SetFileKey(NewPaletteName);
             PaletteList.Remove(NewPaletteName);
             PaletteList.Add(NewPaletteName, pal);
 
             Palette pal2 = GetPersistentPalette(PaletteName);
-            pal2.SetFileName(NewPaletteName);
+            pal2.SetFileKey(NewPaletteName);
             PersistentPaletteList.Remove(NewPaletteName);
             PersistentPaletteList.Add(NewPaletteName, pal2);
 
             // Rename references
             foreach (Arranger arr in ArrangerList.Values)
             {
-                foreach (ArrangerElement el in arr.ElementList)
+                foreach (ArrangerElement el in arr.ElementGrid)
                 {
-                    if (el.PaletteName == PaletteName)
-                        el.PaletteName = NewPaletteName;
+                    if (el.PaletteKey == PaletteName)
+                        el.PaletteKey = NewPaletteName;
                 }
             }
 
             foreach (Arranger arr in PersistentArrangerList.Values)
             {
-                foreach (ArrangerElement el in arr.ElementList)
+                foreach (ArrangerElement el in arr.ElementGrid)
                 {
-                    if (el.PaletteName == PaletteName)
-                        el.PaletteName = NewPaletteName;
+                    if (el.PaletteKey == PaletteName)
+                        el.PaletteKey = NewPaletteName;
                 }
             }
 
@@ -473,9 +475,9 @@ namespace TileShop
         /// <returns></returns>
         public bool CloseProject()
         {
-            foreach (FileStream fs in FileList.Values)
-                fs.Close();
-            FileList.Clear();
+            foreach (DataFile df in DataFileList.Values)
+                df.Close();
+            DataFileList.Clear();
 
             PaletteList.Clear();
             ArrangerList.Clear();

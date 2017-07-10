@@ -108,11 +108,11 @@ namespace TileShop
         }
         private byte foreignAlpha;
 
-        public PaletteEditorForm(string PaletteName)
+        public PaletteEditorForm(string paletteKey)
         {
             InitializeComponent();
 
-            pal = FileManager.Instance.GetPalette(PaletteName);
+            pal = FileManager.Instance.GetPalette(paletteKey);
 
             ColorFormatBox.Enabled = false;
             List<string> colorList = Palette.GetPaletteColorFormatsNameList();
@@ -121,7 +121,7 @@ namespace TileShop
             ColorFormatBox.Enabled = true;
 
             PaletteNameBox.Text = pal.Name;
-            ProjectFileBox.Text = pal.FileName;
+            ProjectFileBox.Text = pal.DataFileKey;
             PaletteOffsetBox.Text = pal.FileAddress.FileOffset.ToString(); // TODO: Refactor for new FileBitAddress
             NudEntries.Value = pal.Entries;
             SetColorFormatBox(pal.ColorFormat);
@@ -138,6 +138,7 @@ namespace TileShop
             ForeignBlue = B;
 
             ContentSourceName = pal.Name;
+            ContentSourceKey = paletteKey;
 
             paletteTip.InitialDelay = 1000;
             paletteTip.ReshowDelay = 500;
@@ -301,7 +302,7 @@ namespace TileShop
 
             SetPaletteNumericBounds(format);
 
-            pal.LoadPalette(pal.FileName, pal.FileAddress, format, pal.ZeroIndexTransparent, pal.Entries);
+            pal.LoadPalette(pal.DataFileKey, pal.FileAddress, format, pal.ZeroIndexTransparent, pal.Entries);
             SwatchControl.Invalidate();
         }
 

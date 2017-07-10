@@ -46,8 +46,8 @@ namespace TileShop
 
             if(arranger.IsSequential) // Sequential requires only one seek per render
             {
-                br = new BinaryReader(FileManager.Instance.GetFileStream(arranger.ElementList[0, 0].FileName));
-                br.BaseStream.Seek(arranger.ElementList[0, 0].FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise
+                br = new BinaryReader(FileManager.Instance.GetDataFile(arranger.ElementGrid[0, 0].DataFileKey).Stream);
+                br.BaseStream.Seek(arranger.ElementGrid[0, 0].FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise
             }
 
             string PrevFileName = "";
@@ -56,7 +56,7 @@ namespace TileShop
             {
                 for(int j = 0; j < arranger.ArrangerElementSize.Width; j++)
                 {
-                    ArrangerElement el = arranger.ElementList[j, i];
+                    ArrangerElement el = arranger.ElementGrid[j, i];
                     if (!arranger.IsSequential) // Non-sequential requires a seek for each element rendered
                     {
                         if (el.IsBlank())
@@ -64,11 +64,11 @@ namespace TileShop
                             GraphicsCodec.DecodeBlank(Image, el);
                             continue;
                         }
-                        if(PrevFileName != el.FileName) // Only create a new binary reader when necessary
-                            br = new BinaryReader(FileManager.Instance.GetFileStream(el.FileName));
+                        if(PrevFileName != el.DataFileKey) // Only create a new binary reader when necessary
+                            br = new BinaryReader(FileManager.Instance.GetDataFile(el.DataFileKey).Stream);
 
                         br.BaseStream.Seek(el.FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise
-                        PrevFileName = el.FileName;
+                        PrevFileName = el.DataFileKey;
                     }
 
                     GraphicsCodec.Decode(Image, el);
@@ -106,17 +106,17 @@ namespace TileShop
             {
                 for (int j = 0; j < arranger.ArrangerElementSize.Width; j++)
                 {
-                    ArrangerElement el = arranger.ElementList[j, i];
+                    ArrangerElement el = arranger.ElementGrid[j, i];
                     if (!arranger.IsSequential) // Non-sequential requires a seek for each element rendered
                     {
                         if (el.FormatName == "") // Empty format means a blank tile
                             continue;
 
-                        if (PrevFileName != el.FileName) // Only create a new binary reader when necessary
-                            bw = new BinaryWriter(FileManager.Instance.GetFileStream(el.FileName));
+                        if (PrevFileName != el.DataFileKey) // Only create a new binary reader when necessary
+                            bw = new BinaryWriter(FileManager.Instance.GetDataFile(el.DataFileKey).Stream);
 
                         bw.BaseStream.Seek(el.FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise
-                        PrevFileName = el.FileName;
+                        PrevFileName = el.DataFileKey;
                     }
 
                     GraphicsCodec.Encode(Image, el);

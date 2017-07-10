@@ -94,6 +94,10 @@ namespace TileShop
             }
         }
 
+        /// <summary>
+        /// Load default palettes from the palettes directory
+        /// </summary>
+        /// <param name="path">Path to the palettes directory</param>
         private void LoadPalettes(string path)
         {
             string[] filenames = Directory.GetFiles(path);
@@ -167,21 +171,21 @@ namespace TileShop
 
                 List<Arranger> arrangers = plugin.Value.RetrieveArrangers();
                 List<Palette> palettes = plugin.Value.RetrievePalettes();
-                List<string> files = plugin.Value.RetrieveFiles();
+                List<DataFile> dataFiles = plugin.Value.RetrieveDataFiles();
 
                 if (arrangers == null)
                 {
                     MessageBox.Show("Plugin returned null for RetrieveArrangers");
                     return;
                 }
-                if(palettes == null)
+                if (palettes == null)
                 {
                     MessageBox.Show("Plugin returned null for RetrievePalettes");
                     return;
                 }
 
-                foreach (string filename in files)
-                    pec.AddFile(filename, pluginName);
+                foreach (DataFile df in dataFiles)
+                    pec.AddDataFile(df, pluginName);
 
                 foreach (Palette pal in palettes)
                     pec.AddPalette(pal.Clone(), pluginName);
@@ -208,16 +212,6 @@ namespace TileShop
                     break;
                 }
             }
-        }
-
-        private void DebugToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            WindowState = FormWindowState.Maximized;
-
-            string s = @"D:\Projects\ff2.sfc";
-
-            if(!pec.AddFile(s, "Debug", true))
-                MessageBox.Show("Could not open file " + s);
         }
 
         private void BlankArrangerToolStripMenuItem_Click(object sender, EventArgs e)
@@ -248,8 +242,9 @@ namespace TileShop
         {
             WindowState = FormWindowState.Maximized;
 
-            ProjectFileName = "D:\\Projects\\ff2.xml";
-            pec.LoadProject(ProjectFileName);
+            ProjectFileName = "D:\\Projects\\ff2newxml.xml";
+            GameDescriptor gd = new GameDescriptor();
+            gd.LoadProject(pec, ProjectFileName);
         }
 
         private void SaveProjectToolStripMenuItem_Click(object sender, EventArgs e)
@@ -333,7 +328,7 @@ namespace TileShop
             if (ActiveMdiChild is GraphicsViewerChild gv) // Initialize with defaults from the active MDI window
             {
                 Size ElementSize = gv.DisplayArranger.ElementPixelSize;
-                sapf.SetDefaults(true, "", new Size(ElementSize.Width, ElementSize.Height), new Size(16, 8), ArrangerLayout.TiledArranger);
+                sapf.SetDefaults(true, "", "", new Size(ElementSize.Width, ElementSize.Height), new Size(16, 8), ArrangerLayout.TiledArranger);
             }
 
             if (DialogResult.OK == sapf.ShowDialog())
@@ -451,12 +446,14 @@ namespace TileShop
                     }*/
 
                     // Load new XML project file
-                    pec.LoadProject(ofd.FileName);
+                    GameDescriptor gd = new GameDescriptor();
+                    gd.LoadProject(pec, ofd.FileName);
                     ProjectFileName = ofd.FileName;
                 }
                 else
                 {
-                    if (!pec.AddFile(ofd.FileName, "", true))
+                    DataFile df = new DataFile(Path.GetFileNameWithoutExtension(ofd.FileName));
+                    if (!pec.AddDataFile(df, "", true))
                     {
                         MessageBox.Show("Could not open file " + ofd.FileName);
                         return;

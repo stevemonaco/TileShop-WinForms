@@ -23,7 +23,7 @@ namespace TIMParserPlugin
     {
         List<Arranger> arrangers = new List<Arranger>();
         List<Palette> palettes = new List<Palette>();
-        List<string> filenames = new List<string>();
+        List<DataFile> dataFiles = new List<DataFile>();
 
         const uint TimTag = 0x00000010;
 
@@ -44,14 +44,20 @@ namespace TIMParserPlugin
             if (ofd.ShowDialog() != DialogResult.OK)
                 return false;
 
+            // Clear data for multiple runs
             arrangers.Clear();
             palettes.Clear();
+            dataFiles.Clear();
 
             foreach (string fname in ofd.FileNames)
             {
                 int count = SearchTIMFile(fname);
                 if (count > 0) // Found at least one TIM in the file
-                    filenames.Add(fname);
+                {
+                    DataFile df = new DataFile(Path.GetFileName(fname));
+                    df.Open(fname); // TODO: Refactor not opening these files plugin-side; do it TileShop-side instead
+                    dataFiles.Add(df);
+                }
             }
 
             return true;
@@ -164,9 +170,9 @@ namespace TIMParserPlugin
             return palettes;
         }
 
-        public List<string> RetrieveFiles()
+        public List<DataFile> RetrieveDataFiles()
         {
-            return filenames;
+            return dataFiles;
         }
 
         void Arrange(TimData td, string TimFileName, string BaseName)
@@ -188,8 +194,8 @@ namespace TIMParserPlugin
 
                 ArrangerElement el = arr.GetElement(0, 0);
 
-                el.FileName = TimFileName;
-                el.PaletteName = palName;
+                el.DataFileKey = TimFileName;
+                el.PaletteKey = palName;
                 el.FileAddress = new FileBitAddress(td.ImageDataOffset, 0);
                 el.Height = td.ImageHeight;
                 el.Width = td.ImageWidth;

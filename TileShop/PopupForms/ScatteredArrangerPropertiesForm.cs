@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 using System.Windows.Forms;
 
 namespace TileShop
@@ -16,6 +17,7 @@ namespace TileShop
         public Size ElementPixelSize { get; private set; }
         public string ArrangerName { get; private set; }
         public ArrangerLayout ArrangerLayout { get; private set; }
+        public string ArrangerKey { get; private set; }
 
         private bool CreateMode;
 
@@ -23,7 +25,7 @@ namespace TileShop
         {
             InitializeComponent();
             ArrangerName = "";
-            SetDefaults(true, "", new Size(8, 8), new Size(16, 8), ArrangerLayout.TiledArranger);
+            SetDefaults(true, "", "", new Size(8, 8), new Size(16, 8), ArrangerLayout.TiledArranger);
 
             ActiveControl = NameTextBox;
         }
@@ -32,13 +34,14 @@ namespace TileShop
         /// Sets the default parameters for the form before the user sees the form
         /// </summary>
         /// <param name="createMode">True if the form is intended to create a new arranger; else false</param>
-        /// <param name="name">Name of the arranger to be created/renamed</param>
+        /// <param name="name">Name of the arranger</param>
+        /// <param name="key">Key of the arranger to be renamed or blank if to be created</param>
         /// <param name="elementSize">Size of each element in pixels</param>
         /// <param name="arrangerSize">Size of the arranger in elements</param>
         /// <param name="layoutMode">Layout mode of the arranger</param>
-        public void SetDefaults(bool createMode, string name, Size elementSize, Size arrangerSize, ArrangerLayout layoutMode)
+        public void SetDefaults(bool createMode, string name, string key, Size elementSize, Size arrangerSize, ArrangerLayout layoutMode)
         {
-            if (name == null)
+            if (key == null)
                 throw new ArgumentNullException();
             if(elementSize.Width <= 0 || elementSize.Height <= 0 || arrangerSize.Width <= 0 || arrangerSize.Height <= 0)
                 throw new ArgumentOutOfRangeException();
@@ -69,6 +72,7 @@ namespace TileShop
             ArrangerSize = arrangerSize;
             ElementPixelSize = elementSize;
             ArrangerName = name;
+            ArrangerKey = key;
         }
 
         private Size GetElementSize()
