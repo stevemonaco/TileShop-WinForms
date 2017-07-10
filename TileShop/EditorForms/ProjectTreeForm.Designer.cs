@@ -1,6 +1,6 @@
 ﻿namespace TileShop
 {
-    partial class ProjectExplorerControl
+    partial class ProjectTreeForm
     {
         /// <summary> 
         /// Required designer variable.
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ProjectExplorerControl));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ProjectTreeForm));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.projectTabPage = new System.Windows.Forms.TabPage();
             this.ProjectTreeView = new System.Windows.Forms.TreeView();
@@ -91,15 +91,15 @@
             this.nodeImageList.Images.SetKeyName(3, "ImageButton_735_32.bmp");
             this.nodeImageList.Images.SetKeyName(4, "ChooseColorHS.bmp");
             // 
-            // ProjectExplorerControl
+            // ProjectTreeForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(269, 373);
             this.Controls.Add(this.tabControl1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Name = "ProjectExplorerControl";
-            this.Text = "Project Explorer";
+            this.Name = "ProjectTreeForm";
+            this.Text = "Project Tree";
             this.tabControl1.ResumeLayout(false);
             this.projectTabPage.ResumeLayout(false);
             this.ResumeLayout(false);

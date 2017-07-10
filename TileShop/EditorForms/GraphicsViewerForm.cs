@@ -14,7 +14,7 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace TileShop
 {
-    public partial class GraphicsViewerChild : EditorDockContent
+    public partial class GraphicsViewerForm : EditorDockContent
     {
         int prevFormatIndex = -1;
 
@@ -54,7 +54,7 @@ namespace TileShop
         // UI Events
         public event EventHandler<EventArgs> EditArrangerChanged;
 
-        public GraphicsViewerChild(string ArrangerKey)
+        public GraphicsViewerForm(string ArrangerKey)
         {
             InitializeComponent();
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.NonPublic, 

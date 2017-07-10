@@ -15,12 +15,12 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace TileShop
 {
-    public partial class ProjectExplorerControl : DockContent
+    public partial class ProjectTreeForm : DockContent
     {
         TileShopForm tsf = null;
         ContextMenu contextMenu = new ContextMenu();
 
-        public ProjectExplorerControl(TileShopForm tileShopForm)
+        public ProjectTreeForm(TileShopForm tileShopForm)
         {
             tsf = tileShopForm ?? throw new ArgumentNullException();
 
@@ -290,13 +290,13 @@ namespace TileShop
 
             foreach (EditorDockContent dc in activeEditors) // Return if an editor is already opened
             {
-                if (dc.ContentSourceName == dataFileKey && dc is GraphicsViewerChild)
+                if (dc.ContentSourceName == dataFileKey && dc is GraphicsViewerForm)
                     return false;
             }
 
             if (FileManager.Instance.LoadSequentialArranger(dataFileKey))
             {
-                GraphicsViewerChild gv = new GraphicsViewerChild(dataFileKey);
+                GraphicsViewerForm gv = new GraphicsViewerForm(dataFileKey);
                 gv.WindowState = FormWindowState.Maximized;
                 gv.SetZoom(6);
                 gv.Show(tsf.DockPanel, DockState.Document);
@@ -317,11 +317,11 @@ namespace TileShop
 
             foreach (EditorDockContent dc in activeEditors) // Return if an editor is already opened
             {
-                if (dc.ContentSourceKey == ArrangerKey && dc is GraphicsViewerChild)
+                if (dc.ContentSourceKey == ArrangerKey && dc is GraphicsViewerForm)
                     return false;
             }
 
-            GraphicsViewerChild gv = new GraphicsViewerChild(ArrangerKey);
+            GraphicsViewerForm gv = new GraphicsViewerForm(ArrangerKey);
             gv.WindowState = FormWindowState.Maximized;
 
             gv.SetZoom(6);

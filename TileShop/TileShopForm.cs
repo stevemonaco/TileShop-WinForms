@@ -26,7 +26,7 @@ namespace TileShop
         }
         private string projectFileName = "";
 
-        ProjectExplorerControl pec;
+        ProjectTreeForm ptf;
         PixelEditorForm pef;
         PluginManager pm = new PluginManager();
 
@@ -43,11 +43,11 @@ namespace TileShop
 
             this.Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
 
-            pec = new ProjectExplorerControl(this);
+            ptf = new ProjectTreeForm(this);
             pef = new PixelEditorForm();
 
             pef.Show(DockPanel, DockState.DockRight);
-            pec.Show(DockPanel, DockState.DockLeft); // Showing this last makes the ProjectExplorerControl focused upon launch
+            ptf.Show(DockPanel, DockState.DockLeft); // Showing this last makes the ProjectExplorerControl focused upon launch
         }
 
         public void RefreshTitle()
@@ -67,7 +67,7 @@ namespace TileShop
                     return false;
             }
 
-            GraphicsViewerChild gv = new GraphicsViewerChild(arrangerName);
+            GraphicsViewerForm gv = new GraphicsViewerForm(arrangerName);
             gv.Show(DockPanel, DockState.Document);
 
             return true;
@@ -185,13 +185,13 @@ namespace TileShop
                 }
 
                 foreach (DataFile df in dataFiles)
-                    pec.AddDataFile(df, pluginName);
+                    ptf.AddDataFile(df, pluginName);
 
                 foreach (Palette pal in palettes)
-                    pec.AddPalette(pal.Clone(), pluginName);
+                    ptf.AddPalette(pal.Clone(), pluginName);
 
                 foreach (Arranger arr in arrangers)
-                    pec.AddArranger(arr.Clone(), pluginName);
+                    ptf.AddArranger(arr.Clone(), pluginName);
             }
         }
 
@@ -218,7 +218,7 @@ namespace TileShop
         {
             NewTileArrangerForm ntaf = new NewTileArrangerForm();
 
-            if (ActiveMdiChild is GraphicsViewerChild gv)
+            if (ActiveMdiChild is GraphicsViewerForm gv)
             {
                 Size ElementSize = gv.DisplayArranger.ElementPixelSize;
                 ntaf.SetDefaults(ElementSize.Width, ElementSize.Height, 16, 8);
@@ -244,7 +244,7 @@ namespace TileShop
 
             ProjectFileName = "D:\\Projects\\ff2newxml.xml";
             GameDescriptor gd = new GameDescriptor();
-            gd.LoadProject(pec, ProjectFileName);
+            gd.LoadProject(ptf, ProjectFileName);
         }
 
         private void SaveProjectToolStripMenuItem_Click(object sender, EventArgs e)
@@ -273,11 +273,11 @@ namespace TileShop
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
                     ProjectFileName = sfd.FileName;
-                    pec.SaveProject(ProjectFileName);
+                    ptf.SaveProject(ProjectFileName);
                 }
             }
             else
-                pec.SaveProject(ProjectFileName);
+                ptf.SaveProject(ProjectFileName);
         }
 
         private void SaveProjectAsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -304,20 +304,20 @@ namespace TileShop
                 ShowDialog() == DialogResult.OK)
             {
                 ProjectFileName = sfd.FileName;
-                pec.SaveProject(ProjectFileName);
+                ptf.SaveProject(ProjectFileName);
             }
         }
 
         private void NewPaletteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             NewPaletteForm npf = new NewPaletteForm();
-            npf.AddFileNames(pec.GetFileNameList());
+            npf.AddFileNames(ptf.GetFileNameList());
 
             if(DialogResult.OK == npf.ShowDialog())
             {
                 Palette pal = new Palette(npf.PaletteName);
                 pal.LoadPalette(npf.FileName, new FileBitAddress(npf.FileOffset, 0), npf.ColorFormat, true, npf.Entries); // TODO: Refactor for new FileBitAddress
-                pec.AddPalette(pal, "");
+                ptf.AddPalette(pal, "");
             }
         }
 
@@ -325,7 +325,7 @@ namespace TileShop
         {
             ScatteredArrangerPropertiesForm sapf = new ScatteredArrangerPropertiesForm();
 
-            if (ActiveMdiChild is GraphicsViewerChild gv) // Initialize with defaults from the active MDI window
+            if (ActiveMdiChild is GraphicsViewerForm gv) // Initialize with defaults from the active MDI window
             {
                 Size ElementSize = gv.DisplayArranger.ElementPixelSize;
                 sapf.SetDefaults(true, "", "", new Size(ElementSize.Width, ElementSize.Height), new Size(16, 8), ArrangerLayout.TiledArranger);
@@ -338,7 +338,7 @@ namespace TileShop
 
                 Arranger arr = Arranger.NewScatteredArranger(sapf.ArrangerLayout, ArrSize.Width, ArrSize.Height, ElementSize.Width, ElementSize.Height);
                 arr.Name = sapf.ArrangerName;
-                pec.AddArranger(arr, "", true);
+                ptf.AddArranger(arr, "", true);
             }
         }
 
@@ -353,7 +353,7 @@ namespace TileShop
             if (!pef.Visible)
                 pef.Show();
 
-            GraphicsViewerChild gv = (GraphicsViewerChild)sender;
+            GraphicsViewerForm gv = (GraphicsViewerForm)sender;
             pef.SetEditArranger(gv.EditArranger);
         }
 
@@ -447,13 +447,13 @@ namespace TileShop
 
                     // Load new XML project file
                     GameDescriptor gd = new GameDescriptor();
-                    gd.LoadProject(pec, ofd.FileName);
+                    gd.LoadProject(ptf, ofd.FileName);
                     ProjectFileName = ofd.FileName;
                 }
                 else
                 {
                     DataFile df = new DataFile(Path.GetFileNameWithoutExtension(ofd.FileName));
-                    if (!pec.AddDataFile(df, "", true))
+                    if (!ptf.AddDataFile(df, "", true))
                     {
                         MessageBox.Show("Could not open file " + ofd.FileName);
                         return;
@@ -498,7 +498,7 @@ namespace TileShop
             CloseEditors();
 
             ProjectFileName = "";
-            pec.CloseProject();
+            ptf.CloseProject();
             LoadPalettes(PaletteDirectoryPath);
         }
 

@@ -1,4 +1,4 @@
-﻿TODO:
+﻿Development Tasks
 Beta 1 tasks:
 General
 	- Test UI features for detecting modifications to arrangers/palettes/etc
@@ -8,9 +8,10 @@ General
 	x Revise code so that the same resource cannot be opened in two editors at once
 	x Disallow keyboard access to codec dropdown and remove highlight
 	- Test support for renaming items (and simultaneously renaming all references)
-	- Change XML to tree layout
-	- Change XML graphic -> element
-	- Remove required bitoffset XML exporting (default is 0)
+	x Change XML to tree layout
+	x Change XML graphic -> element
+	x Remove required bitoffset XML exporting (default is 0)
+	- Allow multiple projects to be loaded into ProjectTreeForm (prefix project node name into XML, put each project into separate tab or just top-level folder)
 	- Design palette system (palette accessibility: TIMs need multiple bound palettes, tiles less so (only animations), stored in XML? How to add in UI?)
 		- Have TIM plugin create multiple images for TIMs with multiple palettes
 		- Apply palette button with drop-down menu showing available palettes (palettes already used elsewhere in the arranger)

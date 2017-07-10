@@ -1,6 +1,6 @@
 ﻿namespace TileShop
 {
-    partial class GraphicsViewerChild
+    partial class GraphicsViewerForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GraphicsViewerChild));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GraphicsViewerForm));
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.FormatSelectBox = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -39,8 +39,8 @@
             this.SaveLoadSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.SaveButton = new System.Windows.Forms.ToolStripButton();
             this.JumpButton = new System.Windows.Forms.ToolStripButton();
-            this.RenderPanel = new System.Windows.Forms.Panel();
             this.ArrangerPropertiesButton = new System.Windows.Forms.ToolStripButton();
+            this.RenderPanel = new System.Windows.Forms.Panel();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -154,6 +154,17 @@
             this.JumpButton.Text = "Jump";
             this.JumpButton.Click += new System.EventHandler(this.JumpButton_Click);
             // 
+            // ArrangerPropertiesButton
+            // 
+            this.ArrangerPropertiesButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.ArrangerPropertiesButton.Image = ((System.Drawing.Image)(resources.GetObject("ArrangerPropertiesButton.Image")));
+            this.ArrangerPropertiesButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ArrangerPropertiesButton.Name = "ArrangerPropertiesButton";
+            this.ArrangerPropertiesButton.Size = new System.Drawing.Size(64, 22);
+            this.ArrangerPropertiesButton.Text = "Properties";
+            this.ArrangerPropertiesButton.ToolTipText = "Arranger Properties";
+            this.ArrangerPropertiesButton.Click += new System.EventHandler(this.ArrangerPropertiesButton_Click);
+            // 
             // RenderPanel
             // 
             this.RenderPanel.AllowDrop = true;
@@ -172,17 +183,6 @@
             this.RenderPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.RenderPanel_MouseMove);
             this.RenderPanel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.RenderPanel_MouseUp);
             // 
-            // ArrangerPropertiesButton
-            // 
-            this.ArrangerPropertiesButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.ArrangerPropertiesButton.Image = ((System.Drawing.Image)(resources.GetObject("ArrangerPropertiesButton.Image")));
-            this.ArrangerPropertiesButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ArrangerPropertiesButton.Name = "ArrangerPropertiesButton";
-            this.ArrangerPropertiesButton.Size = new System.Drawing.Size(64, 22);
-            this.ArrangerPropertiesButton.Text = "Properties";
-            this.ArrangerPropertiesButton.ToolTipText = "Arranger Properties";
-            this.ArrangerPropertiesButton.Click += new System.EventHandler(this.ArrangerPropertiesButton_Click);
-            // 
             // GraphicsViewerChild
             // 
             this.AllowDrop = true;
@@ -196,7 +196,7 @@
             this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "GraphicsViewerChild";
-            this.Text = "GraphicsMdiChild";
+            this.Text = "GraphicsViewerForm";
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             this.ResumeLayout(false);

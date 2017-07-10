@@ -16,7 +16,7 @@ namespace TileShop
     /// </summary>
     public class GameDescriptor
     {
-        private ProjectExplorerControl pec = null;
+        private ProjectTreeForm ptf = null;
 
         /// <summary>
         /// Base directory for all file locations on disk
@@ -31,11 +31,11 @@ namespace TileShop
         /// <param name="pec">ProjectExplorerControl from which to load data into</param>
         /// <param name="XmlFileName"></param>
         /// <returns></returns>
-        public bool LoadProject(ProjectExplorerControl projectExplorerControl, string XmlFileName)
+        public bool LoadProject(ProjectTreeForm projectTreeForm, string XmlFileName)
         {
-            pec = projectExplorerControl;
+            ptf = projectTreeForm;
 
-            if (pec == null)
+            if (ptf == null)
                 return false;
 
             XElement doc = XElement.Load(XmlFileName);
@@ -74,7 +74,7 @@ namespace TileShop
         /// <returns></returns>
         private bool AddFolderNode(XElement folderNode)
         {
-            pec.AddFolderNode(GetNodeKey(folderNode));
+            ptf.AddFolderNode(GetNodeKey(folderNode));
 
             foreach (XElement node in folderNode.Elements())
             {
@@ -99,7 +99,7 @@ namespace TileShop
             DataFile df = new DataFile(name);
             df.Open(location);
 
-            pec.AddDataFile(df, GetNodePath(fileNode));
+            ptf.AddDataFile(df, GetNodePath(fileNode));
             return true;
         }
 
@@ -122,7 +122,7 @@ namespace TileShop
             PaletteColorFormat format = Palette.StringToColorFormat(formatname);
 
             pal.LoadPalette(datafile, address, format, zeroindextransparent, entries);
-            pec.AddPalette(pal, GetNodePath(paletteNode));
+            ptf.AddPalette(pal, GetNodePath(paletteNode));
 
             return true;
         }
@@ -189,7 +189,7 @@ namespace TileShop
                 arr.SetElement(el, xmlElement.posx, xmlElement.posy);
             }
 
-            pec.AddArranger(arr, GetNodePath(arrangerNode));
+            ptf.AddArranger(arr, GetNodePath(arrangerNode));
             return true;
         }
 
