@@ -240,7 +240,7 @@ namespace TileShop
         {
             Rectangle zoomed = PointsToRectangle(BeginPoint, EndPoint); // Rectangle in zoomed coordinates
             Rectangle unzoomed = ViewerToArrangerRectangle(zoomed);
-            Rectangle unzoomedfull = GetSelectionPixelRect(unzoomed);
+            Rectangle unzoomedfull = GetExpandedSelectionPixelRect(unzoomed);
 
             SelectedClientRect = new Rectangle(unzoomedfull.X * Zoom, unzoomedfull.Y * Zoom, unzoomedfull.Width * Zoom, unzoomedfull.Height * Zoom);
 
@@ -253,20 +253,20 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Resizes the current selection rect to encompass the entirety of selected elements (tiles)
+        /// Expands the given selection rectangle to fully contain all pixels of selected Elements
         /// </summary>
-        /// <param name="r"></param>
+        /// <param name="partialRectangle">Selection rectangle in unzoomed pixels containing partially selected Elements</param>
         /// <returns></returns>
-        private Rectangle GetSelectionPixelRect(Rectangle r)
+        private Rectangle GetExpandedSelectionPixelRect(Rectangle partialRectangle)
         {
             Arranger arr = FileManager.Instance.GetArranger(ArrangerKey);
 
-            int x1 = r.Left;
-            int x2 = r.Right;
-            int y1 = r.Top;
-            int y2 = r.Bottom;
+            int x1 = partialRectangle.Left;
+            int x2 = partialRectangle.Right;
+            int y1 = partialRectangle.Top;
+            int y2 = partialRectangle.Bottom;
 
-            // Extend rectangle to include the entirety of partially selected tiles
+            // Expands rectangle to include the entirety of partially selected tiles
             foreach (ArrangerElement el in arr.ElementGrid)
             {
                 if (x1 > el.X1 && x1 <= el.X2)
