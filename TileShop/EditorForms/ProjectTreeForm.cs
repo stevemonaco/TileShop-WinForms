@@ -301,7 +301,7 @@ namespace TileShop
                 gv.SetZoom(6);
                 gv.Show(tsf.DockPanel, DockState.Document);
 
-                gv.ContentModified += tsf.ContentModified;
+                gv.ContentModified += tsf.ViewerContentModified;
                 gv.ContentSaved += tsf.ContentSaved;
                 gv.EditArrangerChanged += tsf.EditArrangerChanged;
                 gv.ClearEditArranger();
@@ -332,7 +332,7 @@ namespace TileShop
             gv.SetZoom(6);
             gv.Show(tsf.DockPanel, DockState.Document);
 
-            gv.ContentModified += tsf.ContentModified;
+            gv.ContentModified += tsf.ViewerContentModified;
             gv.ContentSaved += tsf.ContentSaved;
             gv.EditArrangerChanged += tsf.EditArrangerChanged;
             gv.ClearEditArranger();
@@ -359,7 +359,7 @@ namespace TileShop
             }
 
             PaletteEditorForm pef = new PaletteEditorForm(PaletteKey);
-            pef.ContentModified += tsf.ContentModified;
+            pef.ContentModified += tsf.PaletteContentModified;
             pef.ContentSaved += tsf.ContentSaved;
             pef.Show(tsf.DockPanel, DockState.Document);
 

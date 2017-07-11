@@ -295,6 +295,7 @@ namespace TileShop
             {
                 rm.SetPixel(X, Y, Color.FromArgb((int)pal[SwatchControl.SelectedIndex]));
                 ContainsModifiedContent = true;
+                OnContentModified(EventArgs.Empty);
                 PixelPanel.Invalidate();
             }
         }

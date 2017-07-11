@@ -71,6 +71,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\ArrangerElement.cs" />
+    <Compile Include="Core\ArrangerExtensions.cs" />
     <Compile Include="Core\ArrangerSelectionData.cs" />
     <Compile Include="Core\BitStream.cs" />
     <Compile Include="Core\CustomCursor.cs" />

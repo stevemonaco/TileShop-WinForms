@@ -329,38 +329,39 @@ namespace TileShop
             if (!pef.Visible)
                 pef.Show();
 
+            pef.ContentModified += PixelContentModified;
+
             GraphicsViewerForm gv = (GraphicsViewerForm)sender;
             pef.SetEditArranger(gv.EditArranger);
         }
 
         /// <summary>
-        /// Called in the event that a palette subeditor has made changes that must be propagated to sibling subeditors
-        /// Each subeditor must be refreshed
+        /// Invoked when a PixelEditorForm has made changes that must be propagated to sibling subeditors
+        /// Only GraphicsViewerForms need to be refreshed
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void PaletteContentsModified(object sender, EventArgs e)
+        public void PixelContentModified(object sender, EventArgs e)
         {
-            // Minor bug: Can sometimes reload arranger of some DockContents twice
-            // Example: A floating GraphicsViewerChild window (with multiple docks?)
             foreach (DockPane dp in DockPanel.Panes)
             {
                 foreach (DockContent dc in dp.Contents)
                 {
-                    if (dc is EditorDockContent)
-                        ((EditorDockContent)dc).RefreshContent();
+                    if (dc is GraphicsViewerForm gv)
+                        gv.RefreshContent();
                 }
             }
         }
 
         /// <summary>
-        /// Called upon an editor having its content modified
+        /// Invoked when a PaletteEditorForm has made changes that must be propagated to sibling subeditors
+        /// Each subeditor type must be refreshed
         /// </summary>
-        /// <param name="sender">Editor which invoked the event</param>
+        /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void ContentModified(object sender, EventArgs e)
+        public void PaletteContentModified(object sender, EventArgs e)
         {
-            // Minor bug: Can sometimes refresh some DockContents twice
+            // Minor bug: Can sometimes reload arranger of some DockContents twice
             // Example: A floating GraphicsViewerChild window (with multiple docks?)
             foreach (DockPane dp in DockPanel.Panes)
             {
@@ -370,6 +371,17 @@ namespace TileShop
                         ((EditorDockContent)dc).RefreshContent();
                 }
             }
+        }
+
+        /// <summary>
+        /// Invoked when a GraphicsViewerForm has made changes that must be propagated to sibling subeditors
+        /// </summary>
+        /// <param name="sender">Editor which invoked the event</param>
+        /// <param name="e"></param>
+        public void ViewerContentModified(object sender, EventArgs e)
+        {
+            // Currently no need for the GraphicsViewerForm to make changes to propagate
+            return;
         }
 
         /// <summary>

@@ -2,6 +2,8 @@
 Beta 1 tasks:
 General
 	- Test UI features for detecting modifications to arrangers/palettes/etc
+		- Fix: Temp modifications (pixel placement) to PixelEditorForm do not propagate to GraphicsViewerForm because they aren't written to the file
+		- Fix: Perm modifications (saving) by PixelEditorForm do not propagate to GraphicsViewerForm because the events aren't hooked up
 	x Revise TileShopForm for external file loaders always loading into the root directory (Remember first-time TIM palette load automatically being modified)
 	x Add drag/drop rearranging for the treeview
 	- Revise menu option code (Close Project, Save Project As, etc)
@@ -26,6 +28,7 @@ GraphicsViewerChild
 	x Allow user to resize number of ScatteredArranger elements in UI
 	- Add support to attach palettes to tiles for ScatteredArrangers
 	- RenderPanel size issue with swapping codecs to/from PSX (linear) graphics
+	- Change <, >, l, ; keys to change element pixel size by +/- 8 in linear mode. Fine-tune +/- 1 pixel will be manual in ArrangerProperties
 
 Codecs
 	x Test encoding support for rowpixelpattern
