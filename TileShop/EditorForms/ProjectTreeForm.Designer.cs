@@ -64,6 +64,7 @@
             // 
             this.ProjectTreeView.AllowDrop = true;
             this.ProjectTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ProjectTreeView.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ProjectTreeView.ImageIndex = 0;
             this.ProjectTreeView.ImageList = this.nodeImageList;
             this.ProjectTreeView.LabelEdit = true;

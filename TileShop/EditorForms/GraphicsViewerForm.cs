@@ -77,8 +77,8 @@ namespace TileShop
             {
                 GraphicsFormat graphicsFormat = FileManager.Instance.GetGraphicsFormat(DisplayArranger.GetSequentialGraphicsFormat());
 
-                EditModeButton.Checked = false; // Do not allow edits directly to a sequential arranger
-                EditModeButton.Visible = false;
+                //EditModeButton.Checked = false; // Do not allow edits directly to a sequential arranger
+                //EditModeButton.Visible = false;
 
                 SaveButton.Visible = false;
                 ReloadButton.Visible = false;
@@ -710,13 +710,23 @@ namespace TileShop
 
                 DisplayArranger.ResizeScatteredArranger(newArrangerSize.Width, newArrangerSize.Height);
 
-                if (newArrangerName != DisplayArranger.Name) // TODO: Rename arranger, requires refactoring to access ProjectExplorerControl...
+                if (newArrangerName != DisplayArranger.Name) // TODO: Rename arranger, requires refactoring to access ProjectTreeForm...
                 {
 
                 }
 
                 ReloadArranger();
             }
+        }
+
+        private void AddPaletteReferenceItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void DefaultPaletteItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

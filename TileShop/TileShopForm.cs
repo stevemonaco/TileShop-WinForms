@@ -214,30 +214,6 @@ namespace TileShop
             }
         }
 
-        private void BlankArrangerToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            NewTileArrangerForm ntaf = new NewTileArrangerForm();
-
-            if (ActiveMdiChild is GraphicsViewerForm gv)
-            {
-                Size ElementSize = gv.DisplayArranger.ElementPixelSize;
-                ntaf.SetDefaults(ElementSize.Width, ElementSize.Height, 16, 8);
-
-                if (gv.DisplayArranger.Mode == ArrangerMode.SequentialArranger)
-                {
-                    GraphicsFormat fmt = FileManager.Instance.GetGraphicsFormat(gv.DisplayArranger.GetSequentialGraphicsFormat());
-                    ntaf.SetFormat(fmt.Name);
-                }
-            }
-
-            if(DialogResult.OK == ntaf.ShowDialog())
-            {
-                //GraphicsViewerMdiChild gmc = new GraphicsViewerMdiChild(this, ArrangerMode.MemoryArranger);
-                //GraphicsFormat 
-                //gmc.LoadTileArranger(ntaf.GetFormatName(), ntaf.GetArrangerSize(), null);
-            }
-        }
-
         private void DebugXmlToolStripMenuItem_Click(object sender, EventArgs e)
         {
             WindowState = FormWindowState.Maximized;

@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PixelEditorForm));
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.PaletteBox = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -48,6 +47,7 @@
             // 
             // toolStrip1
             // 
+            this.toolStrip1.AutoSize = false;
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.PaletteBox,
             this.toolStripSeparator1,
@@ -60,63 +60,80 @@
             this.SaveButton});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(533, 25);
+            this.toolStrip1.Padding = new System.Windows.Forms.Padding(3);
+            this.toolStrip1.Size = new System.Drawing.Size(533, 38);
             this.toolStrip1.TabIndex = 0;
             this.toolStrip1.Text = "toolStrip1";
             // 
             // PaletteBox
             // 
             this.PaletteBox.Name = "PaletteBox";
-            this.PaletteBox.Size = new System.Drawing.Size(121, 25);
+            this.PaletteBox.Size = new System.Drawing.Size(121, 37);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 37);
             // 
             // PencilButton
             // 
+            this.PencilButton.AutoSize = false;
             this.PencilButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.PencilButton.Image = global::TileShop.Properties.Resources.PencilTool;
+            this.PencilButton.Image = global::TileShop.Properties.Resources.pencil;
+            this.PencilButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.PencilButton.ImageTransparentColor = System.Drawing.Color.White;
+            this.PencilButton.Margin = new System.Windows.Forms.Padding(0);
             this.PencilButton.Name = "PencilButton";
-            this.PencilButton.Size = new System.Drawing.Size(23, 22);
+            this.PencilButton.Padding = new System.Windows.Forms.Padding(1, 0, 1, 0);
+            this.PencilButton.Size = new System.Drawing.Size(37, 36);
             this.PencilButton.Click += new System.EventHandler(this.PencilButton_Click);
             // 
             // PickerButton
             // 
+            this.PickerButton.AutoSize = false;
             this.PickerButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.PickerButton.Image = global::TileShop.Properties.Resources.ColorPickerTool;
+            this.PickerButton.Image = global::TileShop.Properties.Resources.color_picker;
+            this.PickerButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.PickerButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.PickerButton.Margin = new System.Windows.Forms.Padding(0);
             this.PickerButton.Name = "PickerButton";
-            this.PickerButton.Size = new System.Drawing.Size(23, 22);
+            this.PickerButton.Padding = new System.Windows.Forms.Padding(1, 0, 1, 0);
+            this.PickerButton.Size = new System.Drawing.Size(37, 36);
             this.PickerButton.Text = "toolStripButton3";
             this.PickerButton.Click += new System.EventHandler(this.PickerButton_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 37);
             // 
             // GridlinesButton
             // 
+            this.GridlinesButton.AutoSize = false;
             this.GridlinesButton.CheckOnClick = true;
             this.GridlinesButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.GridlinesButton.Image = global::TileShop.Properties.Resources.gridlines;
+            this.GridlinesButton.Image = global::TileShop.Properties.Resources.grid;
+            this.GridlinesButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.GridlinesButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.GridlinesButton.Margin = new System.Windows.Forms.Padding(0);
             this.GridlinesButton.Name = "GridlinesButton";
-            this.GridlinesButton.Size = new System.Drawing.Size(23, 22);
+            this.GridlinesButton.Padding = new System.Windows.Forms.Padding(1, 0, 1, 0);
+            this.GridlinesButton.Size = new System.Drawing.Size(37, 36);
             this.GridlinesButton.Text = "toolStripButton3";
             this.GridlinesButton.Click += new System.EventHandler(this.GridlinesButton_Click);
             // 
             // ReloadButton
             // 
             this.ReloadButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.ReloadButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.ReloadButton.Image = ((System.Drawing.Image)(resources.GetObject("ReloadButton.Image")));
+            this.ReloadButton.AutoSize = false;
+            this.ReloadButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ReloadButton.Image = global::TileShop.Properties.Resources.arrow_refresh_small;
+            this.ReloadButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.ReloadButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ReloadButton.Margin = new System.Windows.Forms.Padding(0);
             this.ReloadButton.Name = "ReloadButton";
-            this.ReloadButton.Size = new System.Drawing.Size(47, 22);
+            this.ReloadButton.Padding = new System.Windows.Forms.Padding(1, 0, 1, 0);
+            this.ReloadButton.Size = new System.Drawing.Size(37, 36);
             this.ReloadButton.Text = "Reload";
             this.ReloadButton.Click += new System.EventHandler(this.ReloadButton_Click);
             // 
@@ -124,23 +141,27 @@
             // 
             this.toolStripSeparator3.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 37);
             // 
             // SaveButton
             // 
             this.SaveButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.SaveButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.SaveButton.Image = ((System.Drawing.Image)(resources.GetObject("SaveButton.Image")));
+            this.SaveButton.AutoSize = false;
+            this.SaveButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.SaveButton.Image = global::TileShop.Properties.Resources.disk;
+            this.SaveButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.SaveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.SaveButton.Margin = new System.Windows.Forms.Padding(0);
             this.SaveButton.Name = "SaveButton";
-            this.SaveButton.Size = new System.Drawing.Size(35, 22);
+            this.SaveButton.Padding = new System.Windows.Forms.Padding(1, 0, 1, 0);
+            this.SaveButton.Size = new System.Drawing.Size(37, 36);
             this.SaveButton.Text = "Save";
             this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
             // 
             // PixelPanel
             // 
             this.PixelPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.PixelPanel.Location = new System.Drawing.Point(0, 25);
+            this.PixelPanel.Location = new System.Drawing.Point(0, 38);
             this.PixelPanel.Name = "PixelPanel";
             this.PixelPanel.Size = new System.Drawing.Size(533, 201);
             this.PixelPanel.TabIndex = 1;
@@ -152,10 +173,10 @@
             // SwatchControl
             // 
             this.SwatchControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SwatchControl.Location = new System.Drawing.Point(0, 226);
+            this.SwatchControl.Location = new System.Drawing.Point(0, 239);
             this.SwatchControl.Name = "SwatchControl";
             this.SwatchControl.SelectedIndex = 0;
-            this.SwatchControl.Size = new System.Drawing.Size(533, 250);
+            this.SwatchControl.Size = new System.Drawing.Size(533, 237);
             this.SwatchControl.TabIndex = 2;
             // 
             // PixelEditorForm
@@ -173,7 +194,6 @@
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 

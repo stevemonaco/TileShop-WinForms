@@ -127,12 +127,6 @@
     </Compile>
     <Compile Include="Core\GraphicsCodec.cs" />
     <Compile Include="Core\GraphicsFormat.cs" />
-    <Compile Include="PopupForms\NewTileArrangerForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="PopupForms\NewTileArrangerForm.Designer.cs">
-      <DependentUpon>NewTileArrangerForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="EditorForms\GraphicsViewerForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -186,9 +180,6 @@
     <EmbeddedResource Include="EditorForms\GraphicsViewerForm.resx">
       <DependentUpon>GraphicsViewerForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PopupForms\NewTileArrangerForm.resx">
-      <DependentUpon>NewTileArrangerForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
@@ -231,6 +222,33 @@
     <Content Include="Codecs\SNESMode7.xml" />
     <Content Include="Codecs\VB2bpp.xml" />
     <Content Include="Development Tasks.txt" />
+    <None Include="Resources\application_form_edit.png" />
+    <None Include="Resources\shape_rotate_clockwise.png" />
+    <None Include="Resources\shape_rotate_anticlockwise.png" />
+    <None Include="Resources\shape_flip_vertical.png" />
+    <None Include="Resources\shape_flip_horizontal.png" />
+    <None Include="Resources\select.png" />
+    <None Include="Resources\pencil.png" />
+    <None Include="Resources\palette.png" />
+    <None Include="Resources\paintcan.png" />
+    <None Include="Resources\paintbrush.png" />
+    <None Include="Resources\magnifier_zoom_out.png" />
+    <None Include="Resources\magnifier_zoom_in.png" />
+    <None Include="Resources\grid.png" />
+    <None Include="Resources\folder.png" />
+    <None Include="Resources\draw_eraser.png" />
+    <None Include="Resources\document_redirect.png" />
+    <None Include="Resources\document_import.png" />
+    <None Include="Resources\document_export.png" />
+    <None Include="Resources\disk_multiple.png" />
+    <None Include="Resources\disk.png" />
+    <None Include="Resources\cursor.png" />
+    <None Include="Resources\color_swatch.png" />
+    <None Include="Resources\color_picker.png" />
+    <None Include="Resources\arrow_rotate_clockwise.png" />
+    <None Include="Resources\arrow_rotate_anticlockwise.png" />
+    <None Include="Resources\arrow_refresh_small.png" />
+    <None Include="Resources\PaletteTool.png" />
     <None Include="Resources\PencilTool.png" />
     <None Include="Resources\PencilCursor.png" />
     <None Include="Resources\PencilCursor.bmp" />

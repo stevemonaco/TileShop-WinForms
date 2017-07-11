@@ -31,7 +31,6 @@
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.NewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.blankArrangerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.OpenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.CloseProjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
@@ -91,18 +90,9 @@
             // 
             // NewToolStripMenuItem
             // 
-            this.NewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.blankArrangerToolStripMenuItem});
             this.NewToolStripMenuItem.Name = "NewToolStripMenuItem";
             this.NewToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
             this.NewToolStripMenuItem.Text = "New";
-            // 
-            // blankArrangerToolStripMenuItem
-            // 
-            this.blankArrangerToolStripMenuItem.Name = "blankArrangerToolStripMenuItem";
-            this.blankArrangerToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.blankArrangerToolStripMenuItem.Text = "Blank Arranger";
-            this.blankArrangerToolStripMenuItem.Click += new System.EventHandler(this.BlankArrangerToolStripMenuItem_Click);
             // 
             // OpenToolStripMenuItem
             // 
@@ -287,7 +277,6 @@
         private System.Windows.Forms.ToolStripMenuItem ExitToolStripMenuItem;
         private System.Windows.Forms.ToolStripStatusLabel SelectionLabel;
         private WeifenLuo.WinFormsUI.Docking.VS2013BlueTheme dockTheme;
-        private System.Windows.Forms.ToolStripMenuItem blankArrangerToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem DebugXmlToolStripMenuItem;
         public WeifenLuo.WinFormsUI.Docking.DockPanel DockPanel;
         private System.Windows.Forms.ToolStripMenuItem SaveProjectToolStripMenuItem;

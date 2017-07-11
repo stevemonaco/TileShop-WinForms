@@ -33,9 +33,9 @@ namespace TileShop
         // General Arranger variables
 
         /// <summary>
-        /// Gets individual Elements from the Arranger
+        /// Gets individual Elements that compose the Arranger
         /// </summary>
-        public ArrangerElement[,] ElementGrid { get; private set; }
+        public ArrangerElement[,] ElementGrid { get; set; }
 
         /// <summary>
         /// Gets the size of the entire Arranger in Elements
@@ -181,9 +181,14 @@ namespace TileShop
             if (Mode != ArrangerMode.SequentialArranger)
                 throw new InvalidOperationException();
 
-            FileBitAddress address = GetInitialSequentialFileAddress();
+            FileBitAddress address;
+
+            if (ElementGrid == null) // New Arranger being resized
+                address = 0;
+            else address = GetInitialSequentialFileAddress();
 
             ElementGrid = new ArrangerElement[arrangerWidth, arrangerHeight];
+
             int x = 0;
             int y = 0;
 
@@ -342,7 +347,7 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Creates a new subarranger from an existing arranger
+        /// Creates a new Scattered Arranger from an existing Arranger
         /// </summary>
         /// <param name="subArrangerName">Arranger name for the newly created Arranger</param>
         /// <param name="arrangerPosX">0-based top-most Element coordinate of parent Arranger selection to copy</param>
@@ -360,19 +365,14 @@ namespace TileShop
 
             Arranger subArranger = new Arranger()
             {
-                Mode = ArrangerMode.ScatteredArranger, // Default to scattered arranger due to selections not being the full width of the parent arranger
+                Mode = ArrangerMode.ScatteredArranger, // Default to scattered arranger
+                IsSequential = false,
                 Name = subArrangerName,
                 ElementGrid = new ArrangerElement[copyWidth, copyHeight],
                 ArrangerElementSize = new Size(copyWidth, copyHeight),
                 ElementPixelSize = ElementPixelSize,
                 ArrangerPixelSize = new Size(ElementPixelSize.Width * copyWidth, ElementPixelSize.Height * copyHeight)
             };
-
-            if (Mode == ArrangerMode.SequentialArranger)
-            {
-                subArranger.IsSequential = IsSequential;
-                subArranger.FileSize = FileSize;
-            }
 
             for (int srcy = arrangerPosY, desty = 0; srcy < arrangerPosY + copyHeight; srcy++, desty++)
             {

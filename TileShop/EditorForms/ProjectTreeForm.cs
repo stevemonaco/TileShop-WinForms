@@ -300,6 +300,12 @@ namespace TileShop
                 gv.WindowState = FormWindowState.Maximized;
                 gv.SetZoom(6);
                 gv.Show(tsf.DockPanel, DockState.Document);
+
+                gv.ContentModified += tsf.ContentModified;
+                gv.ContentSaved += tsf.ContentSaved;
+                gv.EditArrangerChanged += tsf.EditArrangerChanged;
+                gv.ClearEditArranger();
+
                 return true;
             }
             else
@@ -323,9 +329,9 @@ namespace TileShop
 
             GraphicsViewerForm gv = new GraphicsViewerForm(ArrangerKey);
             gv.WindowState = FormWindowState.Maximized;
-
             gv.SetZoom(6);
             gv.Show(tsf.DockPanel, DockState.Document);
+
             gv.ContentModified += tsf.ContentModified;
             gv.ContentSaved += tsf.ContentSaved;
             gv.EditArrangerChanged += tsf.EditArrangerChanged;

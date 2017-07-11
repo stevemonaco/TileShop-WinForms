@@ -40,17 +40,17 @@ namespace TileShop
             if (!NeedsRedraw)
                 return true;
 
-            BinaryReader br = null;
-
             // TODO: Consider using Tile Cache
+
+            FileStream fs = null;
 
             if(arranger.IsSequential) // Sequential requires only one seek per render
             {
-                br = new BinaryReader(FileManager.Instance.GetDataFile(arranger.ElementGrid[0, 0].DataFileKey).Stream);
-                br.BaseStream.Seek(arranger.ElementGrid[0, 0].FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise
+                fs = FileManager.Instance.GetDataFile(arranger.ElementGrid[0, 0].DataFileKey).Stream;
+                fs.Seek(arranger.ElementGrid[0, 0].FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise
             }
 
-            string PrevFileName = "";
+            string PrevFileKey = "";
 
             for(int i = 0; i < arranger.ArrangerElementSize.Height; i++)
             {
@@ -64,11 +64,11 @@ namespace TileShop
                             GraphicsCodec.DecodeBlank(Image, el);
                             continue;
                         }
-                        if(PrevFileName != el.DataFileKey) // Only create a new binary reader when necessary
-                            br = new BinaryReader(FileManager.Instance.GetDataFile(el.DataFileKey).Stream);
+                        if(PrevFileKey != el.DataFileKey) // Only create a new binary reader when necessary
+                            fs = FileManager.Instance.GetDataFile(el.DataFileKey).Stream;
 
-                        br.BaseStream.Seek(el.FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise
-                        PrevFileName = el.DataFileKey;
+                        fs.Seek(el.FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise seeking
+                        PrevFileKey = el.DataFileKey;
                     }
 
                     GraphicsCodec.Decode(Image, el);
@@ -99,8 +99,15 @@ namespace TileShop
             if (Image == null)
                 throw new NullReferenceException();
 
-            BinaryWriter bw = null;
-            string PrevFileName = "";
+            string PrevFileKey = "";
+
+            FileStream fs = null; // Used for seeking the DataFile associated with an ArrangerElement before encoding it
+
+            if (arranger.IsSequential) // Seek to the first element
+            {
+                fs = FileManager.Instance.GetDataFile(arranger.ElementGrid[0, 0].DataFileKey).Stream;
+                fs.Seek(arranger.GetInitialSequentialFileAddress().FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise seeking
+            }
 
             for (int i = 0; i < arranger.ArrangerElementSize.Height; i++)
             {
@@ -112,15 +119,14 @@ namespace TileShop
                         if (el.FormatName == "") // Empty format means a blank tile
                             continue;
 
-                        if (PrevFileName != el.DataFileKey) // Only create a new binary reader when necessary
-                            bw = new BinaryWriter(FileManager.Instance.GetDataFile(el.DataFileKey).Stream);
+                        if (PrevFileKey != el.DataFileKey) // Only get a new FileStream when necessary
+                            fs = FileManager.Instance.GetDataFile(el.DataFileKey).Stream;
 
-                        bw.BaseStream.Seek(el.FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise
-                        PrevFileName = el.DataFileKey;
+                        fs.Seek(el.FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise seeks
+                        PrevFileKey = el.DataFileKey;
                     }
 
                     GraphicsCodec.Encode(Image, el);
-                    //GraphicsCodec.Encode(Image, el.X1, el.Y1, FileManager.Instance.GetGraphicsFormat(el.FormatName), bw, FileManager.Instance.GetPalette(el.PaletteName));
                 }
             }
 
