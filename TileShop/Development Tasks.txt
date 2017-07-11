@@ -48,6 +48,34 @@ Test NewPaletteForm (Add bitwise)
 Misc tasks:
 Change fixedsize in codec to fixedwidth and fixedheight (might not be necessary)
 
+Project Icons v2:
+GraphicsViewerForm:
+	Select Elements Mode - Temp,
+	Edit Elements Mode - Temp,
+	Apply Palette to Elements Mode - Ok,
+	Arranger Properties Form - Temp
+	Palette Picker - Temp,
+	Erase Element - Temp,
+	Zoom In - Ok,
+	Zoom Out - Ok,
+	Jump - Temp,
+	Save - Ok,
+	Reload - Ok
+TileShopForm: Open Project File - Ok, Save Project File - Ok, Import File - Ok
+PaletteEditorForm: None
+PixelEditorForm:
+	Pencil Tool - Ok,
+	Color Picker Tool - Ok,
+	Rectangle Select Tool - Ok,
+	Flood Fill - Ok,
+	Rotate CW - Ok,
+	Rotate CCW - Ok,
+	Flip Horizontally - Temp, 
+	Flip Vertically - Temp,
+	Color Remap - N/A,
+	Toggle Palette Color - Temp (BW for pixels not pertaining to the current palette, or color to show real colors for everything)
+ProjectTreeForm: None (?)
+
 Testing:
 FF5 8x12 1bpp font @ 3EB00
 JackBros 16x16 2bpp VB font @ A0000
