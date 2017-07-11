@@ -52,11 +52,11 @@ namespace TileShop
 
             string PrevFileKey = "";
 
-            for(int i = 0; i < arranger.ArrangerElementSize.Height; i++)
+            for(int y = 0; y < arranger.ArrangerElementSize.Height; y++)
             {
-                for(int j = 0; j < arranger.ArrangerElementSize.Width; j++)
+                for(int x = 0; x < arranger.ArrangerElementSize.Width; x++)
                 {
-                    ArrangerElement el = arranger.ElementGrid[j, i];
+                    ArrangerElement el = arranger.ElementGrid[x, y];
                     if (!arranger.IsSequential) // Non-sequential requires a seek for each element rendered
                     {
                         if (el.IsBlank())
@@ -109,11 +109,11 @@ namespace TileShop
                 fs.Seek(arranger.GetInitialSequentialFileAddress().FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise seeking
             }
 
-            for (int i = 0; i < arranger.ArrangerElementSize.Height; i++)
+            for (int y = 0; y < arranger.ArrangerElementSize.Height; y++)
             {
-                for (int j = 0; j < arranger.ArrangerElementSize.Width; j++)
+                for (int x = 0; x < arranger.ArrangerElementSize.Width; x++)
                 {
-                    ArrangerElement el = arranger.ElementGrid[j, i];
+                    ArrangerElement el = arranger.ElementGrid[x, y];
                     if (!arranger.IsSequential) // Non-sequential requires a seek for each element rendered
                     {
                         if (el.FormatName == "") // Empty format means a blank tile
