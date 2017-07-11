@@ -37,14 +37,12 @@ namespace TileShop
 
         protected virtual void OnContentModified(EventArgs e)
         {
-            EventHandler<EventArgs> ModifiedHandler = ContentModified;
-            ModifiedHandler?.Invoke(this, e);
+            ContentModified?.Invoke(this, e);
         }
 
         protected virtual void OnContentSaved(EventArgs e)
         {
-            EventHandler<EventArgs> SavedHandler = ContentSaved;
-            SavedHandler?.Invoke(this, e);
+            ContentSaved?.Invoke(this, e);
         }
 
         /// <summary>
