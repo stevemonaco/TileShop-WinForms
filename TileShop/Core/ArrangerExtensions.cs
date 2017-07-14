@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -135,6 +136,29 @@ namespace TileShop
             }
 
             return self.ElementGrid[0, 0].FileAddress;
+        }
+
+        /// <summary>
+        /// Translates a point to an element location in the underlying arranger
+        /// </summary>
+        /// <param name="Location">Point in zoomed coordinates</param>
+        /// <returns>Element location</returns>
+        public static Point PointToElementLocation(this Arranger self, Point Location, int Zoom = 1)
+        {
+            Point unzoomed = new Point(Location.X / Zoom, Location.Y / Zoom);
+
+            // Search list for element
+            for (int y = 0; y < self.ArrangerElementSize.Height; y++)
+            {
+                for (int x = 0; x < self.ArrangerElementSize.Width; x++)
+                {
+                    ArrangerElement el = self.ElementGrid[x, y];
+                    if (unzoomed.X >= el.X1 && unzoomed.X <= el.X2 && unzoomed.Y >= el.Y1 && unzoomed.Y <= el.Y2)
+                        return new Point(x, y);
+                }
+            }
+
+            throw new ArgumentOutOfRangeException("Location is outside of the range of all ArrangerElements in ElementList");
         }
     }
 }

@@ -206,32 +206,6 @@ namespace TileShop
             InDragState = false;
         }
 
-
-        /// <summary>
-        /// Translates a point in zoomed coordinates to an element location in the underlying arranger
-        /// </summary>
-        /// <param name="Location">Point in zoomed coordinates</param>
-        /// <returns>Element location</returns>
-        public Point PointToElementLocation(Point Location)
-        {
-            Point unzoomed = new Point(Location.X / Zoom, Location.Y / Zoom);
-
-            Arranger arr = FileManager.Instance.GetArranger(ArrangerKey);
-
-            // Search list for element
-            for (int y = 0; y < arr.ArrangerElementSize.Height; y++)
-            {
-                for (int x = 0; x < arr.ArrangerElementSize.Width; x++)
-                {
-                    ArrangerElement el = arr.ElementGrid[x, y];
-                    if (unzoomed.X >= el.X1 && unzoomed.X <= el.X2 && unzoomed.Y >= el.Y1 && unzoomed.Y <= el.Y2)
-                        return new Point(x, y);
-                }
-            }
-
-            throw new ArgumentOutOfRangeException("Location is outside of the range of all ArrangerElements in ElementList");
-        }
-
         /// <summary>
         /// Calculates a resized selection rectangle in zoomed coordinates (to fully cover tiles that are half-moused over) and populates
         /// selected elements and selection size for retrieval
