@@ -10,10 +10,9 @@ namespace TileShop
 {
     public partial class TileShopForm : Form
     {
-        string CodecDirectoryPath = "D:\\Projects\\TileShop\\codecs\\";
-        string PaletteDirectoryPath = "D:\\Projects\\TileShop\\pal\\";
-        string PluginDirectoryPath = "D:\\Projects\\TileShop\\plugins";
-        //string PluginDirectoryPath = @"D:\VS Projects\TileShop\TIMParserPlugin\bin\Debug\";
+        string CodecDirectoryPath = @"D:\Projects\TileShop\codecs\";
+        string PaletteDirectoryPath = @"D:\Projects\TileShop\pal\";
+        string PluginDirectoryPath = @"D:\Projects\TileShop\plugins\";
 
         public string ProjectFileName
         {
@@ -67,8 +66,8 @@ namespace TileShop
                     return false;
             }
 
-            GraphicsViewerForm gv = new GraphicsViewerForm(arrangerName);
-            gv.Show(DockPanel, DockState.Document);
+            ArrangerViewerForm avf = new ArrangerViewerForm(arrangerName);
+            avf.Show(DockPanel, DockState.Document);
 
             return true;
         }
@@ -301,9 +300,9 @@ namespace TileShop
         {
             ScatteredArrangerPropertiesForm sapf = new ScatteredArrangerPropertiesForm();
 
-            if (ActiveMdiChild is GraphicsViewerForm gv) // Initialize with defaults from the active MDI window
+            if (ActiveMdiChild is ArrangerViewerForm avf) // Initialize with defaults from the active MDI window
             {
-                Size ElementSize = gv.DisplayArranger.ElementPixelSize;
+                Size ElementSize = avf.DisplayArranger.ElementPixelSize;
                 sapf.SetDefaults(true, "", "", new Size(ElementSize.Width, ElementSize.Height), new Size(16, 8), ArrangerLayout.TiledArranger);
             }
 
@@ -331,8 +330,8 @@ namespace TileShop
 
             pef.ContentModified += PixelContentModified;
 
-            GraphicsViewerForm gv = (GraphicsViewerForm)sender;
-            pef.SetEditArranger(gv.EditArranger);
+            ArrangerViewerForm avf = (ArrangerViewerForm)sender;
+            pef.SetEditArranger(avf.EditArranger);
         }
 
         /// <summary>
@@ -347,8 +346,8 @@ namespace TileShop
             {
                 foreach (DockContent dc in dp.Contents)
                 {
-                    if (dc is GraphicsViewerForm gv)
-                        gv.RefreshContent();
+                    if (dc is ArrangerViewerForm avf)
+                        avf.RefreshContent();
                 }
             }
         }

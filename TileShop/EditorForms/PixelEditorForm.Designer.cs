@@ -68,12 +68,12 @@
             // PaletteBox
             // 
             this.PaletteBox.Name = "PaletteBox";
-            this.PaletteBox.Size = new System.Drawing.Size(121, 37);
+            this.PaletteBox.Size = new System.Drawing.Size(121, 32);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 37);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 32);
             // 
             // PencilButton
             // 
@@ -85,7 +85,7 @@
             this.PencilButton.Margin = new System.Windows.Forms.Padding(0);
             this.PencilButton.Name = "PencilButton";
             this.PencilButton.Padding = new System.Windows.Forms.Padding(1, 0, 1, 0);
-            this.PencilButton.Size = new System.Drawing.Size(37, 36);
+            this.PencilButton.Size = new System.Drawing.Size(36, 36);
             this.PencilButton.Click += new System.EventHandler(this.PencilButton_Click);
             // 
             // PickerButton
@@ -98,14 +98,14 @@
             this.PickerButton.Margin = new System.Windows.Forms.Padding(0);
             this.PickerButton.Name = "PickerButton";
             this.PickerButton.Padding = new System.Windows.Forms.Padding(1, 0, 1, 0);
-            this.PickerButton.Size = new System.Drawing.Size(37, 36);
+            this.PickerButton.Size = new System.Drawing.Size(36, 36);
             this.PickerButton.Text = "toolStripButton3";
             this.PickerButton.Click += new System.EventHandler(this.PickerButton_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 37);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 32);
             // 
             // GridlinesButton
             // 
@@ -118,7 +118,7 @@
             this.GridlinesButton.Margin = new System.Windows.Forms.Padding(0);
             this.GridlinesButton.Name = "GridlinesButton";
             this.GridlinesButton.Padding = new System.Windows.Forms.Padding(1, 0, 1, 0);
-            this.GridlinesButton.Size = new System.Drawing.Size(37, 36);
+            this.GridlinesButton.Size = new System.Drawing.Size(36, 36);
             this.GridlinesButton.Text = "toolStripButton3";
             this.GridlinesButton.Click += new System.EventHandler(this.GridlinesButton_Click);
             // 
@@ -133,7 +133,7 @@
             this.ReloadButton.Margin = new System.Windows.Forms.Padding(0);
             this.ReloadButton.Name = "ReloadButton";
             this.ReloadButton.Padding = new System.Windows.Forms.Padding(1, 0, 1, 0);
-            this.ReloadButton.Size = new System.Drawing.Size(37, 36);
+            this.ReloadButton.Size = new System.Drawing.Size(36, 36);
             this.ReloadButton.Text = "Reload";
             this.ReloadButton.Click += new System.EventHandler(this.ReloadButton_Click);
             // 
@@ -141,7 +141,7 @@
             // 
             this.toolStripSeparator3.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 37);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 32);
             // 
             // SaveButton
             // 
@@ -154,7 +154,7 @@
             this.SaveButton.Margin = new System.Windows.Forms.Padding(0);
             this.SaveButton.Name = "SaveButton";
             this.SaveButton.Padding = new System.Windows.Forms.Padding(1, 0, 1, 0);
-            this.SaveButton.Size = new System.Drawing.Size(37, 36);
+            this.SaveButton.Size = new System.Drawing.Size(36, 36);
             this.SaveButton.Text = "Save";
             this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
             // 

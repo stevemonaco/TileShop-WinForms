@@ -99,7 +99,7 @@ namespace TileShop
         }
         
         /// <summary>
-        /// Loads content from underlying source
+        /// Reloads content from underlying source
         /// </summary>
         /// <returns></returns>
         public virtual bool ReloadContent()

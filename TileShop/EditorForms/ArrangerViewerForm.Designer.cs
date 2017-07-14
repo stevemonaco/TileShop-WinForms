@@ -1,6 +1,6 @@
 ﻿namespace TileShop
 {
-    partial class GraphicsViewerForm
+    partial class ArrangerViewerForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,22 +28,20 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GraphicsViewerForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ArrangerViewerForm));
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.FormatSelectBox = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.ShowGridlinesButton = new System.Windows.Forms.ToolStripButton();
             this.offsetLabel = new System.Windows.Forms.ToolStripLabel();
-            this.EditModeButton = new System.Windows.Forms.ToolStripButton();
+            this.ArrangeModeButton = new System.Windows.Forms.ToolStripButton();
             this.ReloadButton = new System.Windows.Forms.ToolStripButton();
             this.SaveLoadSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.SaveButton = new System.Windows.Forms.ToolStripButton();
             this.JumpButton = new System.Windows.Forms.ToolStripButton();
-            this.paletteDropDownButton = new System.Windows.Forms.ToolStripDropDownButton();
-            this.defaultPaletteItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.addPaletteReferenceItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.EditModeButton = new System.Windows.Forms.ToolStripButton();
             this.ArrangerPropertiesButton = new System.Windows.Forms.ToolStripButton();
+            this.PaletteDropDownButton = new TileShop.Controls.CheckedDropDownButton();
+            this.ShowGridlinesButton = new System.Windows.Forms.ToolStripButton();
             this.RenderPanel = new System.Windows.Forms.Panel();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -55,20 +53,21 @@
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.FormatSelectBox,
             this.toolStripSeparator1,
-            this.ShowGridlinesButton,
             this.offsetLabel,
-            this.EditModeButton,
+            this.ArrangeModeButton,
             this.ReloadButton,
             this.SaveLoadSeparator,
             this.SaveButton,
             this.JumpButton,
-            this.paletteDropDownButton,
-            this.ArrangerPropertiesButton});
+            this.EditModeButton,
+            this.ArrangerPropertiesButton,
+            this.PaletteDropDownButton,
+            this.ShowGridlinesButton});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(3);
             this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.toolStrip1.Size = new System.Drawing.Size(564, 38);
+            this.toolStrip1.Size = new System.Drawing.Size(564, 40);
             this.toolStrip1.TabIndex = 4;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -76,65 +75,50 @@
             // 
             this.FormatSelectBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.FormatSelectBox.Name = "FormatSelectBox";
-            this.FormatSelectBox.Size = new System.Drawing.Size(121, 32);
+            this.FormatSelectBox.Size = new System.Drawing.Size(121, 34);
             this.FormatSelectBox.DropDownClosed += new System.EventHandler(this.FormatSelectBox_DropDownClosed);
             this.FormatSelectBox.SelectedIndexChanged += new System.EventHandler(this.FormatSelectBox_SelectedIndexChanged);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 32);
-            // 
-            // ShowGridlinesButton
-            // 
-            this.ShowGridlinesButton.AutoSize = false;
-            this.ShowGridlinesButton.Checked = true;
-            this.ShowGridlinesButton.CheckOnClick = true;
-            this.ShowGridlinesButton.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ShowGridlinesButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ShowGridlinesButton.Image = global::TileShop.Properties.Resources.grid;
-            this.ShowGridlinesButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.ShowGridlinesButton.ImageTransparentColor = System.Drawing.Color.White;
-            this.ShowGridlinesButton.Margin = new System.Windows.Forms.Padding(1, 0, 1, 0);
-            this.ShowGridlinesButton.Name = "ShowGridlinesButton";
-            this.ShowGridlinesButton.Size = new System.Drawing.Size(37, 36);
-            this.ShowGridlinesButton.Text = "Show Gridlines";
-            this.ShowGridlinesButton.ToolTipText = "Show Gridlines";
-            this.ShowGridlinesButton.Click += new System.EventHandler(this.ShowGridlinesButton_Click);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 34);
             // 
             // offsetLabel
             // 
             this.offsetLabel.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.offsetLabel.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.offsetLabel.Name = "offsetLabel";
-            this.offsetLabel.Size = new System.Drawing.Size(0, 29);
+            this.offsetLabel.Size = new System.Drawing.Size(0, 31);
             // 
-            // EditModeButton
+            // ArrangeModeButton
             // 
-            this.EditModeButton.AutoSize = false;
-            this.EditModeButton.Checked = true;
-            this.EditModeButton.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.EditModeButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.EditModeButton.Image = global::TileShop.Properties.Resources.cursor;
-            this.EditModeButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.EditModeButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.EditModeButton.Margin = new System.Windows.Forms.Padding(1, 0, 1, 0);
-            this.EditModeButton.Name = "EditModeButton";
-            this.EditModeButton.Size = new System.Drawing.Size(37, 36);
-            this.EditModeButton.Text = "Enable/Disable Edit Mode";
-            this.EditModeButton.ToolTipText = "Enable/Disable Edit Mode";
-            this.EditModeButton.Click += new System.EventHandler(this.EditModeButton_Click);
+            this.ArrangeModeButton.AutoSize = false;
+            this.ArrangeModeButton.BackColor = System.Drawing.SystemColors.Control;
+            this.ArrangeModeButton.Checked = true;
+            this.ArrangeModeButton.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ArrangeModeButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ArrangeModeButton.Image = global::TileShop.Properties.Resources.cursor;
+            this.ArrangeModeButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.ArrangeModeButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ArrangeModeButton.Margin = new System.Windows.Forms.Padding(1, 0, 1, 0);
+            this.ArrangeModeButton.Name = "ArrangeModeButton";
+            this.ArrangeModeButton.Size = new System.Drawing.Size(36, 36);
+            this.ArrangeModeButton.Text = "Arrange Elements Mode";
+            this.ArrangeModeButton.ToolTipText = "Select Elements to Arrange";
+            this.ArrangeModeButton.Click += new System.EventHandler(this.ArrangeModeButton_Click);
             // 
             // ReloadButton
             // 
             this.ReloadButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.ReloadButton.AutoSize = false;
             this.ReloadButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.ReloadButton.Image = global::TileShop.Properties.Resources.arrow_refresh_small;
             this.ReloadButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.ReloadButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ReloadButton.Margin = new System.Windows.Forms.Padding(1, 0, 1, 0);
             this.ReloadButton.Name = "ReloadButton";
-            this.ReloadButton.Size = new System.Drawing.Size(36, 32);
+            this.ReloadButton.Size = new System.Drawing.Size(36, 36);
             this.ReloadButton.Text = "Reload";
             this.ReloadButton.ToolTipText = "Reload arranger from underlying source";
             this.ReloadButton.Click += new System.EventHandler(this.ReloadButton_Click);
@@ -143,7 +127,7 @@
             // 
             this.SaveLoadSeparator.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.SaveLoadSeparator.Name = "SaveLoadSeparator";
-            this.SaveLoadSeparator.Size = new System.Drawing.Size(6, 32);
+            this.SaveLoadSeparator.Size = new System.Drawing.Size(6, 34);
             // 
             // SaveButton
             // 
@@ -155,7 +139,7 @@
             this.SaveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.SaveButton.Margin = new System.Windows.Forms.Padding(1, 0, 1, 0);
             this.SaveButton.Name = "SaveButton";
-            this.SaveButton.Size = new System.Drawing.Size(37, 36);
+            this.SaveButton.Size = new System.Drawing.Size(36, 36);
             this.SaveButton.Text = "Save";
             this.SaveButton.ToolTipText = "Save arranger to underlying source";
             this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
@@ -170,47 +154,24 @@
             this.JumpButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.JumpButton.Margin = new System.Windows.Forms.Padding(1, 0, 1, 0);
             this.JumpButton.Name = "JumpButton";
-            this.JumpButton.Size = new System.Drawing.Size(37, 36);
+            this.JumpButton.Size = new System.Drawing.Size(36, 36);
             this.JumpButton.Text = "Jump";
             this.JumpButton.ToolTipText = "Jump to File Offset";
             this.JumpButton.Click += new System.EventHandler(this.JumpButton_Click);
             // 
-            // paletteDropDownButton
+            // EditModeButton
             // 
-            this.paletteDropDownButton.AutoSize = false;
-            this.paletteDropDownButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.paletteDropDownButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.defaultPaletteItem,
-            this.toolStripSeparator2,
-            this.addPaletteReferenceItem});
-            this.paletteDropDownButton.Image = global::TileShop.Properties.Resources.palette;
-            this.paletteDropDownButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.paletteDropDownButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.paletteDropDownButton.Margin = new System.Windows.Forms.Padding(1, 0, 1, 0);
-            this.paletteDropDownButton.Name = "paletteDropDownButton";
-            this.paletteDropDownButton.Size = new System.Drawing.Size(44, 36);
-            this.paletteDropDownButton.Text = "Palette Tool";
-            this.paletteDropDownButton.ToolTipText = "Apply Palette";
-            // 
-            // defaultPaletteItem
-            // 
-            this.defaultPaletteItem.Name = "defaultPaletteItem";
-            this.defaultPaletteItem.Size = new System.Drawing.Size(270, 22);
-            this.defaultPaletteItem.Tag = "Default";
-            this.defaultPaletteItem.Text = "Default";
-            this.defaultPaletteItem.Click += new System.EventHandler(this.DefaultPaletteItem_Click);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(267, 6);
-            // 
-            // addPaletteReferenceItem
-            // 
-            this.addPaletteReferenceItem.Name = "addPaletteReferenceItem";
-            this.addPaletteReferenceItem.Size = new System.Drawing.Size(270, 22);
-            this.addPaletteReferenceItem.Text = "Add Palette Reference From Project...";
-            this.addPaletteReferenceItem.Click += new System.EventHandler(this.AddPaletteReferenceItem_Click);
+            this.EditModeButton.AutoSize = false;
+            this.EditModeButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.EditModeButton.Image = global::TileShop.Properties.Resources.pencil;
+            this.EditModeButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.EditModeButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.EditModeButton.Margin = new System.Windows.Forms.Padding(0);
+            this.EditModeButton.Name = "EditModeButton";
+            this.EditModeButton.Size = new System.Drawing.Size(36, 36);
+            this.EditModeButton.Text = "Edit Elements";
+            this.EditModeButton.ToolTipText = "Select Elements to Edit";
+            this.EditModeButton.Click += new System.EventHandler(this.EditModeButton_Click);
             // 
             // ArrangerPropertiesButton
             // 
@@ -221,18 +182,49 @@
             this.ArrangerPropertiesButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ArrangerPropertiesButton.Margin = new System.Windows.Forms.Padding(1, 0, 1, 0);
             this.ArrangerPropertiesButton.Name = "ArrangerPropertiesButton";
-            this.ArrangerPropertiesButton.Size = new System.Drawing.Size(37, 36);
+            this.ArrangerPropertiesButton.Size = new System.Drawing.Size(36, 36);
             this.ArrangerPropertiesButton.Text = "Properties";
             this.ArrangerPropertiesButton.ToolTipText = "Arranger Properties";
             this.ArrangerPropertiesButton.Click += new System.EventHandler(this.ArrangerPropertiesButton_Click);
+            // 
+            // PaletteDropDownButton
+            // 
+            this.PaletteDropDownButton.AutoSize = false;
+            this.PaletteDropDownButton.Checked = false;
+            this.PaletteDropDownButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.PaletteDropDownButton.Image = global::TileShop.Properties.Resources.palette;
+            this.PaletteDropDownButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.PaletteDropDownButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.PaletteDropDownButton.Margin = new System.Windows.Forms.Padding(1, 0, 1, 0);
+            this.PaletteDropDownButton.Name = "PaletteDropDownButton";
+            this.PaletteDropDownButton.Size = new System.Drawing.Size(46, 36);
+            this.PaletteDropDownButton.Text = "Choose Palette to Apply";
+            this.PaletteDropDownButton.ToolTipText = "Choose Palette to Apply";
+            // 
+            // ShowGridlinesButton
+            // 
+            this.ShowGridlinesButton.AutoSize = false;
+            this.ShowGridlinesButton.Checked = true;
+            this.ShowGridlinesButton.CheckOnClick = true;
+            this.ShowGridlinesButton.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ShowGridlinesButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ShowGridlinesButton.Image = global::TileShop.Properties.Resources.grid;
+            this.ShowGridlinesButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.ShowGridlinesButton.ImageTransparentColor = System.Drawing.Color.White;
+            this.ShowGridlinesButton.Margin = new System.Windows.Forms.Padding(1, 0, 1, 0);
+            this.ShowGridlinesButton.Name = "ShowGridlinesButton";
+            this.ShowGridlinesButton.Size = new System.Drawing.Size(36, 36);
+            this.ShowGridlinesButton.Text = "Show Gridlines";
+            this.ShowGridlinesButton.ToolTipText = "Show Gridlines";
+            this.ShowGridlinesButton.Click += new System.EventHandler(this.ShowGridlinesButton_Click);
             // 
             // RenderPanel
             // 
             this.RenderPanel.AllowDrop = true;
             this.RenderPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.RenderPanel.Location = new System.Drawing.Point(0, 38);
+            this.RenderPanel.Location = new System.Drawing.Point(0, 40);
             this.RenderPanel.Name = "RenderPanel";
-            this.RenderPanel.Size = new System.Drawing.Size(564, 419);
+            this.RenderPanel.Size = new System.Drawing.Size(564, 417);
             this.RenderPanel.TabIndex = 5;
             this.RenderPanel.DragDrop += new System.Windows.Forms.DragEventHandler(this.RenderPanel_DragDrop);
             this.RenderPanel.DragEnter += new System.Windows.Forms.DragEventHandler(this.RenderPanel_DragEnter);
@@ -244,7 +236,7 @@
             this.RenderPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.RenderPanel_MouseMove);
             this.RenderPanel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.RenderPanel_MouseUp);
             // 
-            // GraphicsViewerForm
+            // ArrangerViewerForm
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -256,7 +248,7 @@
             this.Controls.Add(this.toolStrip1);
             this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Name = "GraphicsViewerForm";
+            this.Name = "ArrangerViewerForm";
             this.Text = "GraphicsViewerForm";
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
@@ -271,15 +263,13 @@
         private System.Windows.Forms.ToolStripButton ShowGridlinesButton;
         private System.Windows.Forms.Panel RenderPanel;
         private System.Windows.Forms.ToolStripLabel offsetLabel;
-        private System.Windows.Forms.ToolStripButton EditModeButton;
+        private System.Windows.Forms.ToolStripButton ArrangeModeButton;
         private System.Windows.Forms.ToolStripButton SaveButton;
         private System.Windows.Forms.ToolStripButton ReloadButton;
         private System.Windows.Forms.ToolStripSeparator SaveLoadSeparator;
         private System.Windows.Forms.ToolStripButton JumpButton;
         private System.Windows.Forms.ToolStripButton ArrangerPropertiesButton;
-        private System.Windows.Forms.ToolStripDropDownButton paletteDropDownButton;
-        private System.Windows.Forms.ToolStripMenuItem defaultPaletteItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripMenuItem addPaletteReferenceItem;
+        private System.Windows.Forms.ToolStripButton EditModeButton;
+        private Controls.CheckedDropDownButton PaletteDropDownButton;
     }
 }
