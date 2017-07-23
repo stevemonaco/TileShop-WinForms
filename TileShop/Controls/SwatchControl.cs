@@ -42,7 +42,7 @@ namespace TileShop
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.NonPublic,
                 null, this, new object[] { true }); // Enable double buffering
 
-            pal = FileManager.Instance.GetPalette(PaletteName);
+            pal = ResourceManager.Instance.GetPalette(PaletteName);
             if (MaxColorsDisplayed == 0)
                 MaxColors = pal.Entries;
             else

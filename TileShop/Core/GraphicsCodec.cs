@@ -35,7 +35,7 @@ namespace TileShop
         /// <param name="el">ArrangerElement to decode</param>
         public static void Decode(Bitmap bmp, ArrangerElement el)
         {
-            GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
+            GraphicsFormat format = ResourceManager.Instance.GetGraphicsFormat(el.FormatName);
 
             if (format.ColorType == PixelColorType.Indexed)
                 IndexedDecode(bmp, el);
@@ -50,8 +50,8 @@ namespace TileShop
         /// <param name="el">Element to decode</param>
         unsafe static void IndexedDecode(Bitmap bmp, ArrangerElement el)
         {
-            FileStream fs = FileManager.Instance.GetDataFile(el.DataFileKey).Stream;
-            GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
+            FileStream fs = ResourceManager.Instance.GetDataFile(el.DataFileKey).Stream;
+            GraphicsFormat format = ResourceManager.Instance.GetGraphicsFormat(el.FormatName);
 
             format.Resize(el.Width, el.Height);
 
@@ -195,7 +195,7 @@ namespace TileShop
 
                 int Height = el.Y2 - el.Y1 + 1;
                 int Width = el.X2 - el.X1 + 1;
-                Palette pal = FileManager.Instance.GetPalette(el.PaletteKey);
+                Palette pal = ResourceManager.Instance.GetPalette(el.PaletteKey);
 
                 for (int y = 0; y < Height; y++)
                 {
@@ -235,7 +235,7 @@ namespace TileShop
         #region Graphics Encoding Functions
         public unsafe static void Encode(Bitmap bmp, ArrangerElement el)
         {
-            GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
+            GraphicsFormat format = ResourceManager.Instance.GetGraphicsFormat(el.FormatName);
 
             if (format.ColorType == PixelColorType.Indexed)
                 IndexedEncode(bmp, el);
@@ -248,8 +248,8 @@ namespace TileShop
             // ReadBitmap for local->foreign color conversion into fmt.MergedData
             ReadBitmapIndexed(bmp, el);
 
-            FileStream fs = FileManager.Instance.GetDataFile(el.DataFileKey).Stream;
-            GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(el.FormatName);
+            FileStream fs = ResourceManager.Instance.GetDataFile(el.DataFileKey).Stream;
+            GraphicsFormat format = ResourceManager.Instance.GetGraphicsFormat(el.FormatName);
 
             // Loop over MergedData to split foreign colors into bit planes in fmt.TileData
             for (int pos = 0; pos < el.MergedData.Length; pos++)
@@ -331,7 +331,7 @@ namespace TileShop
 
                 int Height = el.Y2 - el.Y1 + 1;
                 int Width = el.X2 - el.X1 + 1;
-                Palette pal = FileManager.Instance.GetPalette(el.PaletteKey);
+                Palette pal = ResourceManager.Instance.GetPalette(el.PaletteKey);
 
                 for (int y = 0; y < Height; y++)
                 {

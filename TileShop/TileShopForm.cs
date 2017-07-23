@@ -89,7 +89,7 @@ namespace TileShop
             foreach(string s in filenames)
             {
                 if(Path.GetExtension(s) == ".xml")
-                    FileManager.Instance.LoadFormat(s);
+                    ResourceManager.Instance.LoadFormat(s);
             }
         }
 
@@ -104,17 +104,17 @@ namespace TileShop
             foreach (string s in filenames)
             {
                 if (Path.GetExtension(s) == ".pal")
-                    FileManager.Instance.LoadPalette(s, Path.GetFileNameWithoutExtension(s));
+                    ResourceManager.Instance.LoadPalette(s, Path.GetFileNameWithoutExtension(s));
             }
         }
 
         private void LoadCursors()
         {
             Cursor PencilCursor = CustomCursor.LoadCursorFromBitmap(Properties.Resources.PencilCursor, new Point(0, 15));
-            FileManager.Instance.AddCursor("PencilCursor", PencilCursor);
+            ResourceManager.Instance.AddCursor("PencilCursor", PencilCursor);
 
             Cursor PickerCursor = CustomCursor.LoadCursorFromBitmap(Properties.Resources.PickerCursor, new Point(2, 19));
-            FileManager.Instance.AddCursor("PickerCursor", PickerCursor);
+            ResourceManager.Instance.AddCursor("PickerCursor", PickerCursor);
         }
 
         private void LoadPlugins()
@@ -218,8 +218,8 @@ namespace TileShop
             WindowState = FormWindowState.Maximized;
 
             ProjectFileName = "D:\\Projects\\ff2newxml.xml";
-            GameDescriptor gd = new GameDescriptor();
-            gd.LoadProject(ptf, ProjectFileName);
+            GameDescriptorSerializer gds = new GameDescriptorSerializer();
+            gds.LoadProject(ptf, ProjectFileName);
         }
 
         private void SaveProjectToolStripMenuItem_Click(object sender, EventArgs e)
@@ -433,8 +433,8 @@ namespace TileShop
                     }*/
 
                     // Load new XML project file
-                    GameDescriptor gd = new GameDescriptor();
-                    gd.LoadProject(ptf, ofd.FileName);
+                    GameDescriptorSerializer gds = new GameDescriptorSerializer();
+                    gds.LoadProject(ptf, ofd.FileName);
                     ProjectFileName = ofd.FileName;
                 }
                 else

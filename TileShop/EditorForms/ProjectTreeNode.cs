@@ -11,6 +11,11 @@ namespace TileShop
     {
         public abstract void BuildContextMenu(ContextMenu Menu);
 
+        public string GetNodeKey()
+        {
+            return this.FullPath + this.Name;
+        }
+
         /// <summary>
         /// Path to folder where the node is contained
         /// </summary>
@@ -69,9 +74,9 @@ namespace TileShop
         }
     }
 
-    public class FileNode : ProjectTreeNode
+    public class DataFileNode : ProjectTreeNode
     {
-        public FileNode()
+        public DataFileNode()
         {
             ImageIndex = 2;
             SelectedImageIndex = 2;

@@ -83,9 +83,9 @@
     <Compile Include="EditorForms\EditorDockContent.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Core\FileManager.cs" />
+    <Compile Include="Core\ResourceManager.cs" />
     <Compile Include="Core\FileTypeLoader.cs" />
-    <Compile Include="Core\GameDescriptor.cs" />
+    <Compile Include="Core\GameDescriptorSerializer.cs" />
     <Compile Include="EditorForms\ProjectTreeNode.cs" />
     <Compile Include="Plugins\IFileParserContract.cs" />
     <Compile Include="Controls\IntegerTextBox.cs">

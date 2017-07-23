@@ -13,6 +13,7 @@ namespace TileShop
     public class DataFile
     {
         public string Name { get; private set; }
+        public string Location { get; private set; }
         public FileStream Stream { get; private set; }
 
         public DataFile(string name)
@@ -33,6 +34,7 @@ namespace TileShop
             if (!File.Exists(filename))
                 throw new FileNotFoundException("Could not find " + filename);
 
+            Location = filename;
             Stream = File.Open(filename, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
             return true;
         }

@@ -154,7 +154,7 @@ namespace TileShop
         /// <returns></returns>
         public static Arranger NewSequentialArranger(int arrangerWidth, int arrangerHeight, string dataFileKey, GraphicsFormat format)
         {
-            DataFile df = FileManager.Instance.GetDataFile(dataFileKey);
+            DataFile df = ResourceManager.Instance.GetDataFile(dataFileKey);
 
             Arranger arr = new Arranger()
             {
@@ -248,7 +248,7 @@ namespace TileShop
             if (Mode != ArrangerMode.SequentialArranger)
                 throw new ArgumentException();
 
-            return ResizeSequentialArranger(arrangerWidth, arrangerHeight, ElementGrid[0, 0].DataFileKey, FileManager.Instance.GetGraphicsFormat(ElementGrid[0, 0].FormatName));
+            return ResizeSequentialArranger(arrangerWidth, arrangerHeight, ElementGrid[0, 0].DataFileKey, ResourceManager.Instance.GetGraphicsFormat(ElementGrid[0, 0].FormatName));
         }
 
         /// <summary>
@@ -463,7 +463,7 @@ namespace TileShop
                 throw new InvalidOperationException();
 
             FileBitAddress address = ElementGrid[0, 0].FileAddress;
-            GraphicsFormat fmt = FileManager.Instance.GetGraphicsFormat(Format);
+            GraphicsFormat fmt = ResourceManager.Instance.GetGraphicsFormat(Format);
 
             ElementPixelSize = ElementSize;
 

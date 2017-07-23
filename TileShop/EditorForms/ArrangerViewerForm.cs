@@ -70,14 +70,14 @@ namespace TileShop
 
             // Setup arranger variables
             ContentSourceKey = ArrangerKey;
-            DisplayArranger = FileManager.Instance.GetArranger(ArrangerKey);
+            DisplayArranger = ResourceManager.Instance.GetArranger(ArrangerKey);
             ReloadArranger();
             selectionData = new ArrangerSelectionData(ContentSourceKey);
             selectionData.Zoom = 1;
 
             if (DisplayArranger.Mode == ArrangerMode.SequentialArranger)
             {
-                GraphicsFormat graphicsFormat = FileManager.Instance.GetGraphicsFormat(DisplayArranger.GetSequentialGraphicsFormat());
+                GraphicsFormat graphicsFormat = ResourceManager.Instance.GetGraphicsFormat(DisplayArranger.GetSequentialGraphicsFormat());
 
                 SaveButton.Visible = false;
                 ReloadButton.Visible = false;
@@ -86,7 +86,7 @@ namespace TileShop
                 PaletteDropDownButton.Visible = false;
 
                 // Initialize the codec select box
-                List<string> formatList = FileManager.Instance.GetGraphicsFormatsNameList();
+                List<string> formatList = ResourceManager.Instance.GetGraphicsFormatsNameList();
                 foreach (string s in formatList)
                     FormatSelectBox.Items.Add(s);
 
@@ -105,7 +105,7 @@ namespace TileShop
         #region EditorDockContent Implementation
         public override bool ReloadContent()
         {
-            DisplayArranger = FileManager.Instance.ReloadArranger(ContentSourceKey);
+            DisplayArranger = ResourceManager.Instance.ReloadArranger(ContentSourceKey);
             EditArranger = null;
             DisplayElements = DisplayArranger.ArrangerElementSize;
             ElementSize = DisplayArranger.ElementPixelSize;
@@ -130,7 +130,7 @@ namespace TileShop
 
             MessageBox.Show("SaveContent");
 
-            FileManager.Instance.SaveArranger(ContentSourceKey);
+            ResourceManager.Instance.SaveArranger(ContentSourceKey);
 
             ContainsModifiedContent = false;
             return true;
@@ -582,7 +582,7 @@ namespace TileShop
             if (DisplayArranger.Mode != ArrangerMode.SequentialArranger)
                 return;
 
-            GraphicsFormat format = FileManager.Instance.GetGraphicsFormat((string)FormatSelectBox.SelectedItem);
+            GraphicsFormat format = ResourceManager.Instance.GetGraphicsFormat((string)FormatSelectBox.SelectedItem);
             DisplayArranger.SetGraphicsFormat((string)FormatSelectBox.SelectedItem, new Size(format.DefaultWidth, format.DefaultHeight));
             ElementSize = DisplayArranger.ElementPixelSize;
 

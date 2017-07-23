@@ -12,14 +12,19 @@ namespace TileShop
     /// Singleton class that manages file and editor resources
     /// Files loaded here are kept open always until CloseProject is called
     /// </summary>
-    
+
     // TODO - Consider future implementation of lazy instantiation for some objects, especially for projects that have many, many files
-    public class FileManager
+    public class ResourceManager
     {
-       public static readonly FileManager Instance = new FileManager();
+        public static readonly ResourceManager Instance = new ResourceManager();
 
         /// <summary>
-        /// List of in-use files that can be read or written to by subeditors such as the arranger or palette editor
+        /// List of graphics format codecs
+        /// </summary>
+        private Dictionary<string, GraphicsFormat> FormatList = new Dictionary<string, GraphicsFormat>();
+
+        /// <summary>
+        /// List of in-use files on disk that can be read or written to by subeditors such as the arranger or palette editor
         /// </summary>
         private Dictionary<string, DataFile> DataFileList = new Dictionary<string, DataFile>();
 
@@ -29,24 +34,9 @@ namespace TileShop
         private Dictionary<string, Arranger> ArrangerList = new Dictionary<string, Arranger>();
 
         /// <summary>
-        /// List of arrangers that contains arrangers that will be persisted to storage
-        /// </summary>
-        private Dictionary<string, Arranger> PersistentArrangerList = new Dictionary<string, Arranger>();
-
-        /// <summary>
-        /// List of arrangers that contains palettes that will be persisted to storage
-        /// </summary>
-        private Dictionary<string, Palette> PersistentPaletteList = new Dictionary<string, Palette>();
-
-        /// <summary>
         /// List of palettes that may be edited by the user
         /// </summary>
         private Dictionary<string, Palette> PaletteList = new Dictionary<string, Palette>();
-
-        /// <summary>
-        /// List of graphics format codecs
-        /// </summary>
-        private Dictionary<string, GraphicsFormat> FormatList = new Dictionary<string, GraphicsFormat>();
 
         /// <summary>
         /// List of cursors loaded
@@ -58,119 +48,33 @@ namespace TileShop
         /// </summary>
         private FileTypeLoader Loader = new FileTypeLoader();
 
+        /// <summary>
+        /// List of arrangers that contains arrangers that will be persisted to storage
+        /// </summary>
+        private Dictionary<string, Arranger> PersistentArrangerList = new Dictionary<string, Arranger>();
+
+        /// <summary>
+        /// List of arrangers that contains palettes that will be persisted to storage
+        /// </summary>
+        private Dictionary<string, Palette> PersistentPaletteList = new Dictionary<string, Palette>();
+
         const int DefaultElementsX = 16;
         const int DefaultElementsY = 16;
 
+        #region GraphicsFormat Management
         public void AddGraphicsFormat(GraphicsFormat format)
         {
             FormatList.Add(format.Name, format);
         }
 
-        public void AddArranger(Arranger arr, string key)
+        public bool LoadFormat(string Filename)
         {
-            if (arr == null || key == null)
-                throw new ArgumentNullException();
+            GraphicsFormat fmt = new GraphicsFormat();
+            if (!fmt.LoadFromXml(Filename))
+                return false;
 
-            if (!HasArranger(key))
-            {
-                PersistentArrangerList.Add(key, arr);
-                ArrangerList.Add(key, arr.Clone());
-            }
-        }
-
-        public void AddPalette(Palette pal, string key)
-        {
-            if (pal == null || key == null)
-                throw new ArgumentNullException();
-
-            if (String.IsNullOrEmpty(pal.Name))
-                throw new ArgumentException();
-
-            if (!HasPalette(key))
-            {
-                PersistentPaletteList.Add(key, pal);
-                PaletteList.Add(key, pal.Clone());
-            }
-        }
-
-        /// <summary>
-        /// Retrieves a DataFile by its key
-        /// </summary>
-        /// <param name="dataFileKey"></param>
-        /// <returns></returns>
-        public DataFile GetDataFile(string dataFileKey)
-        {
-            if (DataFileList.ContainsKey(dataFileKey))
-                return DataFileList[dataFileKey];
-            else
-                throw new KeyNotFoundException();
-        }
-
-        /// <summary>
-        /// Gets the editable palette associated with the specified name
-        /// </summary>
-        /// <param name="PaletteName"></param>
-        /// <returns></returns>
-        public Palette GetPalette(string PaletteName)
-        {
-            if (PaletteList.ContainsKey(PaletteName))
-                return PaletteList[PaletteName];
-            else
-                throw new KeyNotFoundException(String.Format("Palette {0} was not found in the PaletteList", PaletteName));
-        }
-
-        /// <summary>
-        /// Gets the editable arranger associated with the specified name
-        /// </summary>
-        /// <param name="ArrangerName"></param>
-        /// <returns></returns>
-        public Arranger GetArranger(string ArrangerName)
-        {
-            if (ArrangerList.ContainsKey(ArrangerName))
-                return ArrangerList[ArrangerName];
-            else
-                throw new KeyNotFoundException(String.Format("Arranger {0} was not found in the ArrangerList", ArrangerName));
-        }
-
-        /// <summary>
-        /// Gets the persistent palette associated with the specified name
-        /// </summary>
-        /// <param name="PaletteName"></param>
-        /// <returns></returns>
-        public Palette GetPersistentPalette(string PaletteName)
-        {
-            if (PersistentPaletteList.ContainsKey(PaletteName))
-                return PersistentPaletteList[PaletteName];
-            else
-                throw new KeyNotFoundException(String.Format("Palette {0} was not found in the PersistentPaletteList", PaletteName));
-        }
-
-        /// <summary>
-        /// Gets the persistent arranger associated with the specified name
-        /// </summary>
-        /// <param name="ArrangerName"></param>
-        /// <returns></returns>
-        public Arranger GetPersistentArranger(string ArrangerName)
-        {
-            if (PersistentArrangerList.ContainsKey(ArrangerName))
-                return PersistentArrangerList[ArrangerName];
-            else
-                throw new KeyNotFoundException(String.Format("Arranger {0} was not found in the PersistentArrangerList", ArrangerName));
-        }
-
-        public bool HasDataFile(string Filename)
-        {
-            return DataFileList.ContainsKey(Filename);
-        }
-
-        public bool HasArranger(string ArrangerName)
-        {
-            return PersistentArrangerList.ContainsKey(ArrangerName);
-        }
-
-        public bool HasPalette(string PaletteName)
-        {
-            return PersistentPaletteList.ContainsKey(PaletteName);
+            AddGraphicsFormat(fmt);
+            return true;
         }
 
         public GraphicsFormat GetGraphicsFormat(string FormatName)
@@ -183,13 +87,15 @@ namespace TileShop
 
         public List<string> GetGraphicsFormatsNameList()
         {
-            Dictionary<string, GraphicsFormat>.KeyCollection keys = FileManager.Instance.FormatList.Keys;
+            Dictionary<string, GraphicsFormat>.KeyCollection keys = ResourceManager.Instance.FormatList.Keys;
             List<string> keyList = keys.ToList<string>();
             keyList.Sort();
 
             return keyList;
         }
+        #endregion
 
+        #region DataFile Management
         /// <summary>
         /// Adds a data file to FileManager
         /// </summary>
@@ -210,91 +116,30 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Creates a sequential arranger from a data file
+        /// Retrieves a DataFile by its key
         /// </summary>
-        /// <param name="dataFileKey">Key of a previously loaded data file</param>
+        /// <param name="dataFileKey"></param>
         /// <returns></returns>
-        public bool LoadSequentialArranger(string dataFileKey)
+        public DataFile GetDataFile(string dataFileKey)
         {
-            string formatname = Loader.GetDefaultFormatName(dataFileKey);
-            Arranger arranger = Arranger.NewSequentialArranger(DefaultElementsX, DefaultElementsY, dataFileKey, GetGraphicsFormat(formatname));
-            AddArranger(arranger, dataFileKey); // TODO: Ensure that Filename is local to the XML project file
-
-            return true;
-        }
-
-        public bool LoadFormat(string Filename)
-        {
-            GraphicsFormat fmt = new GraphicsFormat();
-            if (!fmt.LoadFromXml(Filename))
-                return false;
-
-            AddGraphicsFormat(fmt);
-            return true;
-        }
-
-        /// <summary>
-        /// Loads and associates a palette within FileManager
-        /// </summary>
-        /// <param name="Filename">Filename to palette to be loaded</param>
-        /// <param name="PaletteName">Name associated to the palette within FileManager </param>
-        /// <returns></returns>
-        public bool LoadPalette(string Filename, string PaletteName)
-        {
-            if (Filename == null || PaletteName == null)
-                throw new ArgumentNullException();
-
-            Palette pal = new Palette(PaletteName);
-            if (!pal.LoadPalette(Filename))
-                return false;
-
-            AddPalette(pal, pal.Name);
-            return true;
-        }
-
-        public bool AddCursor(string CursorName, Cursor cursor)
-        {
-            if (!CursorList.ContainsKey(CursorName))
-            {
-                CursorList.Add(CursorName, cursor);
-                return true;
-            }
-            return false;
-        }
-
-        public Cursor GetCursor(string CursorName)
-        {
-            if (CursorList.ContainsKey(CursorName))
-                return CursorList[CursorName];
+            if (DataFileList.ContainsKey(dataFileKey))
+                return DataFileList[dataFileKey];
             else
                 throw new KeyNotFoundException();
         }
 
+        public bool HasDataFile(string Filename)
+        {
+            return DataFileList.ContainsKey(Filename);
+        }
+
         public void RemoveFile(string FileName)
         {
-            if(DataFileList.ContainsKey(FileName))
+            if (DataFileList.ContainsKey(FileName))
             {
                 DataFileList[FileName].Close();
                 DataFileList.Remove(FileName);
             }
-        }
-
-        public void RemoveArranger(string ArrangerName)
-        {
-            if(ArrangerList.ContainsKey(ArrangerName))
-                ArrangerList.Remove(ArrangerName);
-
-            if (PersistentArrangerList.ContainsKey(ArrangerName))
-                PersistentArrangerList.Remove(ArrangerName);
-        }
-
-        public void RemovePalette(string PaletteName)
-        {
-            if (PaletteList.ContainsKey(PaletteName))
-                PaletteList.Remove(PaletteName);
-
-            if (PersistentPaletteList.ContainsKey(PaletteName))
-                PersistentPaletteList.Remove(PaletteName);
         }
 
         /// <summary>
@@ -329,7 +174,7 @@ namespace TileShop
             // Rename references
             foreach (Arranger arr in ArrangerList.Values)
             {
-                foreach(ArrangerElement el in arr.ElementGrid)
+                foreach (ArrangerElement el in arr.ElementGrid)
                 {
                     if (el.DataFileKey == FileName)
                         el.DataFileKey = NewFileName;
@@ -360,6 +205,62 @@ namespace TileShop
             return true;
         }
 
+        #endregion
+
+        #region Arranger Management
+        public void AddArranger(Arranger arr, string key)
+        {
+            if (arr == null || key == null)
+                throw new ArgumentNullException();
+
+            if (!HasArranger(key))
+            {
+                PersistentArrangerList.Add(key, arr);
+                ArrangerList.Add(key, arr.Clone());
+            }
+        }
+
+        /// <summary>
+        /// Creates a sequential arranger from a data file
+        /// </summary>
+        /// <param name="dataFileKey">Key of a previously loaded data file</param>
+        /// <returns></returns>
+        public bool LoadSequentialArranger(string dataFileKey)
+        {
+            string formatname = Loader.GetDefaultFormatName(dataFileKey);
+            Arranger arranger = Arranger.NewSequentialArranger(DefaultElementsX, DefaultElementsY, dataFileKey, GetGraphicsFormat(formatname));
+            AddArranger(arranger, dataFileKey); // TODO: Ensure that Filename is local to the XML project file
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the editable arranger associated with the specified name
+        /// </summary>
+        /// <param name="ArrangerName"></param>
+        /// <returns></returns>
+        public Arranger GetArranger(string ArrangerName)
+        {
+            if (ArrangerList.ContainsKey(ArrangerName))
+                return ArrangerList[ArrangerName];
+            else
+                throw new KeyNotFoundException(String.Format("Arranger {0} was not found in the ArrangerList", ArrangerName));
+        }
+
+        public bool HasArranger(string ArrangerName)
+        {
+            return PersistentArrangerList.ContainsKey(ArrangerName);
+        }
+
+        public void RemoveArranger(string ArrangerName)
+        {
+            if (ArrangerList.ContainsKey(ArrangerName))
+                ArrangerList.Remove(ArrangerName);
+
+            if (PersistentArrangerList.ContainsKey(ArrangerName))
+                PersistentArrangerList.Remove(ArrangerName);
+        }
+
         /// <summary>
         /// Renames an arranger that is currently loaded into the FileManager
         /// </summary>
@@ -382,6 +283,69 @@ namespace TileShop
             PersistentArrangerList.Add(NewArrangerName, arr2);
 
             return true;
+        }
+        #endregion
+
+        #region Palette Management
+        public void AddPalette(Palette pal, string key)
+        {
+            if (pal == null || key == null)
+                throw new ArgumentNullException();
+
+            if (String.IsNullOrEmpty(pal.Name))
+                throw new ArgumentException();
+
+            if (!HasPalette(key))
+            {
+                PersistentPaletteList.Add(key, pal);
+                PaletteList.Add(key, pal.Clone());
+            }
+        }
+
+        /// <summary>
+        /// Loads and associates a palette within FileManager
+        /// </summary>
+        /// <param name="Filename">Filename to palette to be loaded</param>
+        /// <param name="PaletteName">Name associated to the palette within FileManager </param>
+        /// <returns></returns>
+        public bool LoadPalette(string Filename, string PaletteName)
+        {
+            if (Filename == null || PaletteName == null)
+                throw new ArgumentNullException();
+
+            Palette pal = new Palette(PaletteName);
+            if (!pal.LoadPalette(Filename))
+                return false;
+
+            AddPalette(pal, pal.Name);
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the editable palette associated with the specified name
+        /// </summary>
+        /// <param name="PaletteName"></param>
+        /// <returns></returns>
+        public Palette GetPalette(string PaletteName)
+        {
+            if (PaletteList.ContainsKey(PaletteName))
+                return PaletteList[PaletteName];
+            else
+                throw new KeyNotFoundException(String.Format("Palette {0} was not found in the PaletteList", PaletteName));
+        }
+
+        public bool HasPalette(string PaletteName)
+        {
+            return PersistentPaletteList.ContainsKey(PaletteName);
+        }
+
+        public void RemovePalette(string PaletteName)
+        {
+            if (PaletteList.ContainsKey(PaletteName))
+                PaletteList.Remove(PaletteName);
+
+            if (PersistentPaletteList.ContainsKey(PaletteName))
+                PersistentPaletteList.Remove(PaletteName);
         }
 
         /// <summary>
@@ -426,6 +390,53 @@ namespace TileShop
 
             return true;
         }
+        #endregion
+
+        /// <summary>
+        /// Gets the persistent palette associated with the specified name
+        /// </summary>
+        /// <param name="PaletteName"></param>
+        /// <returns></returns>
+        private Palette GetPersistentPalette(string PaletteName)
+        {
+            if (PersistentPaletteList.ContainsKey(PaletteName))
+                return PersistentPaletteList[PaletteName];
+            else
+                throw new KeyNotFoundException(String.Format("Palette {0} was not found in the PersistentPaletteList", PaletteName));
+        }
+
+        /// <summary>
+        /// Gets the persistent arranger associated with the specified name
+        /// </summary>
+        /// <param name="ArrangerName"></param>
+        /// <returns></returns>
+        private Arranger GetPersistentArranger(string ArrangerName)
+        {
+            if (PersistentArrangerList.ContainsKey(ArrangerName))
+                return PersistentArrangerList[ArrangerName];
+            else
+                throw new KeyNotFoundException(String.Format("Arranger {0} was not found in the PersistentArrangerList", ArrangerName));
+        }
+
+        #region Cursor Management
+        public bool AddCursor(string CursorName, Cursor cursor)
+        {
+            if (!CursorList.ContainsKey(CursorName))
+            {
+                CursorList.Add(CursorName, cursor);
+                return true;
+            }
+            return false;
+        }
+
+        public Cursor GetCursor(string CursorName)
+        {
+            if (CursorList.ContainsKey(CursorName))
+                return CursorList[CursorName];
+            else
+                throw new KeyNotFoundException();
+        }
+        #endregion
 
         /// <summary>
         /// Reloads the specified arranger from its underlying source

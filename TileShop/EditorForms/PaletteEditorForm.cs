@@ -112,7 +112,7 @@ namespace TileShop
         {
             InitializeComponent();
 
-            pal = FileManager.Instance.GetPalette(paletteKey);
+            pal = ResourceManager.Instance.GetPalette(paletteKey);
 
             ColorFormatBox.Enabled = false;
             List<string> colorList = Palette.GetPaletteColorFormatsNameList();

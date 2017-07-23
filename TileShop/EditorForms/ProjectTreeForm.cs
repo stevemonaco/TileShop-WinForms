@@ -45,14 +45,14 @@ namespace TileShop
             if (tn != null) // File has already been added
                 return false;
 
-            FileNode fileNode = new FileNode()
+            DataFileNode fileNode = new DataFileNode()
             {
                 Text = df.Name,
                 Tag = df.Name
             };
 
             string fileKey = Path.Combine(NodePath, df.Name);
-            if (!FileManager.Instance.AddDataFile(df, fileKey))
+            if (!ResourceManager.Instance.AddDataFile(df, fileKey))
                 return false;
 
             // TODO: Refactor
@@ -87,11 +87,11 @@ namespace TileShop
             if (tn == null) // Not found
                 return false;
 
-            if (!(tn is FileNode))
+            if (!(tn is DataFileNode))
                 throw new InvalidOperationException("Attempted to RemoveFile on a TreeView node that is not a FileNode");
 
             tn.Remove();
-            FileManager.Instance.RemoveFile(Filename);
+            ResourceManager.Instance.RemoveFile(Filename);
 
             return true;
         }
@@ -110,10 +110,10 @@ namespace TileShop
             if (tn == null) // Not found
                 return false;
 
-            if (!(tn is FileNode))
+            if (!(tn is DataFileNode))
                 throw new InvalidOperationException("Attempted to RenameFile on a TreeView node that is not a FileNode");
 
-            if (!FileManager.Instance.RenameFile(Filename, NewFilename))
+            if (!ResourceManager.Instance.RenameFile(Filename, NewFilename))
                 return false;
 
             tn.Text = NewFilename;
@@ -138,7 +138,7 @@ namespace TileShop
             if (!(tn is PaletteNode))
                 throw new InvalidOperationException("Attempted to RenamePalette on a TreeView node that is not a PaletteNode");
 
-            if (!FileManager.Instance.RenamePalette(PaletteName, NewPaletteName))
+            if (!ResourceManager.Instance.RenamePalette(PaletteName, NewPaletteName))
                 return false;
 
             tn.Text = NewPaletteName;
@@ -163,7 +163,7 @@ namespace TileShop
             if (!(tn is ArrangerNode))
                 throw new InvalidOperationException("Attempted to RenameArranger on a TreeView node that is not an ArrangerNode");
 
-            if (!FileManager.Instance.RenameArranger(ArrangerName, NewArrangerName))
+            if (!ResourceManager.Instance.RenameArranger(ArrangerName, NewArrangerName))
                 return false;
 
             tn.Text = NewArrangerName;
@@ -207,7 +207,7 @@ namespace TileShop
             }
 
             string arrangerKey = Path.Combine(NodePath, arr.Name);
-            FileManager.Instance.AddArranger(arr, arrangerKey);
+            ResourceManager.Instance.AddArranger(arr, arrangerKey);
 
             if (Show)
                 return ShowScatteredArranger(arrangerKey);
@@ -255,7 +255,7 @@ namespace TileShop
             }
 
             string key = Path.Combine(NodePath, pal.Name);
-            FileManager.Instance.AddPalette(pal, key);
+            ResourceManager.Instance.AddPalette(pal, key);
 
             return true;
         }
@@ -294,7 +294,7 @@ namespace TileShop
                     return false;
             }
 
-            if (FileManager.Instance.LoadSequentialArranger(dataFileKey))
+            if (ResourceManager.Instance.LoadSequentialArranger(dataFileKey))
             {
                 ArrangerViewerForm avf = new ArrangerViewerForm(dataFileKey);
                 avf.WindowState = FormWindowState.Maximized;
@@ -347,7 +347,7 @@ namespace TileShop
         /// <returns></returns>
         public bool ShowPaletteEditor(string PaletteKey)
         {
-            if (!FileManager.Instance.HasPalette(PaletteKey))
+            if (!ResourceManager.Instance.HasPalette(PaletteKey))
                 return false;
 
             List<EditorDockContent> activeEditors = tsf.GetActiveEditors();
@@ -374,9 +374,15 @@ namespace TileShop
         public bool CloseProject()
         {
             ProjectTreeView.Nodes.Clear();
-            FileManager.Instance.CloseProject();
+            ResourceManager.Instance.CloseProject();
 
             return true;
+        }
+
+        public bool LoadProject(string XmlFileName)
+        {
+            GameDescriptorSerializer gds = new GameDescriptorSerializer();
+            return gds.LoadProject(ProjectTreeView.Nodes, XmlFileName);
         }
 
         /// <summary>
@@ -403,7 +409,7 @@ namespace TileShop
 
             foreach (TreeNode tn in ProjectTreeView.GetAllNodes())
             {
-                if (tn is FileNode fn)
+                if (tn is DataFileNode fn)
                 {
                     var xmlfile = new XElement("file");
                     xmlfile.SetAttributeValue("location", fn.Text);
@@ -412,7 +418,7 @@ namespace TileShop
                 }
                 else if (tn is PaletteNode pn)
                 {
-                    Palette pal = FileManager.Instance.GetPersistentPalette(pn.Text);
+                    Palette pal = ResourceManager.Instance.GetPersistentPalette(pn.Text);
                     var xmlpal = new XElement("palette");
                     xmlpal.SetAttributeValue("name", pal.Name);
                     xmlpal.SetAttributeValue("folder", pn.GetNodePath());
@@ -426,7 +432,7 @@ namespace TileShop
                 }
                 else if (tn is ArrangerNode an)
                 {
-                    Arranger arr = FileManager.Instance.GetPersistentArranger(an.Text);
+                    Arranger arr = ResourceManager.Instance.GetPersistentArranger(an.Text);
                     var xmlarr = new XElement("arranger");
                     xmlarr.SetAttributeValue("name", arr.Name);
                     xmlarr.SetAttributeValue("folder", an.GetNodePath());
@@ -529,7 +535,7 @@ namespace TileShop
                     foreach (string s in nodeFileNameList)
                         list.Add(s);
                 }
-                else if (tn is FileNode)
+                else if (tn is DataFileNode)
                     list.Add(tn.Text);
             }
 
@@ -552,7 +558,7 @@ namespace TileShop
                     foreach (string s in childFileNames)
                         ret.Add(s);
                 }
-                else if (childNode is FileNode)
+                else if (childNode is DataFileNode)
                     ret.Add(childNode.Text);
             }
 
@@ -561,7 +567,7 @@ namespace TileShop
 
         private void ProjectTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            if (e.Node is FileNode)
+            if (e.Node is DataFileNode)
             {
                 ShowSequentialArranger(e.Node.FullPath);
 
@@ -719,8 +725,8 @@ namespace TileShop
             ProjectTreeNode dragNode = null;
             bool moveChildren = false;
 
-            if (e.Data.GetDataPresent(typeof(FileNode)))
-                dragNode = (FileNode)e.Data.GetData(typeof(FileNode));
+            if (e.Data.GetDataPresent(typeof(DataFileNode)))
+                dragNode = (DataFileNode)e.Data.GetData(typeof(DataFileNode));
             if (e.Data.GetDataPresent(typeof(FolderNode)))
                 dragNode = (FolderNode)e.Data.GetData(typeof(FolderNode));
             if (e.Data.GetDataPresent(typeof(PaletteNode)))

@@ -13,9 +13,9 @@ General
 	x Change XML to tree layout
 	x Change XML graphic -> element
 	x Remove required bitoffset XML exporting (default is 0)
-	- Allow multiple projects to be loaded into ProjectTreeForm (prefix project node name into XML, put each project into separate tab or just top-level folder)
+	- Have editors grab cloned copies of FileManager objects, isolate direct access to persistent objects
 	- Design palette system (palette accessibility: TIMs need multiple bound palettes, tiles less so (only animations), stored in XML? How to add in UI?)
-		- Have TIM plugin create multiple images for TIMs with multiple palettes
+		x Have TIM plugin create multiple images for TIMs with multiple palettes
 		- Apply palette button with drop-down menu showing available palettes (palettes already used elsewhere in the arranger)
 		- Drop-down menu with "Other" option that allows selecting a palette from elsewhere in the project
 
@@ -38,8 +38,10 @@ Pixel Editor
 	- Add support for palettes in pixel editor (gray out pixels that cannot be edited using the current palette)
 
 Beta 2 tasks:
+Allow multiple projects to be loaded into ProjectTreeForm (prefix project node name into XML, put each project into separate tab or just top-level folder)
 Add more tools to the pixel editor (color cycling/remapping, flood fill, rectangle tool)
 Add direct encoding/decoding
+Add support for standard graphics files (bmp, png, jpg, gif, etc)
 Switch file i/o to just-in-time for editing
 *Fix sequential arranger offsets to be bitwise (Add variable width/height tile support)
 

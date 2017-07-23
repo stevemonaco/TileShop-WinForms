@@ -85,7 +85,7 @@ namespace TileShop
             if (IsBlank())
                 return;
 
-            GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(FormatName);
+            GraphicsFormat format = ResourceManager.Instance.GetGraphicsFormat(FormatName);
             ElementData.Clear();
             for (int i = 0; i < format.ColorDepth; i++)
             {
@@ -143,7 +143,7 @@ namespace TileShop
                 el.MergedData[i] = MergedData[i];
 
             // Copy TileData
-            GraphicsFormat format = FileManager.Instance.GetGraphicsFormat(FormatName);
+            GraphicsFormat format = ResourceManager.Instance.GetGraphicsFormat(FormatName);
             for (int i = 0; i < ElementData.Count; i++)
                 for (int j = 0; j < ElementData[i].Length; j++)
                     el.ElementData[i][j] = ElementData[i][j];

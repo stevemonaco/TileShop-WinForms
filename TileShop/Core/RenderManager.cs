@@ -46,7 +46,7 @@ namespace TileShop
 
             if(arranger.IsSequential) // Sequential requires only one seek per render
             {
-                fs = FileManager.Instance.GetDataFile(arranger.ElementGrid[0, 0].DataFileKey).Stream;
+                fs = ResourceManager.Instance.GetDataFile(arranger.ElementGrid[0, 0].DataFileKey).Stream;
                 fs.Seek(arranger.ElementGrid[0, 0].FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise
             }
 
@@ -65,7 +65,7 @@ namespace TileShop
                             continue;
                         }
                         if(PrevFileKey != el.DataFileKey) // Only create a new binary reader when necessary
-                            fs = FileManager.Instance.GetDataFile(el.DataFileKey).Stream;
+                            fs = ResourceManager.Instance.GetDataFile(el.DataFileKey).Stream;
 
                         fs.Seek(el.FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise seeking
                         PrevFileKey = el.DataFileKey;
@@ -105,7 +105,7 @@ namespace TileShop
 
             if (arranger.IsSequential) // Seek to the first element
             {
-                fs = FileManager.Instance.GetDataFile(arranger.ElementGrid[0, 0].DataFileKey).Stream;
+                fs = ResourceManager.Instance.GetDataFile(arranger.ElementGrid[0, 0].DataFileKey).Stream;
                 fs.Seek(arranger.GetInitialSequentialFileAddress().FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise seeking
             }
 
@@ -120,7 +120,7 @@ namespace TileShop
                             continue;
 
                         if (PrevFileKey != el.DataFileKey) // Only get a new FileStream when necessary
-                            fs = FileManager.Instance.GetDataFile(el.DataFileKey).Stream;
+                            fs = ResourceManager.Instance.GetDataFile(el.DataFileKey).Stream;
 
                         fs.Seek(el.FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise seeks
                         PrevFileKey = el.DataFileKey;

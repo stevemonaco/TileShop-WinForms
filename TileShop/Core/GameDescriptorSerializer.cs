@@ -14,9 +14,9 @@ namespace TileShop
     /// <summary>
     /// Provides XML support for reading/writing Game Descriptor Files and loading the content into the ProjectExplorerControl
     /// </summary>
-    public class GameDescriptor
+    public class GameDescriptorSerializer
     {
-        private ProjectTreeForm ptf = null;
+        private TreeNodeCollection ProjectNodes = null;
 
         /// <summary>
         /// Base directory for all file locations on disk
@@ -31,12 +31,12 @@ namespace TileShop
         /// <param name="pec">ProjectExplorerControl from which to load data into</param>
         /// <param name="XmlFileName"></param>
         /// <returns></returns>
-        public bool LoadProject(ProjectTreeForm projectTreeForm, string XmlFileName)
+        public bool LoadProject(TreeNodeCollection nodeCollection, string XmlFileName)
         {
-            ptf = projectTreeForm;
+            if (nodeCollection == null || String.IsNullOrEmpty(XmlFileName))
+                throw new ArgumentException();
 
-            if (ptf == null)
-                return false;
+            ProjectNodes = nodeCollection;
 
             XElement doc = XElement.Load(XmlFileName);
             XElement projectNode = doc.Element("project");
@@ -203,7 +203,7 @@ namespace TileShop
             string path = "";
 
             XElement currentNode = node;
-            while(currentNode.Parent != null && currentNode.Parent.Name == "folder")
+            while (currentNode.Parent != null && currentNode.Parent.Name == "folder")
             {
                 currentNode = currentNode.Parent;
                 path = Path.Combine(currentNode.Attribute("name").Value, path);
@@ -228,104 +228,137 @@ namespace TileShop
         /// <param name="pec">ProjectExplorerControl from which to save the project tree data</param>
         /// <param name="XmlFileName"></param>
         /// <returns></returns>
-        //public bool SaveProject(ProjectExplorerControl pec, string XmlFileName)
-        //{
-        //    var root = new XElement("gdf");
+        public bool SaveProject(TreeNodeCollection tnc, string XmlFileName)
+        {
+            if (tnc == null)
+                throw new ArgumentNullException();
 
-        //    // Save settings
-        //    var settings = new XElement("settings");
-        //    //XElement numberformat = new XElement("filelocationnumberformat");
-        //    //numberformat.SetValue("hexadecimal");
-        //    //settings.Add(numberformat);
+            if (String.IsNullOrEmpty(XmlFileName))
+                throw new ArgumentException();
 
-        //    root.Add(settings);
+            var xmlRoot = new XElement("gdf");
+            var projectRoot = new XElement("project");
+            var settingsRoot = new XElement("settings");
 
-        //    // Save each data file
-        //    var datafiles = new XElement("datafiles");
-        //    var palettes = new XElement("palettes");
-        //    var arrangers = new XElement("arrangers");
+            xmlRoot.Add(settingsRoot);
 
-        //    foreach (TreeNode tn in pec.ProjectTreeView.GetAllNodes())
-        //    {
-        //        if (tn is FileNode fn)
-        //        {
-        //            var xmlfile = new XElement("file");
-        //            xmlfile.SetAttributeValue("location", fn.Text);
-        //            xmlfile.SetAttributeValue("folder", fn.GetNodePath());
-        //            datafiles.Add(xmlfile);
-        //        }
-        //        else if (tn is PaletteNode pn)
-        //        {
-        //            Palette pal = FileManager.Instance.GetPersistentPalette(pn.Text);
-        //            var xmlpal = new XElement("palette");
-        //            xmlpal.SetAttributeValue("name", pal.Name);
-        //            xmlpal.SetAttributeValue("folder", pn.GetNodePath());
-        //            xmlpal.SetAttributeValue("fileoffset", String.Format("{0:X}", pal.FileAddress.FileOffset));
-        //            xmlpal.SetAttributeValue("bitoffset", String.Format("{0:X}", pal.FileAddress.BitOffset));
-        //            xmlpal.SetAttributeValue("datafile", pal.FileName);
-        //            xmlpal.SetAttributeValue("format", Palette.ColorFormatToString(pal.ColorFormat));
-        //            xmlpal.SetAttributeValue("entries", pal.Entries);
-        //            xmlpal.SetAttributeValue("zeroindextransparent", pal.ZeroIndexTransparent);
-        //            palettes.Add(xmlpal);
-        //        }
-        //        else if (tn is ArrangerNode an)
-        //        {
-        //            Arranger arr = FileManager.Instance.GetPersistentArranger(an.Text);
-        //            var xmlarr = new XElement("arranger");
-        //            xmlarr.SetAttributeValue("name", arr.Name);
-        //            xmlarr.SetAttributeValue("folder", an.GetNodePath());
-        //            xmlarr.SetAttributeValue("elementsx", arr.ArrangerElementSize.Width);
-        //            xmlarr.SetAttributeValue("elementsy", arr.ArrangerElementSize.Height);
-        //            xmlarr.SetAttributeValue("width", arr.ElementPixelSize.Width);
-        //            xmlarr.SetAttributeValue("height", arr.ElementPixelSize.Height);
+            foreach (TreeNode tn in tnc)
+            {
+                if (tn is FolderNode folderNode)
+                    projectRoot.Add(SaveFolderNode(folderNode));
+                else if (tn is DataFileNode fileNode)
+                    projectRoot.Add(SaveDataFileNode(fileNode));
+                else if (tn is PaletteNode paletteNode)
+                    projectRoot.Add(SavePaletteNode(paletteNode));
+                else if (tn is ArrangerNode arrangerNode)
+                    projectRoot.Add(SaveArrangerNode(arrangerNode));
+            }
 
-        //            if (arr.Layout == ArrangerLayout.TiledArranger)
-        //                xmlarr.SetAttributeValue("layout", "tiled");
-        //            else if (arr.Layout == ArrangerLayout.LinearArranger)
-        //                xmlarr.SetAttributeValue("layout", "linear");
+            xmlRoot.Add(projectRoot);
 
-        //            string DefaultPalette = FindMostFrequentValue(arr, "PaletteName");
-        //            string DefaultFile = FindMostFrequentValue(arr, "FileName");
-        //            string DefaultFormat = FindMostFrequentValue(arr, "FormatName");
+            xmlRoot.Save(XmlFileName);
 
-        //            xmlarr.SetAttributeValue("defaultformat", DefaultFormat);
-        //            xmlarr.SetAttributeValue("defaultfile", DefaultFile);
-        //            xmlarr.SetAttributeValue("defaultpalette", DefaultPalette);
+            return true;
+        }
 
-        //            for (int y = 0; y < arr.ArrangerElementSize.Height; y++)
-        //            {
-        //                for (int x = 0; x < arr.ArrangerElementSize.Width; x++)
-        //                {
-        //                    var graphic = new XElement("graphic");
-        //                    ArrangerElement el = arr.GetElement(x, y);
+        public XElement SaveFolderNode(FolderNode fn)
+        {
+            XElement xe = new XElement("folder");
+            xe.SetAttributeValue("name", fn.Name);
 
-        //                    graphic.SetAttributeValue("fileoffset", String.Format("{0:X}", el.FileAddress.FileOffset));
-        //                    graphic.SetAttributeValue("bitoffset", String.Format("{0:X}", el.FileAddress.BitOffset));
-        //                    graphic.SetAttributeValue("posx", x);
-        //                    graphic.SetAttributeValue("posy", y);
-        //                    if (el.FormatName != DefaultFormat)
-        //                        graphic.SetAttributeValue("format", el.FormatName);
-        //                    if (el.FileName != DefaultFile)
-        //                        graphic.SetAttributeValue("file", el.FileName);
-        //                    if (el.PaletteName != DefaultPalette)
-        //                        graphic.SetAttributeValue("palette", el.PaletteName);
+            foreach (TreeNode tn in fn.Nodes)
+            {
+                if (tn is FolderNode folderNode)
+                    xe.Add(SaveFolderNode(folderNode));
+                else if (tn is DataFileNode fileNode)
+                    SaveDataFileNode(fileNode);
+                else if (tn is PaletteNode paletteNode)
+                    SavePaletteNode(paletteNode);
+                else if (tn is ArrangerNode arrangerNode)
+                    SaveArrangerNode(arrangerNode);
+            }
 
-        //                    xmlarr.Add(graphic);
-        //                }
-        //            }
+            return xe;
+        }
 
-        //            arrangers.Add(xmlarr);
-        //        }
-        //    }
+        public XElement SaveDataFileNode(DataFileNode dfn)
+        {
+            DataFile df = ResourceManager.Instance.GetDataFile(dfn.GetNodeKey());
 
-        //    root.Add(datafiles);
-        //    root.Add(palettes);
-        //    root.Add(arrangers);
+            XElement xe = new XElement("datafile");
+            xe.SetAttributeValue("name", df.Name);
+            xe.SetAttributeValue("location", df.Location);
 
-        //    root.Save(XmlFileName);
+            return xe;
+        }
 
-        //    return true;
-        //}
+        public XElement SavePaletteNode(PaletteNode pn)
+        {
+            Palette pal = ResourceManager.Instance.GetPalette(pn.GetNodeKey());
+
+            XElement xe = new XElement("palette");
+
+            xe.SetAttributeValue("name", pal.Name);
+            xe.SetAttributeValue("folder", pn.GetNodePath());
+            xe.SetAttributeValue("fileoffset", String.Format("{0:X}", pal.FileAddress.FileOffset));
+            xe.SetAttributeValue("bitoffset", String.Format("{0:X}", pal.FileAddress.BitOffset));
+            xe.SetAttributeValue("datafile", pal.DataFileKey);
+            xe.SetAttributeValue("format", Palette.ColorFormatToString(pal.ColorFormat));
+            xe.SetAttributeValue("entries", pal.Entries);
+            xe.SetAttributeValue("zeroindextransparent", pal.ZeroIndexTransparent);
+
+            return xe;
+        }
+
+        public XElement SaveArrangerNode(ArrangerNode an)
+        {
+            Arranger arr = ResourceManager.Instance.GetArranger(an.GetNodeKey());
+            XElement xe = new XElement("arranger");
+
+            xe.SetAttributeValue("name", arr.Name);
+            xe.SetAttributeValue("folder", an.GetNodePath());
+            xe.SetAttributeValue("elementsx", arr.ArrangerElementSize.Width);
+            xe.SetAttributeValue("elementsy", arr.ArrangerElementSize.Height);
+            xe.SetAttributeValue("width", arr.ElementPixelSize.Width);
+            xe.SetAttributeValue("height", arr.ElementPixelSize.Height);
+
+            if (arr.Layout == ArrangerLayout.TiledArranger)
+                xe.SetAttributeValue("layout", "tiled");
+            else if (arr.Layout == ArrangerLayout.LinearArranger)
+                xe.SetAttributeValue("layout", "linear");
+
+            string DefaultPalette = FindMostFrequentValue(arr, "PaletteName");
+            string DefaultFile = FindMostFrequentValue(arr, "FileName");
+            string DefaultFormat = FindMostFrequentValue(arr, "FormatName");
+
+            xe.SetAttributeValue("defaultformat", DefaultFormat);
+            xe.SetAttributeValue("defaultfile", DefaultFile);
+            xe.SetAttributeValue("defaultpalette", DefaultPalette);
+
+            for (int y = 0; y < arr.ArrangerElementSize.Height; y++)
+            {
+                for (int x = 0; x < arr.ArrangerElementSize.Width; x++)
+                {
+                    var graphic = new XElement("graphic");
+                    ArrangerElement el = arr.GetElement(x, y);
+
+                    graphic.SetAttributeValue("fileoffset", String.Format("{0:X}", el.FileAddress.FileOffset));
+                    graphic.SetAttributeValue("bitoffset", String.Format("{0:X}", el.FileAddress.BitOffset));
+                    graphic.SetAttributeValue("posx", x);
+                    graphic.SetAttributeValue("posy", y);
+                    if (el.FormatName != DefaultFormat)
+                        graphic.SetAttributeValue("format", el.FormatName);
+                    if (el.DataFileKey != DefaultFile)
+                        graphic.SetAttributeValue("file", el.DataFileKey);
+                    if (el.PaletteKey != DefaultPalette)
+                        graphic.SetAttributeValue("palette", el.PaletteKey);
+
+                    xe.Add(graphic);
+                }
+            }
+
+            return xe;
+        }
 
         /// <summary>
         /// Find most frequent of an attribute within an arranger's elements

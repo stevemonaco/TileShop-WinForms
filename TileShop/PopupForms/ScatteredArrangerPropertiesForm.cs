@@ -110,7 +110,7 @@ namespace TileShop
                 MessageBox.Show("The arranger must be named.");
                 return;
             }
-            if (CreateMode && FileManager.Instance.HasArranger(NameTextBox.Text))
+            if (CreateMode && ResourceManager.Instance.HasArranger(NameTextBox.Text))
             {
                 MessageBox.Show("Arranger " + NameTextBox.Text + " already exists. Please choose an alternate name.");
                 return;
@@ -124,7 +124,7 @@ namespace TileShop
                 return;
             }
 
-            if(CreateMode && FileManager.Instance.HasArranger(ArrangerName))
+            if(CreateMode && ResourceManager.Instance.HasArranger(ArrangerName))
             {
                 MessageBox.Show("Arranger " + ArrangerName + " already exists. Please choose another name.");
                 return;
