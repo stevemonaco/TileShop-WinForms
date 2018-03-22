@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 
-namespace TileShop
+namespace TileShop.Core
 {
     class TileCache
     {

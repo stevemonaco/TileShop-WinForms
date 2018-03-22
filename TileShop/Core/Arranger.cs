@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 
-namespace TileShop
+namespace TileShop.Core
 {
     /// <summary>
     /// Mode for the arranger.
@@ -28,7 +27,7 @@ namespace TileShop
     /// <summary>
     /// Arranger for graphical screen elements
     /// </summary>
-    public class Arranger
+    public class Arranger : IResource
     {
         // General Arranger variables
 
@@ -66,7 +65,7 @@ namespace TileShop
         /// <summary>
         /// Gets or sets the name of the Arranger
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets whether the Arranger mode is Sequential or not
@@ -107,6 +106,15 @@ namespace TileShop
 
         private Arranger()
         {
+        }
+
+        /// <summary>
+        /// Renames an Arranger to a new name
+        /// </summary>
+        /// <param name="name"></param>
+        public void Rename(string name)
+        {
+            Name = name;
         }
 
         /*void NewBlankArranger(int ElementsX, int ElementsY, GraphicsFormat format)

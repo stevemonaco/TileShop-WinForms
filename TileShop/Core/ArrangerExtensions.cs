@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TileShop
+namespace TileShop.Core
 {
     /// <summary>
     /// Contains Arranger utility functions more relevant for GUI features

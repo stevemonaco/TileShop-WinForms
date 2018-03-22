@@ -4,6 +4,7 @@ using System.IO;
 using System.Drawing;
 using WeifenLuo.WinFormsUI.Docking;
 using System.Collections.Generic;
+using TileShop.Core;
 using TileShop.Plugins;
 
 namespace TileShop
@@ -219,7 +220,7 @@ namespace TileShop
 
             ProjectFileName = "D:\\Projects\\ff2newxml.xml";
             GameDescriptorSerializer gds = new GameDescriptorSerializer();
-            gds.LoadProject(ptf, ProjectFileName);
+            gds.LoadProject(ptf.ProjectNodes, ProjectFileName);
         }
 
         private void SaveProjectToolStripMenuItem_Click(object sender, EventArgs e)
@@ -312,7 +313,7 @@ namespace TileShop
                 Size ElementSize = sapf.ElementPixelSize;
 
                 Arranger arr = Arranger.NewScatteredArranger(sapf.ArrangerLayout, ArrSize.Width, ArrSize.Height, ElementSize.Width, ElementSize.Height);
-                arr.Name = sapf.ArrangerName;
+                arr.Rename(sapf.ArrangerName);
                 ptf.AddArranger(arr, "", true);
             }
         }
@@ -336,7 +337,7 @@ namespace TileShop
 
         /// <summary>
         /// Invoked when a PixelEditorForm has made changes that must be propagated to sibling subeditors
-        /// Only GraphicsViewerForms need to be refreshed
+        /// Only ArrangerViewerForms need to be refreshed
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -434,7 +435,7 @@ namespace TileShop
 
                     // Load new XML project file
                     GameDescriptorSerializer gds = new GameDescriptorSerializer();
-                    gds.LoadProject(ptf, ofd.FileName);
+                    gds.LoadProject(ptf.ProjectNodes, ofd.FileName);
                     ProjectFileName = ofd.FileName;
                 }
                 else

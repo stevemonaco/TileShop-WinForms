@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Reflection;
 using System.IO;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
+using TileShop.Core;
+using TileShop.ExtensionMethods;
 
 namespace TileShop
 {
@@ -586,7 +584,7 @@ namespace TileShop
         {
             if (e.Button == MouseButtons.Right) // Show context menu
             {
-                ProjectTreeNode ptn = (ProjectTreeNode)e.Node;
+                ResourceNode ptn = (ResourceNode)e.Node;
                 ptn.BuildContextMenu(contextMenu);
                 contextMenu.Show(ProjectTreeView, e.Location);
             }
@@ -722,7 +720,7 @@ namespace TileShop
 
         private void ProjectTreeView_DragDrop(object sender, DragEventArgs e)
         {
-            ProjectTreeNode dragNode = null;
+            ResourceNode dragNode = null;
             bool moveChildren = false;
 
             if (e.Data.GetDataPresent(typeof(DataFileNode)))
@@ -740,7 +738,7 @@ namespace TileShop
                 return;
 
             Point p = ((TreeView)sender).PointToClient(new Point(e.X, e.Y));
-            ProjectTreeNode dropNode = (ProjectTreeNode)((TreeView)sender).GetNodeAt(p);
+            ResourceNode dropNode = (ResourceNode)((TreeView)sender).GetNodeAt(p);
 
             if (moveChildren) // FolderNode dragdrop
             {
@@ -784,41 +782,10 @@ namespace TileShop
         {
             // Check for naming conflicts
         }
-    }
 
-    /// <summary>
-    /// Extension methods for TreeView
-    /// </summary>
-    public static class TreeViewExtensions
-    {
-        /// <summary>
-        /// Gets a flat list of all nodes in the tree
-        /// </summary>
-        /// <param name="Self"></param>
-        /// <returns></returns>
-        public static List<TreeNode> GetAllNodes(this TreeView Self)
+        public TreeNodeCollection ProjectNodes
         {
-            List<TreeNode> result = new List<TreeNode>();
-            foreach (TreeNode child in Self.Nodes)
-            {
-                result.AddRange(child.GetAllNodes());
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Gets a flat list of all child nodes
-        /// </summary>
-        /// <param name="Self"></param>
-        /// <returns></returns>
-        public static List<TreeNode> GetAllNodes(this TreeNode Self)
-        {
-            List<TreeNode> result = new List<TreeNode> { Self };
-            foreach (TreeNode child in Self.Nodes)
-            {
-                result.AddRange(child.GetAllNodes());
-            }
-            return result;
+            get { return ProjectTreeView.Nodes; }
         }
     }
 

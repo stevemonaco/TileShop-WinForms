@@ -1,17 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
 using System.Windows.Forms;
-using WeifenLuo.WinFormsUI.Docking;
-using System.Runtime.InteropServices;
 using System.Reflection;
+using TileShop.Core;
 
 namespace TileShop
 {

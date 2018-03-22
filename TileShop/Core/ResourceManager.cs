@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace TileShop
+namespace TileShop.Core
 {
     /// <summary>
     /// Singleton class that manages file and editor resources
@@ -273,12 +273,12 @@ namespace TileShop
                 return false;
 
             Arranger arr = GetArranger(ArrangerName);
-            arr.Name = NewArrangerName;
+            arr.Rename(NewArrangerName);
             ArrangerList.Remove(ArrangerName);
             ArrangerList.Add(NewArrangerName, arr);
 
             Arranger arr2 = GetPersistentArranger(ArrangerName);
-            arr2.Name = NewArrangerName;
+            arr2.Rename(NewArrangerName);
             PersistentArrangerList.Remove(ArrangerName);
             PersistentArrangerList.Add(NewArrangerName, arr2);
 
@@ -397,7 +397,7 @@ namespace TileShop
         /// </summary>
         /// <param name="PaletteName"></param>
         /// <returns></returns>
-        private Palette GetPersistentPalette(string PaletteName)
+        public Palette GetPersistentPalette(string PaletteName)
         {
             if (PersistentPaletteList.ContainsKey(PaletteName))
                 return PersistentPaletteList[PaletteName];
@@ -410,7 +410,7 @@ namespace TileShop
         /// </summary>
         /// <param name="ArrangerName"></param>
         /// <returns></returns>
-        private Arranger GetPersistentArranger(string ArrangerName)
+        public Arranger GetPersistentArranger(string ArrangerName)
         {
             if (PersistentArrangerList.ContainsKey(ArrangerName))
                 return PersistentArrangerList[ArrangerName];

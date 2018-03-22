@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TileShop
+namespace TileShop.Core
 {
     /// <summary>
     /// Contains all necessary data to encode/decode a single element in the arranger

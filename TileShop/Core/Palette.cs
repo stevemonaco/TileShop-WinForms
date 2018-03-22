@@ -10,7 +10,7 @@ using ColorMine.ColorSpaces.Conversions;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 
-namespace TileShop
+namespace TileShop.Core
 {
     public enum PaletteColorFormat { RGB24 = 0, ARGB32, BGR15, ABGR16, RGB15, NES }
 
@@ -25,7 +25,7 @@ namespace TileShop
     /// Local colors are internally ARGB32
     /// Foreign colors are the same as the target system
     /// </summary>
-    public class Palette
+    public class Palette : IResource
     {
         /// <summary>
         /// Identifying name of the palette
@@ -99,6 +99,15 @@ namespace TileShop
             Entries = 0;
             DataFileKey = null;
             ZeroIndexTransparent = true;
+        }
+
+        /// <summary>
+        /// Renames a Palette to a new name
+        /// </summary>
+        /// <param name="name"></param>
+        public void Rename(string name)
+        {
+            Name = name;
         }
 
         /// <summary>

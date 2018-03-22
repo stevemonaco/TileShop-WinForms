@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 
-namespace TileShop
+namespace TileShop.Core
 {
     // Class to store a selection of arranger data
 

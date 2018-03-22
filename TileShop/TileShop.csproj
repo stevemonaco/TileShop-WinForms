@@ -71,72 +71,79 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controls\CheckedDropDownButton.cs">
+    <Compile Include="UI\Controls\CheckedDropDownButton.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Core\ArrangerElement.cs" />
     <Compile Include="Core\ArrangerExtensions.cs" />
     <Compile Include="Core\ArrangerSelectionData.cs" />
     <Compile Include="Core\BitStream.cs" />
-    <Compile Include="Core\CustomCursor.cs" />
+    <Compile Include="Core\ForeignColor.cs" />
+    <Compile Include="Core\NativeColor.cs" />
+    <Compile Include="UI\CustomCursor.cs" />
     <Compile Include="Core\DataFile.cs" />
-    <Compile Include="EditorForms\EditorDockContent.cs">
+    <Compile Include="Core\IResource.cs" />
+    <Compile Include="UI\Forms\EditorDockContent.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Core\ResourceManager.cs" />
     <Compile Include="Core\FileTypeLoader.cs" />
     <Compile Include="Core\GameDescriptorSerializer.cs" />
-    <Compile Include="EditorForms\ProjectTreeNode.cs" />
+    <Compile Include="UI\ResourceNode.cs" />
+    <Compile Include="ExtensionMethods\TreeNodeCollectionExtensions.cs" />
+    <Compile Include="ExtensionMethods\TreeViewExtensions.cs" />
+    <Compile Include="ExtensionMethods\XElementExtensions.cs" />
     <Compile Include="Plugins\IFileParserContract.cs" />
-    <Compile Include="Controls\IntegerTextBox.cs">
+    <Compile Include="UI\Controls\IntegerTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\IntegerTextBox.Designer.cs">
+    <Compile Include="UI\Controls\IntegerTextBox.Designer.cs">
       <DependentUpon>IntegerTextBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="PopupForms\JumpToAddressForm.cs">
+    <Compile Include="Plugins\IFileParserData.cs" />
+    <Compile Include="UI\PopupForms\JumpToAddressForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="PopupForms\JumpToAddressForm.Designer.cs">
+    <Compile Include="UI\PopupForms\JumpToAddressForm.Designer.cs">
       <DependentUpon>JumpToAddressForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="PopupForms\NewPaletteForm.cs">
+    <Compile Include="UI\PopupForms\NewPaletteForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="PopupForms\NewPaletteForm.Designer.cs">
+    <Compile Include="UI\PopupForms\NewPaletteForm.Designer.cs">
       <DependentUpon>NewPaletteForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="PopupForms\ScatteredArrangerPropertiesForm.cs">
+    <Compile Include="UI\PopupForms\ScatteredArrangerPropertiesForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="PopupForms\ScatteredArrangerPropertiesForm.Designer.cs">
+    <Compile Include="UI\PopupForms\ScatteredArrangerPropertiesForm.Designer.cs">
       <DependentUpon>ScatteredArrangerPropertiesForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="EditorForms\PaletteEditorForm.cs">
+    <Compile Include="UI\Forms\PaletteEditorForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="EditorForms\PaletteEditorForm.Designer.cs">
+    <Compile Include="UI\Forms\PaletteEditorForm.Designer.cs">
       <DependentUpon>PaletteEditorForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="EditorForms\PixelEditorForm.cs">
+    <Compile Include="UI\Forms\PixelEditorForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="EditorForms\PixelEditorForm.Designer.cs">
+    <Compile Include="UI\Forms\PixelEditorForm.Designer.cs">
       <DependentUpon>PixelEditorForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Core\PluginManager.cs" />
-    <Compile Include="EditorForms\ProjectTreeForm.cs">
+    <Compile Include="UI\Forms\ProjectTreeForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="EditorForms\ProjectTreeForm.Designer.cs">
+    <Compile Include="UI\Forms\ProjectTreeForm.Designer.cs">
       <DependentUpon>ProjectTreeForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Core\GraphicsCodec.cs" />
     <Compile Include="Core\GraphicsFormat.cs" />
-    <Compile Include="EditorForms\ArrangerViewerForm.cs">
+    <Compile Include="UI\Forms\ArrangerViewerForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="EditorForms\ArrangerViewerForm.Designer.cs">
+    <Compile Include="UI\Forms\ArrangerViewerForm.Designer.cs">
       <DependentUpon>ArrangerViewerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Core\Palette.cs" />
@@ -147,10 +154,10 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Core\RenderManager.cs" />
-    <Compile Include="Controls\SwatchControl.cs">
+    <Compile Include="UI\Controls\SwatchControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Controls\SwatchControl.Designer.cs">
+    <Compile Include="UI\Controls\SwatchControl.Designer.cs">
       <DependentUpon>SwatchControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Core\TileCache.cs" />
@@ -162,28 +169,28 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Controls\IntegerTextBox.resx">
+    <EmbeddedResource Include="UI\Controls\IntegerTextBox.resx">
       <DependentUpon>IntegerTextBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PopupForms\JumpToAddressForm.resx">
+    <EmbeddedResource Include="UI\PopupForms\JumpToAddressForm.resx">
       <DependentUpon>JumpToAddressForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PopupForms\NewPaletteForm.resx">
+    <EmbeddedResource Include="UI\PopupForms\NewPaletteForm.resx">
       <DependentUpon>NewPaletteForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PopupForms\ScatteredArrangerPropertiesForm.resx">
+    <EmbeddedResource Include="UI\PopupForms\ScatteredArrangerPropertiesForm.resx">
       <DependentUpon>ScatteredArrangerPropertiesForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="EditorForms\PaletteEditorForm.resx">
+    <EmbeddedResource Include="UI\Forms\PaletteEditorForm.resx">
       <DependentUpon>PaletteEditorForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="EditorForms\PixelEditorForm.resx">
+    <EmbeddedResource Include="UI\Forms\PixelEditorForm.resx">
       <DependentUpon>PixelEditorForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="EditorForms\ProjectTreeForm.resx">
+    <EmbeddedResource Include="UI\Forms\ProjectTreeForm.resx">
       <DependentUpon>ProjectTreeForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="EditorForms\ArrangerViewerForm.resx">
+    <EmbeddedResource Include="UI\Forms\ArrangerViewerForm.resx">
       <DependentUpon>ArrangerViewerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -191,7 +198,7 @@
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="Controls\SwatchControl.resx">
+    <EmbeddedResource Include="UI\Controls\SwatchControl.resx">
       <DependentUpon>SwatchControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TileShopForm.resx">

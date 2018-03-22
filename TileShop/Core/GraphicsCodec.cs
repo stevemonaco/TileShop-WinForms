@@ -9,7 +9,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
 
-namespace TileShop
+namespace TileShop.Core
 {
     /// <summary>
     /// GraphicsCodec provides a generalized method to encode/decode bitmap formats

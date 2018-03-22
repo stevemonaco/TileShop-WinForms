@@ -6,10 +6,9 @@ using System.Xml.Linq;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
-using System.Text;
-using System.Threading.Tasks;
+using TileShop.ExtensionMethods;
 
-namespace TileShop
+namespace TileShop.Core
 {
     /// <summary>
     /// Provides XML support for reading/writing Game Descriptor Files and loading the content into the ProjectExplorerControl
@@ -74,7 +73,7 @@ namespace TileShop
         /// <returns></returns>
         private bool AddFolderNode(XElement folderNode)
         {
-            ptf.AddFolderNode(GetNodeKey(folderNode));
+            ptf.AddFolderNode(folderNode.NodeKey);
 
             foreach (XElement node in folderNode.Elements())
             {
@@ -99,7 +98,7 @@ namespace TileShop
             DataFile df = new DataFile(name);
             df.Open(location);
 
-            ptf.AddDataFile(df, GetNodePath(fileNode));
+            ptf.AddDataFile(df, fileNode.NodePath());
             return true;
         }
 
@@ -122,7 +121,7 @@ namespace TileShop
             PaletteColorFormat format = Palette.StringToColorFormat(formatname);
 
             pal.LoadPalette(datafile, address, format, zeroindextransparent, entries);
-            ptf.AddPalette(pal, GetNodePath(paletteNode));
+            ptf.AddPalette(pal, paletteNode.NodePath());
 
             return true;
         }
@@ -151,7 +150,7 @@ namespace TileShop
                 throw new XmlException("Incorrect arranger layout type ('" + layoutName + "') for " + name);
 
             arr = Arranger.NewScatteredArranger(layout, elementsx, elementsy, width, height);
-            arr.Name = name;
+            arr.Rename(name);
 
             var xmlElements = elementList.Select(e => new
             {
@@ -189,37 +188,8 @@ namespace TileShop
                 arr.SetElement(el, xmlElement.posx, xmlElement.posy);
             }
 
-            ptf.AddArranger(arr, GetNodePath(arrangerNode));
+            ptf.AddArranger(arr, arrangerNode.NodePath());
             return true;
-        }
-
-        /// <summary>
-        /// Gets the project path for the specified node
-        /// </summary>
-        /// <param name="node"></param>
-        /// <returns></returns>
-        private string GetNodePath(XElement node)
-        {
-            string path = "";
-
-            XElement currentNode = node;
-            while (currentNode.Parent != null && currentNode.Parent.Name == "folder")
-            {
-                currentNode = currentNode.Parent;
-                path = Path.Combine(currentNode.Attribute("name").Value, path);
-            }
-
-            return path;
-        }
-
-        /// <summary>
-        /// Gets the project path key for the specified node
-        /// </summary>
-        /// <param name="node"></param>
-        /// <returns></returns>
-        private string GetNodeKey(XElement node)
-        {
-            return Path.Combine(GetNodePath(node), node.Attribute("name").Value);
         }
 
         /// <summary>

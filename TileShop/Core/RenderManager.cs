@@ -8,7 +8,7 @@ using System.Drawing.Imaging;
 using System.Windows.Forms;
 using System.IO;
 
-namespace TileShop
+namespace TileShop.Core
 {
     // RenderManager
     // Class that is responsible for rendering an Arranger into a bitmap

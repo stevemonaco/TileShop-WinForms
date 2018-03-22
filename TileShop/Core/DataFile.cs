@@ -5,18 +5,27 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace TileShop
+namespace TileShop.Core
 {
     /// <summary>
     /// DataFile manages access to user-modifiable files
     /// </summary>
-    public class DataFile
+    public class DataFile : IResource
     {
         public string Name { get; private set; }
         public string Location { get; private set; }
         public FileStream Stream { get; private set; }
 
         public DataFile(string name)
+        {
+            Name = name;
+        }
+
+        /// <summary>
+        /// Renames a DataFile to a new name
+        /// </summary>
+        /// <param name="name"></param>
+        public void Rename(string name)
         {
             Name = name;
         }

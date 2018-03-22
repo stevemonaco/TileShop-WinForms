@@ -7,13 +7,18 @@ using System.Threading.Tasks;
 
 namespace TileShop
 {
-    public abstract class ProjectTreeNode : TreeNode
+    public abstract class ResourceNode : TreeNode
     {
         public abstract void BuildContextMenu(ContextMenu Menu);
 
         public string GetNodeKey()
         {
             return this.FullPath + this.Name;
+        }
+
+        public string GetNodePath()
+        {
+            return this.FullPath;
         }
 
         /// <summary>
@@ -34,12 +39,10 @@ namespace TileShop
         private void MoveNodeToPath()
         {
             TreeView parentTree = this.TreeView;
-
-
         }*/
     }
 
-    public class FolderNode : ProjectTreeNode
+    public class FolderNode : ResourceNode
     {
         public FolderNode()
         {
@@ -67,6 +70,7 @@ namespace TileShop
                 if (dr == DialogResult.No)
                     return;
 
+                MessageBox.Show("Feature not implemented");
                 // TODO: Remove subitems
             }
             else
@@ -74,7 +78,7 @@ namespace TileShop
         }
     }
 
-    public class DataFileNode : ProjectTreeNode
+    public class DataFileNode : ResourceNode
     {
         public DataFileNode()
         {
@@ -101,7 +105,7 @@ namespace TileShop
         }
     }
 
-    public class PaletteNode : ProjectTreeNode
+    public class PaletteNode : ResourceNode
     {
         public PaletteNode()
         {
@@ -131,7 +135,7 @@ namespace TileShop
         }
     }
 
-    public class ArrangerNode : ProjectTreeNode
+    public class ArrangerNode : ResourceNode
     {
         public ArrangerNode()
         {

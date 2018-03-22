@@ -6,7 +6,7 @@ using System.Xml.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TileShop
+namespace TileShop.Core
 {
     /// <summary>
     /// Defines image assembly features
@@ -88,12 +88,12 @@ namespace TileShop
     /// <summary>
     /// GraphicsFormat describes properties relating to decoding/encoding a general graphics format
     /// </summary>
-    public class GraphicsFormat
+    public class GraphicsFormat : IResource
     {
         /// <summary>
         /// The name of the codec
         /// </summary>
-        public string Name;
+        public string Name { get; set; }
 
         /// <summary>
         /// Returns true if the codec requires fixed size elements or false if the codec operates on variable size elements
@@ -156,7 +156,6 @@ namespace TileShop
         /// Storage size of an element in bits
         /// </summary>
         /// <returns></returns>
-        //public int Size() { return (Width + RowStride) * Height * ColorDepth + ElementStride; }
         public int StorageSize(int width, int height) { return (width + RowStride) * height * ColorDepth + ElementStride; }
 
         public List<ImageProperty> ImagePropertyList { get; private set; }

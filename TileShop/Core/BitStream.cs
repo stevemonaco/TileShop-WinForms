@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace TileShop
+namespace TileShop.Core
 {
     /// <summary>
     /// Struct used to store a file address that does not start on a byte-aligned address
