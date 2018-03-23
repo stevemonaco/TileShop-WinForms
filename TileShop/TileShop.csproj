@@ -169,6 +169,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\ResourceNodeSorter.cs" />
     <EmbeddedResource Include="UI\Controls\IntegerTextBox.resx">
       <DependentUpon>IntegerTextBox.cs</DependentUpon>
     </EmbeddedResource>

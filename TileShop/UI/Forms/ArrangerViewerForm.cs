@@ -99,7 +99,8 @@ namespace TileShop
         #region EditorDockContent Implementation
         public override bool ReloadContent()
         {
-            DisplayArranger = ResourceManager.Instance.ReloadArranger(ContentSourceKey);
+            throw new NotImplementedException();
+            //DisplayArranger = ResourceManager.Instance.ReloadArranger(ContentSourceKey);
             EditArranger = null;
             DisplayElements = DisplayArranger.ArrangerElementSize;
             ElementSize = DisplayArranger.ElementPixelSize;
@@ -124,7 +125,8 @@ namespace TileShop
 
             MessageBox.Show("SaveContent");
 
-            ResourceManager.Instance.SaveArranger(ContentSourceKey);
+            throw new NotImplementedException();
+            //ResourceManager.Instance.SaveArranger(ContentSourceKey);
 
             ContainsModifiedContent = false;
             return true;

@@ -23,6 +23,7 @@ namespace TileShop
             tsf = tileShopForm ?? throw new ArgumentNullException();
 
             InitializeComponent();
+            ProjectTreeView.TreeViewNodeSorter = new ResourceNodeSorter();
         }
 
         /// <summary>
