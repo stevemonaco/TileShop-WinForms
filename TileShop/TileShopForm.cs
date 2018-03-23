@@ -39,7 +39,7 @@ namespace TileShop
             LoadCodecs(CodecDirectoryPath);
             LoadPalettes(PaletteDirectoryPath);
             LoadCursors();
-            LoadPlugins();
+            //LoadPlugins();
 
             this.Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
 
@@ -185,13 +185,13 @@ namespace TileShop
                 }
 
                 foreach (DataFile df in dataFiles)
-                    ptf.AddDataFile(df, pluginName);
+                    ResourceManager.Instance.AddResource(pluginName, df);
 
                 foreach (Palette pal in palettes)
-                    ptf.AddPalette(pal.Clone(), pluginName);
+                    ResourceManager.Instance.AddResource(pluginName, pal.Clone());
 
                 foreach (Arranger arr in arrangers)
-                    ptf.AddArranger(arr.Clone(), pluginName);
+                    ResourceManager.Instance.AddResource(pluginName, arr.Clone());
             }
         }
 
@@ -220,7 +220,8 @@ namespace TileShop
 
             ProjectFileName = "D:\\Projects\\ff2newxml.xml";
             GameDescriptorSerializer gds = new GameDescriptorSerializer();
-            gds.LoadProject(ptf.ProjectNodes, ProjectFileName);
+            gds.LoadProject(ProjectFileName);
+            ptf.ReloadTree();
         }
 
         private void SaveProjectToolStripMenuItem_Click(object sender, EventArgs e)
@@ -293,7 +294,7 @@ namespace TileShop
             {
                 Palette pal = new Palette(npf.PaletteName);
                 pal.LoadPalette(npf.FileName, new FileBitAddress(npf.FileOffset, 0), npf.ColorFormat, true, npf.Entries); // TODO: Refactor for new FileBitAddress
-                ptf.AddPalette(pal, "");
+                ResourceManager.Instance.AddResource(pal.Name, pal); ;
             }
         }
 
@@ -314,7 +315,8 @@ namespace TileShop
 
                 Arranger arr = Arranger.NewScatteredArranger(sapf.ArrangerLayout, ArrSize.Width, ArrSize.Height, ElementSize.Width, ElementSize.Height);
                 arr.Rename(sapf.ArrangerName);
-                ptf.AddArranger(arr, "", true);
+                ResourceManager.Instance.AddResource(arr.Name, arr);
+                //ptf.AddArranger(arr, "", true);
             }
         }
 
@@ -435,7 +437,7 @@ namespace TileShop
 
                     // Load new XML project file
                     GameDescriptorSerializer gds = new GameDescriptorSerializer();
-                    gds.LoadProject(ptf.ProjectNodes, ofd.FileName);
+                    gds.LoadProject(ofd.FileName);
                     ProjectFileName = ofd.FileName;
                 }
                 else

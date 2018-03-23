@@ -25,7 +25,7 @@ namespace TileShop.Core
     /// Local colors are internally ARGB32
     /// Foreign colors are the same as the target system
     /// </summary>
-    public class Palette : IResource
+    public class Palette : IProjectResource
     {
         /// <summary>
         /// Identifying name of the palette
@@ -275,7 +275,7 @@ namespace TileShop.Core
             localPalette = new UInt32[numEntries];
             foreignPalette = new UInt32[numEntries];
 
-            FileStream fs = ResourceManager.Instance.GetDataFile(dataFileKey).Stream;
+            FileStream fs = ((DataFile)ResourceManager.Instance.GetResource(dataFileKey)).Stream;
 
             int readSize;
 
@@ -725,7 +725,7 @@ namespace TileShop.Core
                         throw new NotSupportedException("An unsupported palette format was attempted to be read");
                 }
 
-                FileStream fs = ResourceManager.Instance.GetDataFile(DataFileKey).Stream;
+                FileStream fs = ((DataFile)ResourceManager.Instance.GetResource(DataFileKey)).Stream;
                 BinaryWriter bw = new BinaryWriter(fs);
 
                 fs.Seek(FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Recode this for bitwise writing

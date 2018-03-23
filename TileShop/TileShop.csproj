@@ -71,6 +71,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\ResourceEventArgs.cs" />
     <Compile Include="UI\Controls\CheckedDropDownButton.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -90,7 +91,6 @@
     <Compile Include="Core\FileTypeLoader.cs" />
     <Compile Include="Core\GameDescriptorSerializer.cs" />
     <Compile Include="UI\ResourceNode.cs" />
-    <Compile Include="ExtensionMethods\TreeNodeCollectionExtensions.cs" />
     <Compile Include="ExtensionMethods\TreeViewExtensions.cs" />
     <Compile Include="ExtensionMethods\XElementExtensions.cs" />
     <Compile Include="Plugins\IFileParserContract.cs" />

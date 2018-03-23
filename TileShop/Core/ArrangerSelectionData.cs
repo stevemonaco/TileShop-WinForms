@@ -117,7 +117,7 @@ namespace TileShop.Core
             if (!HasSelection)
                 return false;
 
-            Arranger arr = ResourceManager.Instance.GetArranger(ArrangerKey);
+            Arranger arr = ResourceManager.Instance.GetResource(ArrangerKey) as Arranger;
 
             ElementList = new ArrangerElement[SelectionSize.Width, SelectionSize.Height];
             for (int ysrc = SelectedElements.Y, ydest = 0; ydest < SelectionSize.Height; ydest++, ysrc++)
@@ -180,7 +180,7 @@ namespace TileShop.Core
         public void EndSelection()
         {
             InSelection = false;
-            Arranger arr = ResourceManager.Instance.GetArranger(ArrangerKey);
+            Arranger arr = ResourceManager.Instance.GetResource(ArrangerKey) as Arranger;
             Rectangle testBounds = new Rectangle(new Point(0, 0), arr.ArrangerElementSize);
 
             if (!SelectedElements.IntersectsWith(testBounds)) // No intersection means no selection
@@ -218,7 +218,7 @@ namespace TileShop.Core
 
             SelectedClientRect = new Rectangle(unzoomedfull.X * Zoom, unzoomedfull.Y * Zoom, unzoomedfull.Width * Zoom, unzoomedfull.Height * Zoom);
 
-            Arranger arr = ResourceManager.Instance.GetArranger(ArrangerKey);
+            Arranger arr = ResourceManager.Instance.GetResource(ArrangerKey) as Arranger;
 
             SelectedElements = new Rectangle(unzoomedfull.X / arr.ElementPixelSize.Width, unzoomedfull.Y / arr.ElementPixelSize.Height,
                 unzoomedfull.Width / arr.ElementPixelSize.Width, unzoomedfull.Height / arr.ElementPixelSize.Height);
@@ -233,7 +233,7 @@ namespace TileShop.Core
         /// <returns></returns>
         private Rectangle GetExpandedSelectionPixelRect(Rectangle partialRectangle)
         {
-            Arranger arr = ResourceManager.Instance.GetArranger(ArrangerKey);
+            Arranger arr = ResourceManager.Instance.GetResource(ArrangerKey) as Arranger;
 
             int x1 = partialRectangle.Left;
             int x2 = partialRectangle.Right;

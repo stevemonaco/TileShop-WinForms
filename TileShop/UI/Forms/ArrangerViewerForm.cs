@@ -64,7 +64,7 @@ namespace TileShop
 
             // Setup arranger variables
             ContentSourceKey = ArrangerKey;
-            DisplayArranger = ResourceManager.Instance.GetArranger(ArrangerKey);
+            DisplayArranger = ResourceManager.Instance.GetResource(ArrangerKey) as Arranger;
             ReloadArranger();
             selectionData = new ArrangerSelectionData(ContentSourceKey);
             selectionData.Zoom = 1;

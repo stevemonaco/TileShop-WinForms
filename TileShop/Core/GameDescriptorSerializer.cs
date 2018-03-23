@@ -5,7 +5,6 @@ using System.Xml;
 using System.Xml.Linq;
 using System.IO;
 using System.Reflection;
-using System.Windows.Forms;
 using TileShop.ExtensionMethods;
 
 namespace TileShop.Core
@@ -15,8 +14,6 @@ namespace TileShop.Core
     /// </summary>
     public class GameDescriptorSerializer
     {
-        private TreeNodeCollection ProjectNodes = null;
-
         /// <summary>
         /// Base directory for all file locations on disk
         /// </summary>
@@ -27,15 +24,12 @@ namespace TileShop.Core
         /// Sets up the nodes in the project tree
         /// The project should be previously cleared before calling
         /// </summary>
-        /// <param name="pec">ProjectExplorerControl from which to load data into</param>
-        /// <param name="XmlFileName"></param>
+        /// <param name="XmlFileName">Path to the project XML file</param>
         /// <returns></returns>
-        public bool LoadProject(TreeNodeCollection nodeCollection, string XmlFileName)
+        public bool LoadProject(string XmlFileName)
         {
-            if (nodeCollection == null || String.IsNullOrEmpty(XmlFileName))
+            if (String.IsNullOrEmpty(XmlFileName))
                 throw new ArgumentException();
-
-            ProjectNodes = nodeCollection;
 
             XElement doc = XElement.Load(XmlFileName);
             XElement projectNode = doc.Element("project");
@@ -73,7 +67,7 @@ namespace TileShop.Core
         /// <returns></returns>
         private bool AddFolderNode(XElement folderNode)
         {
-            ptf.AddFolderNode(folderNode.NodeKey);
+            //ptf.AddFolderNode(folderNode.NodeKey);
 
             foreach (XElement node in folderNode.Elements())
             {
@@ -98,7 +92,8 @@ namespace TileShop.Core
             DataFile df = new DataFile(name);
             df.Open(location);
 
-            ptf.AddDataFile(df, fileNode.NodePath());
+            ResourceManager.Instance.AddResource(fileNode.NodeKey(), df);
+            //ptf.AddDataFile(df, fileNode.NodePath());
             return true;
         }
 
@@ -121,7 +116,9 @@ namespace TileShop.Core
             PaletteColorFormat format = Palette.StringToColorFormat(formatname);
 
             pal.LoadPalette(datafile, address, format, zeroindextransparent, entries);
-            ptf.AddPalette(pal, paletteNode.NodePath());
+
+            ResourceManager.Instance.AddResource(paletteNode.NodeKey(), pal);
+            //ptf.AddPalette(pal, paletteNode.NodePath());
 
             return true;
         }
@@ -188,21 +185,18 @@ namespace TileShop.Core
                 arr.SetElement(el, xmlElement.posx, xmlElement.posy);
             }
 
-            ptf.AddArranger(arr, arrangerNode.NodePath());
+            ResourceManager.Instance.AddResource(arrangerNode.NodeKey(), arr);
+            //ptf.AddArranger(arr, arrangerNode.NodePath());
             return true;
         }
 
         /// <summary>
         /// Iterates over tree nodes and saves project settings to XML
         /// </summary>
-        /// <param name="pec">ProjectExplorerControl from which to save the project tree data</param>
         /// <param name="XmlFileName"></param>
         /// <returns></returns>
-        public bool SaveProject(TreeNodeCollection tnc, string XmlFileName)
+        public bool SaveProject(string XmlFileName)
         {
-            if (tnc == null)
-                throw new ArgumentNullException();
-
             if (String.IsNullOrEmpty(XmlFileName))
                 throw new ArgumentException();
 
@@ -212,7 +206,7 @@ namespace TileShop.Core
 
             xmlRoot.Add(settingsRoot);
 
-            foreach (TreeNode tn in tnc)
+            /*foreach (TreeNode tn in tnc)
             {
                 if (tn is FolderNode folderNode)
                     projectRoot.Add(SaveFolderNode(folderNode));
@@ -222,7 +216,7 @@ namespace TileShop.Core
                     projectRoot.Add(SavePaletteNode(paletteNode));
                 else if (tn is ArrangerNode arrangerNode)
                     projectRoot.Add(SaveArrangerNode(arrangerNode));
-            }
+            }*/
 
             xmlRoot.Add(projectRoot);
 
@@ -236,7 +230,7 @@ namespace TileShop.Core
             XElement xe = new XElement("folder");
             xe.SetAttributeValue("name", fn.Name);
 
-            foreach (TreeNode tn in fn.Nodes)
+            /*foreach (TreeNode tn in fn.Nodes)
             {
                 if (tn is FolderNode folderNode)
                     xe.Add(SaveFolderNode(folderNode));
@@ -246,14 +240,14 @@ namespace TileShop.Core
                     SavePaletteNode(paletteNode);
                 else if (tn is ArrangerNode arrangerNode)
                     SaveArrangerNode(arrangerNode);
-            }
+            }*/
 
             return xe;
         }
 
         public XElement SaveDataFileNode(DataFileNode dfn)
         {
-            DataFile df = ResourceManager.Instance.GetDataFile(dfn.GetNodeKey());
+            DataFile df = ResourceManager.Instance.GetResource(dfn.GetNodeKey()) as DataFile;
 
             XElement xe = new XElement("datafile");
             xe.SetAttributeValue("name", df.Name);
@@ -264,7 +258,7 @@ namespace TileShop.Core
 
         public XElement SavePaletteNode(PaletteNode pn)
         {
-            Palette pal = ResourceManager.Instance.GetPalette(pn.GetNodeKey());
+            Palette pal = ResourceManager.Instance.GetResource(pn.GetNodeKey()) as Palette;
 
             XElement xe = new XElement("palette");
 
@@ -282,7 +276,7 @@ namespace TileShop.Core
 
         public XElement SaveArrangerNode(ArrangerNode an)
         {
-            Arranger arr = ResourceManager.Instance.GetArranger(an.GetNodeKey());
+            Arranger arr = ResourceManager.Instance.GetResource(an.GetNodeKey()) as Arranger;
             XElement xe = new XElement("arranger");
 
             xe.SetAttributeValue("name", arr.Name);

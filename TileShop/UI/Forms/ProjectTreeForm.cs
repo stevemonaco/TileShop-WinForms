@@ -50,7 +50,7 @@ namespace TileShop
             };
 
             string fileKey = Path.Combine(NodePath, df.Name);
-            if (!ResourceManager.Instance.AddDataFile(df, fileKey))
+            if (!ResourceManager.Instance.AddResource(fileKey, df))
                 return false;
 
             // TODO: Refactor
@@ -145,38 +145,13 @@ namespace TileShop
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="ArrangerName"></param>
-        /// <param name="NodePath"></param>
-        /// <param name="NewArrangerName"></param>
-        /// <returns></returns>
-        public bool RenameArranger(string ArrangerName, string NodePath, string NewArrangerName)
-        {
-            TreeNode tn = FindNode(ArrangerName, NodePath);
-
-            if (tn == null) // Not found
-                return false;
-
-            if (!(tn is ArrangerNode))
-                throw new InvalidOperationException("Attempted to RenameArranger on a TreeView node that is not an ArrangerNode");
-
-            if (!ResourceManager.Instance.RenameArranger(ArrangerName, NewArrangerName))
-                return false;
-
-            tn.Text = NewArrangerName;
-
-            return true;
-        }
-
-        /// <summary>
         /// Adds an Arranger to the TreeView and to FileManager
         /// </summary>
         /// <param name="arr">Arranger to add</param>
         /// <param name="NodePath">Folder node path into the TreeView</param>
         /// <param name="Show">Optionally shows the arranger immediately</param>
         /// <returns></returns>
-        public bool AddArranger(Arranger arr, string NodePath, bool Show = false)
+        /*public bool AddArranger(Arranger arr, string NodePath, bool Show = false)
         {
             if (arr == null || NodePath == null)
                 throw new ArgumentNullException();
@@ -211,7 +186,7 @@ namespace TileShop
                 return ShowScatteredArranger(arrangerKey);
 
             return true;
-        }
+        }*/
 
         /// <summary>
         /// Removes an Arranger from the TreeView
@@ -238,7 +213,7 @@ namespace TileShop
         /// <param name="pal">Palette to be added</param>
         /// <param name="NodePath">Folder node path into the TreeView</param>
         /// <returns></returns>
-        public bool AddPalette(Palette pal, string NodePath)
+        /*public bool AddPalette(Palette pal, string NodePath)
         {
             PaletteNode pn = new PaletteNode();
             pn.Text = pal.Name;
@@ -256,7 +231,7 @@ namespace TileShop
             ResourceManager.Instance.AddPalette(pal, key);
 
             return true;
-        }
+        }*/
 
         /// <summary>
         /// Removes a Palette from the TreeView
@@ -345,7 +320,7 @@ namespace TileShop
         /// <returns></returns>
         public bool ShowPaletteEditor(string PaletteKey)
         {
-            if (!ResourceManager.Instance.HasPalette(PaletteKey))
+            if (!ResourceManager.Instance.HasResource(PaletteKey))
                 return false;
 
             List<EditorDockContent> activeEditors = tsf.GetActiveEditors();
@@ -372,7 +347,7 @@ namespace TileShop
         public bool CloseProject()
         {
             ProjectTreeView.Nodes.Clear();
-            ResourceManager.Instance.CloseProject();
+            ResourceManager.Instance.ClearResources();
 
             return true;
         }
@@ -380,7 +355,48 @@ namespace TileShop
         public bool LoadProject(string XmlFileName)
         {
             GameDescriptorSerializer gds = new GameDescriptorSerializer();
-            return gds.LoadProject(ProjectTreeView.Nodes, XmlFileName);
+            return gds.LoadProject(XmlFileName);
+        }
+
+         
+        public bool ReloadTree()
+        {
+            ProjectTreeView.Nodes.Clear();
+            Dictionary<string, IProjectResource> resources = ResourceManager.Instance.GetResourceMap();
+
+            foreach(KeyValuePair<string, IProjectResource> resource in resources)
+            {
+                AddResourceAsNode(resource.Key, resource.Value);
+            }
+
+            return true;
+        }
+
+        private bool AddResourceAsNode(string key, IProjectResource Resource)
+        {
+            ResourceNode rn = null;
+            if (Resource is DataFile df)
+                rn = new DataFileNode(df);
+            else if (Resource is Palette pal)
+                rn = new PaletteNode(pal);
+            else if (Resource is Arranger arr)
+                rn = new ArrangerNode(arr);
+
+            string keyParent;
+            int index = key.LastIndexOf(Path.DirectorySeparatorChar);
+            if (index == -1)
+                keyParent = "";
+            else
+                keyParent = key.Substring(0, index);
+
+            ResourceNode parentNode = FindOrAddParentNode(keyParent);
+
+            if (parentNode == null) // Add to root
+                ProjectTreeView.Nodes.Add(rn);
+            else
+                parentNode.Nodes.Add(rn);
+
+            return true;
         }
 
         /// <summary>
@@ -416,7 +432,7 @@ namespace TileShop
                 }
                 else if (tn is PaletteNode pn)
                 {
-                    Palette pal = ResourceManager.Instance.GetPersistentPalette(pn.Text);
+                    Palette pal = ResourceManager.Instance.GetResource(pn.Text) as Palette;
                     var xmlpal = new XElement("palette");
                     xmlpal.SetAttributeValue("name", pal.Name);
                     xmlpal.SetAttributeValue("folder", pn.GetNodePath());
@@ -430,7 +446,7 @@ namespace TileShop
                 }
                 else if (tn is ArrangerNode an)
                 {
-                    Arranger arr = ResourceManager.Instance.GetPersistentArranger(an.Text);
+                    Arranger arr = ResourceManager.Instance.GetResource(an.Text) as Arranger;
                     var xmlarr = new XElement("arranger");
                     xmlarr.SetAttributeValue("name", arr.Name);
                     xmlarr.SetAttributeValue("folder", an.GetNodePath());
@@ -568,7 +584,6 @@ namespace TileShop
             if (e.Node is DataFileNode)
             {
                 ShowSequentialArranger(e.Node.FullPath);
-
             }
             else if (e.Node is PaletteNode)
             {
@@ -591,6 +606,44 @@ namespace TileShop
         }
 
         /// <summary>
+        /// Finds or creates folder nodes leading to the specifed NodePath
+        /// </summary>
+        /// <param name="NodePath">Fully qualified path</param>
+        /// <returns>A folder node at the specified path or null if </returns>
+        public ResourceNode FindOrAddParentNode(string NodePath)
+        {
+            if (NodePath == null)
+                throw new ArgumentNullException();
+
+            string[] nodepaths = NodePath.Split(new char[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (nodepaths.Length == 0) // No separators implies a root level path was specified
+                return null;
+
+            string path = "";
+            TreeNodeCollection tnc = ProjectTreeView.Nodes;
+            ResourceNode node = null;
+
+            for(int i = 0; i < nodepaths.Length; i++)
+            {
+                path = Path.Combine(path, nodepaths[i]);
+                TreeNode[] nodeList = tnc.Find(path, false);
+
+                if (nodeList.Length == 0) // No entry, must create a new FolderNode
+                {
+                    node = new FolderNode(nodepaths[i]);
+                    tnc.Add(node);
+                }
+                else
+                    node = nodeList[0] as ResourceNode;
+
+                tnc = node.Nodes;
+            }
+
+            return node;
+        }
+
+        /// <summary>
         /// Adds a folder node (and any necessary parent folder nodes) to the TreeView
         /// </summary>
         /// <param name="FolderNodePath">Full path of the folder node to add</param>
@@ -601,7 +654,7 @@ namespace TileShop
                 throw new ArgumentNullException();
 
             if (FolderNodePath == "")
-                return null;
+                throw new ArgumentNullException();
 
             string[] nodepaths = FolderNodePath.Split(new char[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
 

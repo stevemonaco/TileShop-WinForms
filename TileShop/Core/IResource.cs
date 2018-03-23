@@ -1,17 +1,17 @@
 ﻿namespace TileShop.Core
 {
     /// <summary>
-    /// Interface specifying how TileShop Resource objects must be implemented
+    /// Interface specifying how TileShop Project Resource objects must be implemented
     /// </summary>
-    public interface IResource
+    public interface IProjectResource
     {
         /// <summary>
-        /// Identifying name of the IResource
+        /// Identifying name of the resource
         /// </summary>
         string Name { get; }
 
         /// <summary>
-        /// Rename an IResource with a new name
+        /// Rename a resource with a new name
         /// </summary>
         /// <param name="name"></param>
         void Rename(string name);

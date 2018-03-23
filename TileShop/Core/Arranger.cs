@@ -27,7 +27,7 @@ namespace TileShop.Core
     /// <summary>
     /// Arranger for graphical screen elements
     /// </summary>
-    public class Arranger : IResource
+    public class Arranger : IProjectResource
     {
         // General Arranger variables
 
@@ -162,7 +162,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public static Arranger NewSequentialArranger(int arrangerWidth, int arrangerHeight, string dataFileKey, GraphicsFormat format)
         {
-            DataFile df = ResourceManager.Instance.GetDataFile(dataFileKey);
+            DataFile df = ResourceManager.Instance.GetResource(dataFileKey) as DataFile;
 
             Arranger arr = new Arranger()
             {

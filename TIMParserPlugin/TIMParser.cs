@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TileShop;
-using TileShop.Plugins;
 using System.ComponentModel.Composition;
 using System.Windows.Forms;
 using System.IO;
+using TileShop.Core;
+using TileShop.Plugins;
 
 namespace TIMParserPlugin
 {
@@ -190,7 +187,7 @@ namespace TIMParserPlugin
                 palettes.Add(pal);
 
                 Arranger arr = Arranger.NewScatteredArranger(ArrangerLayout.LinearArranger, 1, 1, td.ImageWidth, td.ImageHeight);
-                arr.Name = String.Format("{0}.{1}", BaseName, i);
+                arr.Rename(String.Format("{0}.{1}", BaseName, i));
 
                 ArrangerElement el = arr.GetElement(0, 0);
 

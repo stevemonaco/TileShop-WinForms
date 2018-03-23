@@ -10,7 +10,7 @@ namespace TileShop.Core
     /// <summary>
     /// DataFile manages access to user-modifiable files
     /// </summary>
-    public class DataFile : IResource
+    public class DataFile : IProjectResource
     {
         public string Name { get; private set; }
         public string Location { get; private set; }

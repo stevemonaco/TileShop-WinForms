@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Forms;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Windows.Forms;
+using TileShop.Core;
 
 namespace TileShop
 {
     public abstract class ResourceNode : TreeNode
     {
         public abstract void BuildContextMenu(ContextMenu Menu);
+        protected bool AcceptsChildren = false;
 
         public string GetNodeKey()
         {
@@ -48,6 +45,17 @@ namespace TileShop
         {
             ImageIndex = 0;
             SelectedImageIndex = 0;
+            AcceptsChildren = true;
+        }
+
+        public FolderNode(string FolderName)
+        {
+            ImageIndex = 0;
+            SelectedImageIndex = 0;
+            AcceptsChildren = true;
+            Text = FolderName;
+            Name = FolderName;
+            Tag = FolderName;
         }
 
         public override void BuildContextMenu(ContextMenu Menu)
@@ -86,6 +94,15 @@ namespace TileShop
             SelectedImageIndex = 2;
         }
 
+        public DataFileNode(DataFile df)
+        {
+            ImageIndex = 2;
+            SelectedImageIndex = 2;
+            Text = df.Name;
+            Name = df.Name;
+            Tag = df.Name;
+        }
+
         public override void BuildContextMenu(ContextMenu Menu)
         {
             Menu.MenuItems.Clear();
@@ -111,6 +128,15 @@ namespace TileShop
         {
             ImageIndex = 4;
             SelectedImageIndex = 4;
+        }
+
+        public PaletteNode(Palette pal)
+        {
+            ImageIndex = 4;
+            SelectedImageIndex = 4;
+            Text = pal.Name;
+            Name = pal.Name;
+            Tag = pal.Name;
         }
 
         public override void BuildContextMenu(ContextMenu Menu)
@@ -141,6 +167,15 @@ namespace TileShop
         {
             ImageIndex = 3;
             SelectedImageIndex = 3;
+        }
+
+        public ArrangerNode(Arranger arr)
+        {
+            ImageIndex = 3;
+            SelectedImageIndex = 3;
+            Text = arr.Name;
+            Name = arr.Name;
+            Tag = arr.Name;
         }
 
         public override void BuildContextMenu(ContextMenu Menu)

@@ -88,7 +88,7 @@ namespace TileShop.Core
     /// <summary>
     /// GraphicsFormat describes properties relating to decoding/encoding a general graphics format
     /// </summary>
-    public class GraphicsFormat : IResource
+    public class GraphicsFormat : IProjectResource
     {
         /// <summary>
         /// The name of the codec
@@ -277,6 +277,11 @@ namespace TileShop.Core
 
             for (int i = 0; i < ImagePropertyList.Count; i++)
                 ImagePropertyList[i].ExtendRowPattern(Width);
+        }
+
+        public void Rename(string name)
+        {
+            name = Name;
         }
     }
 }
