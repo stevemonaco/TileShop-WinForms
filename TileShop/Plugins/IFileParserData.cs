@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TileShop
+namespace TileShop.Plugins
 {
     /// <summary>
     /// Contains data that the host uses to identify the plugin

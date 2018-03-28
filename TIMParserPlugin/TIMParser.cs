@@ -18,9 +18,7 @@ namespace TIMParserPlugin
     [ExportMetadata("Description", "Parses file(s) for TIMs and automatically creates the appropriate arrangers and palettes")]
     public class TIMParser : IFileParserContract
     {
-        List<Arranger> arrangers = new List<Arranger>();
-        List<Palette> palettes = new List<Palette>();
-        List<DataFile> dataFiles = new List<DataFile>();
+        List<IProjectResource> resources = new List<IProjectResource>();
 
         const uint TimTag = 0x00000010;
 
@@ -42,9 +40,7 @@ namespace TIMParserPlugin
                 return false;
 
             // Clear data for multiple runs
-            arrangers.Clear();
-            palettes.Clear();
-            dataFiles.Clear();
+            resources.Clear();
 
             foreach (string fname in ofd.FileNames)
             {
@@ -53,7 +49,7 @@ namespace TIMParserPlugin
                 {
                     DataFile df = new DataFile(Path.GetFileName(fname));
                     df.Open(fname); // TODO: Refactor not opening these files plugin-side; do it TileShop-side instead
-                    dataFiles.Add(df);
+                    resources.Add(df);
                 }
             }
 
@@ -157,19 +153,9 @@ namespace TIMParserPlugin
             return TimCount;
         }
 
-        public List<Arranger> RetrieveArrangers()
+        public List<IProjectResource> RetrieveResources()
         {
-            return arrangers;
-        }
-
-        public List<Palette> RetrievePalettes()
-        {
-            return palettes;
-        }
-
-        public List<DataFile> RetrieveDataFiles()
-        {
-            return dataFiles;
+            return resources;
         }
 
         void Arrange(TimData td, string TimFileName, string BaseName)
@@ -184,7 +170,7 @@ namespace TIMParserPlugin
                 string palName = String.Format("{0}.CLUT.{1}", BaseName, i);
                 Palette pal = new Palette(palName);
                 pal.LoadPaletteFromFileName(TimFileName, new FileBitAddress(td.ClutOffsets[i], 0), PaletteColorFormat.BGR15, false, td.ClutColors);
-                palettes.Add(pal);
+                resources.Add(pal);
 
                 Arranger arr = Arranger.NewScatteredArranger(ArrangerLayout.LinearArranger, 1, 1, td.ImageWidth, td.ImageHeight);
                 arr.Rename(String.Format("{0}.{1}", BaseName, i));
@@ -222,7 +208,7 @@ namespace TIMParserPlugin
 
                 el.AllocateBuffers();
                 arr.SetElement(el, 0, 0);
-                arrangers.Add(arr);
+                resources.Add(arr);
             }
         }
 
