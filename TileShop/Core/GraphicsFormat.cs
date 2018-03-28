@@ -88,7 +88,7 @@ namespace TileShop.Core
     /// <summary>
     /// GraphicsFormat describes properties relating to decoding/encoding a general graphics format
     /// </summary>
-    public class GraphicsFormat : IProjectResource
+    public class GraphicsFormat
     {
         /// <summary>
         /// The name of the codec

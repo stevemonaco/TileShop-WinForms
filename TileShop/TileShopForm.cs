@@ -39,12 +39,13 @@ namespace TileShop
             LoadCodecs(CodecDirectoryPath);
             LoadPalettes(PaletteDirectoryPath);
             LoadCursors();
-            //LoadPlugins();
+            LoadPlugins();
 
             this.Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
 
             ptf = new ProjectTreeForm(this);
             pef = new PixelEditorForm();
+            ResourceManager.Instance.ResourceAdded += ptf.OnResourceAdded;
 
             pef.Show(DockPanel, DockState.DockRight);
             ptf.Show(DockPanel, DockState.DockLeft); // Showing this last makes the ProjectExplorerControl focused upon launch
@@ -156,6 +157,8 @@ namespace TileShop
             }
         }
 
+        #region UI Events
+
         private void RunFileParserPlugin_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem viewItem = (ToolStripMenuItem)sender;
@@ -169,29 +172,21 @@ namespace TileShop
                 if (!plugin.Value.DisplayPluginInterface()) // If no arrangers/palettes to add
                     break;
 
-                List<Arranger> arrangers = plugin.Value.RetrieveArrangers();
-                List<Palette> palettes = plugin.Value.RetrievePalettes();
-                List<DataFile> dataFiles = plugin.Value.RetrieveDataFiles();
+                List<IProjectResource> resources = plugin.Value.RetrieveResources();
 
-                if (arrangers == null)
+                if (resources == null)
                 {
-                    MessageBox.Show("Plugin returned null for RetrieveArrangers");
-                    return;
-                }
-                if (palettes == null)
-                {
-                    MessageBox.Show("Plugin returned null for RetrievePalettes");
+                    MessageBox.Show($"Plugin '{pluginName}' returned no resources to add");
                     return;
                 }
 
-                foreach (DataFile df in dataFiles)
-                    ResourceManager.Instance.AddResource(pluginName, df);
-
-                foreach (Palette pal in palettes)
-                    ResourceManager.Instance.AddResource(pluginName, pal.Clone());
-
-                foreach (Arranger arr in arrangers)
-                    ResourceManager.Instance.AddResource(pluginName, arr.Clone());
+                foreach (IProjectResource res in resources)
+                {
+                    if (res is DataFile df)
+                        ResourceManager.Instance.AddResource(pluginName, df);
+                    else
+                        ResourceManager.Instance.AddResource(pluginName, res.Clone());
+                }
             }
         }
 
@@ -221,7 +216,6 @@ namespace TileShop
             ProjectFileName = "D:\\Projects\\ff2newxml.xml";
             GameDescriptorSerializer gds = new GameDescriptorSerializer();
             gds.LoadProject(ProjectFileName);
-            ptf.ReloadTree();
         }
 
         private void SaveProjectToolStripMenuItem_Click(object sender, EventArgs e)
@@ -316,92 +310,6 @@ namespace TileShop
                 Arranger arr = Arranger.NewScatteredArranger(sapf.ArrangerLayout, ArrSize.Width, ArrSize.Height, ElementSize.Width, ElementSize.Height);
                 arr.Rename(sapf.ArrangerName);
                 ResourceManager.Instance.AddResource(arr.Name, arr);
-                //ptf.AddArranger(arr, "", true);
-            }
-        }
-
-        public void EditArrangerChanged(object sender, EventArgs e)
-        {
-            if (pef.IsClosed)
-            {
-                pef = new PixelEditorForm();
-                pef.Show(DockPanel, DockState.DockRight);
-            }
-
-            if (!pef.Visible)
-                pef.Show();
-
-            pef.ContentModified += PixelContentModified;
-
-            ArrangerViewerForm avf = (ArrangerViewerForm)sender;
-            pef.SetEditArranger(avf.EditArranger);
-        }
-
-        /// <summary>
-        /// Invoked when a PixelEditorForm has made changes that must be propagated to sibling subeditors
-        /// Only ArrangerViewerForms need to be refreshed
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void PixelContentModified(object sender, EventArgs e)
-        {
-            foreach (DockPane dp in DockPanel.Panes)
-            {
-                foreach (DockContent dc in dp.Contents)
-                {
-                    if (dc is ArrangerViewerForm avf)
-                        avf.RefreshContent();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Invoked when a PaletteEditorForm has made changes that must be propagated to sibling subeditors
-        /// Each subeditor type must be refreshed
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void PaletteContentModified(object sender, EventArgs e)
-        {
-            // Minor bug: Can sometimes reload arranger of some DockContents twice
-            // Example: A floating GraphicsViewerChild window (with multiple docks?)
-            foreach (DockPane dp in DockPanel.Panes)
-            {
-                foreach (DockContent dc in dp.Contents)
-                {
-                    if (dc is EditorDockContent && dc != sender)
-                        ((EditorDockContent)dc).RefreshContent();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Invoked when a GraphicsViewerForm has made changes that must be propagated to sibling subeditors
-        /// </summary>
-        /// <param name="sender">Editor which invoked the event</param>
-        /// <param name="e"></param>
-        public void ViewerContentModified(object sender, EventArgs e)
-        {
-            // Currently no need for the GraphicsViewerForm to make changes to propagate
-            return;
-        }
-
-        /// <summary>
-        /// Called upon an editor having its content saved
-        /// </summary>
-        /// <param name="sender">Editor which invoked the event</param>
-        /// <param name="e"></param>
-        public void ContentSaved(object sender, EventArgs e)
-        {
-            // Minor bug: Can sometimes refresh some DockContents twice
-            // Example: A floating GraphicsViewerChild window (with multiple docks?)
-            foreach (DockPane dp in DockPanel.Panes)
-            {
-                foreach (DockContent dc in dp.Contents)
-                {
-                    if (dc is EditorDockContent && dc != sender)
-                        ((EditorDockContent)dc).ReloadContent();
-                }
             }
         }
 
@@ -491,6 +399,94 @@ namespace TileShop
             ptf.CloseProject();
             LoadPalettes(PaletteDirectoryPath);
         }
+        #endregion
+
+        #region EditorDockContent Events
+        public void EditArrangerChanged(object sender, EventArgs e)
+        {
+            if (pef.IsClosed)
+            {
+                pef = new PixelEditorForm();
+                pef.Show(DockPanel, DockState.DockRight);
+            }
+
+            if (!pef.Visible)
+                pef.Show();
+
+            pef.ContentModified += PixelContentModified;
+
+            ArrangerViewerForm avf = (ArrangerViewerForm)sender;
+            pef.SetEditArranger(avf.EditArranger);
+        }
+
+        /// <summary>
+        /// Invoked when a PixelEditorForm has made changes that must be propagated to sibling subeditors
+        /// Only ArrangerViewerForms need to be refreshed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void PixelContentModified(object sender, EventArgs e)
+        {
+            foreach (DockPane dp in DockPanel.Panes)
+            {
+                foreach (DockContent dc in dp.Contents)
+                {
+                    if (dc is ArrangerViewerForm avf)
+                        avf.RefreshContent();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Invoked when a PaletteEditorForm has made changes that must be propagated to sibling subeditors
+        /// Each subeditor type must be refreshed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void PaletteContentModified(object sender, EventArgs e)
+        {
+            // Minor bug: Can sometimes reload arranger of some DockContents twice
+            // Example: A floating GraphicsViewerChild window (with multiple docks?)
+            foreach (DockPane dp in DockPanel.Panes)
+            {
+                foreach (DockContent dc in dp.Contents)
+                {
+                    if (dc is EditorDockContent && dc != sender)
+                        ((EditorDockContent)dc).RefreshContent();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Invoked when a GraphicsViewerForm has made changes that must be propagated to sibling subeditors
+        /// </summary>
+        /// <param name="sender">Editor which invoked the event</param>
+        /// <param name="e"></param>
+        public void ViewerContentModified(object sender, EventArgs e)
+        {
+            // Currently no need for the GraphicsViewerForm to make changes to propagate
+            return;
+        }
+
+        /// <summary>
+        /// Called upon an editor having its content saved
+        /// </summary>
+        /// <param name="sender">Editor which invoked the event</param>
+        /// <param name="e"></param>
+        public void ContentSaved(object sender, EventArgs e)
+        {
+            // Minor bug: Can sometimes refresh some DockContents twice
+            // Example: A floating GraphicsViewerChild window (with multiple docks?)
+            foreach (DockPane dp in DockPanel.Panes)
+            {
+                foreach (DockContent dc in dp.Contents)
+                {
+                    if (dc is EditorDockContent && dc != sender)
+                        ((EditorDockContent)dc).ReloadContent();
+                }
+            }
+        }
+        #endregion
 
         private void CloseEditors()
         {

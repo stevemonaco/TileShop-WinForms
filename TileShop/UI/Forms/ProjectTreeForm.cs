@@ -73,6 +73,21 @@ namespace TileShop
             return true;
         }
 
+        internal void OnResourceAdded(object sender, ResourceEventArgs e)
+        {
+            IProjectResource res = ResourceManager.Instance.GetResource(e.ResourceKey);
+            AddResourceAsNode(e.ResourceKey, res);
+
+            if(res is DataFile df) // Add sequential arranger below
+            {
+                FileTypeLoader ftl = new FileTypeLoader();
+                Arranger arr = Arranger.NewSequentialArranger(8, 16, e.ResourceKey, ftl.GetDefaultFormat(df.Location));
+                string arrangerName = res.Name + ".SequentialArranger";
+                arr.Rename(arrangerName);
+                ResourceManager.Instance.AddResource(Path.Combine(e.ResourceKey, arrangerName), arr);
+            }
+        }
+
         /// <summary>
         /// Removes a file from the TreeView
         /// </summary>
@@ -90,7 +105,7 @@ namespace TileShop
                 throw new InvalidOperationException("Attempted to RemoveFile on a TreeView node that is not a FileNode");
 
             tn.Remove();
-            ResourceManager.Instance.RemoveFile(Filename);
+            //ResourceManager.Instance.RemoveFile(Filename);
 
             return true;
         }
@@ -256,21 +271,24 @@ namespace TileShop
         /// <summary>
         /// Shows a Sequential Arranger as a docked document tab if not already opened
         /// </summary>
-        /// <param name="dataFileKey">Filename of a datafile previously added to FileManager</param>
+        /// <param name="DataFileKey">Filename of a datafile previously added to FileManager</param>
         /// <returns></returns>
-        public bool ShowSequentialArranger(string dataFileKey)
+        public bool ShowSequentialArranger(string DataFileKey)
         {
             List<EditorDockContent> activeEditors = tsf.GetActiveEditors();
 
             foreach (EditorDockContent dc in activeEditors) // Return if an editor is already opened
             {
-                if (dc.ContentSourceName == dataFileKey && dc is ArrangerViewerForm)
+                if (dc.ContentSourceName == DataFileKey && dc is ArrangerViewerForm)
                     return false;
             }
 
-            if (ResourceManager.Instance.LoadSequentialArranger(dataFileKey))
+            // Workaround to lease a data file without explicitly adding a sequential arranger to the project
+            string LeasedFileKey = DataFileKey + ".SeqArranger";
+
+            if (ResourceManager.Instance.LeaseDataFileAsArranger(DataFileKey, LeasedFileKey))
             {
-                ArrangerViewerForm avf = new ArrangerViewerForm(dataFileKey);
+                ArrangerViewerForm avf = new ArrangerViewerForm(LeasedFileKey);
                 avf.WindowState = FormWindowState.Maximized;
                 avf.SetZoom(6);
                 avf.Show(tsf.DockPanel, DockState.Document);
@@ -287,18 +305,21 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Shows a Scattered Arranger
+        /// Shows an Arranger
         /// </summary>
         /// <param name="ArrangerKey">Key of Arranger in FileManager to show</param>
         /// <returns></returns>
-        public bool ShowScatteredArranger(string ArrangerKey)
+        public bool ShowArranger(string ArrangerKey)
         {
             List<EditorDockContent> activeEditors = tsf.GetActiveEditors();
 
             foreach (EditorDockContent dc in activeEditors) // Return if an editor is already opened
             {
                 if (dc.ContentSourceKey == ArrangerKey && dc is ArrangerViewerForm)
+                {
+                    dc.Show();
                     return false;
+                }
             }
 
             ArrangerViewerForm gv = new ArrangerViewerForm(ArrangerKey);
@@ -357,20 +378,6 @@ namespace TileShop
         {
             GameDescriptorSerializer gds = new GameDescriptorSerializer();
             return gds.LoadProject(XmlFileName);
-        }
-
-         
-        public bool ReloadTree()
-        {
-            ProjectTreeView.Nodes.Clear();
-            Dictionary<string, IProjectResource> resources = ResourceManager.Instance.GetResourceMap();
-
-            foreach(KeyValuePair<string, IProjectResource> resource in resources)
-            {
-                AddResourceAsNode(resource.Key, resource.Value);
-            }
-
-            return true;
         }
 
         private bool AddResourceAsNode(string key, IProjectResource Resource)
@@ -582,17 +589,18 @@ namespace TileShop
 
         private void ProjectTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            if (e.Node is DataFileNode)
-            {
-                ShowSequentialArranger(e.Node.FullPath);
-            }
-            else if (e.Node is PaletteNode)
+            //if (e.Node is DataFileNode)
+            //{
+            //    ShowSequentialArranger(e.Node.FullPath);
+            //}
+
+            if (e.Node is PaletteNode)
             {
                 ShowPaletteEditor(e.Node.FullPath);
             }
             else if (e.Node is ArrangerNode)
             {
-                ShowScatteredArranger(e.Node.FullPath);
+                ShowArranger(e.Node.FullPath);
             }
         }
 
@@ -814,22 +822,26 @@ namespace TileShop
 
         private void ProjectTreeView_BeforeCollapse(object sender, TreeViewCancelEventArgs e)
         {
-            if (!(e.Node is FolderNode))
-                throw new InvalidOperationException("ProjectTreeView attempted to collapse a node that isn't a FolderNode");
+            if (!(e.Node is FolderNode) && !(e.Node is DataFileNode))
+                throw new InvalidOperationException("ProjectTreeView attempted to collapse a node that isn't a FolderNode or DataFileNode");
 
-            FolderNode fn = (FolderNode)e.Node;
-            fn.ImageIndex = 0;
-            fn.SelectedImageIndex = 0;
+            if (e.Node is FolderNode fn)
+            {
+                fn.ImageIndex = 0;
+                fn.SelectedImageIndex = 0;
+            }
         }
 
         private void ProjectTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
-            if (!(e.Node is FolderNode))
-                throw new InvalidOperationException("ProjectTreeView attempted to expand a node that isn't a FolderNode");
+            if (!(e.Node is FolderNode) && !(e.Node is DataFileNode))
+                throw new InvalidOperationException("ProjectTreeView attempted to expand a node that isn't a FolderNode or DataFileNode");
 
-            FolderNode fn = (FolderNode)e.Node;
-            fn.ImageIndex = 1;
-            fn.SelectedImageIndex = 1;
+            if (e.Node is FolderNode fn)
+            {
+                fn.ImageIndex = 1;
+                fn.SelectedImageIndex = 1;
+            }
         }
 
         private void ProjectTreeView_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
@@ -840,35 +852,6 @@ namespace TileShop
         public TreeNodeCollection ProjectNodes
         {
             get { return ProjectTreeView.Nodes; }
-        }
-    }
-
-    /// <summary>
-    /// Extension methods for TreeNode
-    /// </summary>
-    public static class TreeNodeExtensions
-    {
-        /// <summary>
-        /// Builds a node path for the specified node
-        /// </summary>
-        /// <param name="node">Specified node</param>
-        /// <returns>Node path</returns>
-        public static string GetNodePath(this TreeNode node)
-        {
-            string path = "";
-            TreeNode currentNode = node.Parent;
-
-            while (currentNode != null) // Traverse up parent nodes to build the node path
-            {
-                if (path == "")
-                    path = currentNode.Text;
-                else
-                    path = currentNode.Text + "\\" + path;
-
-                currentNode = currentNode.Parent;
-            }
-
-            return path;
         }
     }
 

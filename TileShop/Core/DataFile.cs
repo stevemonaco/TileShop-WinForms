@@ -12,9 +12,9 @@ namespace TileShop.Core
     /// </summary>
     public class DataFile : IProjectResource
     {
-        public string Name { get; private set; }
-        public string Location { get; private set; }
-        public FileStream Stream { get; private set; }
+        public string Name { get; private set; } = null;
+        public string Location { get; private set; } = null;
+        public FileStream Stream { get; private set; } = null;
 
         public DataFile(string name)
         {
@@ -28,6 +28,13 @@ namespace TileShop.Core
         public void Rename(string name)
         {
             Name = name;
+        }
+
+        public IProjectResource Clone()
+        {
+            DataFile df = new DataFile(Name);
+            df.Open(Location);
+            return df;
         }
 
         /// <summary>

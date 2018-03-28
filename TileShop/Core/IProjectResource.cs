@@ -15,5 +15,10 @@
         /// </summary>
         /// <param name="name"></param>
         void Rename(string name);
+
+        /// <summary>
+        /// Deep-clone copy of the object
+        /// </summary>
+        IProjectResource Clone();
     }
 }

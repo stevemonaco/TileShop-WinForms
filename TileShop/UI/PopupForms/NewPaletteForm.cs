@@ -36,7 +36,7 @@ namespace TileShop
                 MessageBox.Show("All fields must be completed before adding a palette to the project");
                 return;
             }
-            if(ResourceManager.Instance.HasPalette(paletteNameBox.Text))
+            if(ResourceManager.Instance.HasResource(paletteNameBox.Text))
             {
                 MessageBox.Show("Palette " + paletteNameBox.Text + " already exists. Please choose an alternate name.");
                 return;

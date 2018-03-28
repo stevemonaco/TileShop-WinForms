@@ -805,7 +805,7 @@ namespace TileShop.Core
         /// Creates a deep copy of the palette
         /// </summary>
         /// <returns></returns>
-        public Palette Clone()
+        public IProjectResource Clone()
         {
             Palette pal = new Palette(Name)
             {

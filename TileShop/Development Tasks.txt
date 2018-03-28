@@ -2,10 +2,11 @@
 Beta 1 tasks:
 General
 	- Test UI features for detecting modifications to arrangers/palettes/etc
-		- Fix: Temp modifications (pixel placement) to PixelEditorForm do not propagate to GraphicsViewerForm because they aren't written to the file
-		- Fix: Perm modifications (saving) by PixelEditorForm do not propagate to GraphicsViewerForm because the events aren't hooked up
+		- Fix: Temp modifications (pixel placement) to PixelEditorForm do not propagate to ArrangerViewerForm because they aren't written to the file
+		- Fix: Perm modifications (saving) by PixelEditorForm do not propagate to ArrangerViewerForm because the events aren't hooked up
 	x Revise TileShopForm for external file loaders always loading into the root directory (Remember first-time TIM palette load automatically being modified)
 	x Add drag/drop rearranging for the treeview
+	- Implement Resource Leasing into UI code
 	- Revise menu option code (Close Project, Save Project As, etc)
 	x Revise code so that the same resource cannot be opened in two editors at once
 	x Disallow keyboard access to codec dropdown and remove highlight
@@ -13,14 +14,14 @@ General
 	x Change XML to tree layout
 	x Change XML graphic -> element
 	x Remove required bitoffset XML exporting (default is 0)
-	- Have editors grab cloned copies of FileManager objects, isolate direct access to persistent objects
+	x Have editors grab cloned copies of FileManager objects, isolate direct access to persistent objects (Implemented resource leasing instead)
 	- Design palette system (palette accessibility: TIMs need multiple bound palettes, tiles less so (only animations), stored in XML? How to add in UI?)
 		x Have TIM plugin create multiple images for TIMs with multiple palettes
 		- Apply palette button with drop-down menu showing available palettes (palettes already used elsewhere in the arranger)
 		- Drop-down menu with "Other" option that allows selecting a palette from elsewhere in the project
 
 GraphicsViewerChild
-	x Add jump/goto address button for GraphicsViewerChild navigation
+	x Add jump/goto address button for ArrangerViewerForm navigation
 	- Implement editing support geared specifically towards linear graphics
 	x Crashing bug when selecting a blank element in a ScatteredArranger (editing) -> Selection contains blank element and cannot be edited MessageBox popup
 	- For drag+drop of elements from a ScatteredArranger->SequentialArranger, create a new temp Arranger with adjusted addresses, render, and save

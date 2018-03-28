@@ -8,11 +8,11 @@ namespace TileShop.Core
 {
     public class ResourceEventArgs : EventArgs
     {
-        public string ResourceName { get; private set; }
+        public string ResourceKey { get; private set; }
 
-        public ResourceEventArgs(string name)
+        public ResourceEventArgs(string key)
         {
-            ResourceName = name;
+            ResourceKey = key;
         }
     }
 }

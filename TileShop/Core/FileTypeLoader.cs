@@ -31,5 +31,16 @@ namespace TileShop.Core
             else
                 return "NES 1bpp";
         }
+
+        public GraphicsFormat GetDefaultFormat(string Filename)
+        {
+            string name;
+            if (LookupDefaultFormat.ContainsKey(Path.GetExtension(Filename)))
+                name = LookupDefaultFormat[Path.GetExtension(Filename)];
+            else
+                name = "NES 1bpp";
+
+            return ResourceManager.Instance.GetGraphicsFormat(name);
+        }
     }
 }

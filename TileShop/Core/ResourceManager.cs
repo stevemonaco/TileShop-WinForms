@@ -10,7 +10,11 @@ namespace TileShop.Core
 {
     /// <summary>
     /// Singleton class that manages file and editor resources
-    /// Files loaded here are kept open always until CloseProject is called
+    /// Files loaded here are kept open always until ClearResources is called
+    /// A lease model is used for managing resources that are currently being edited
+    /// A leased Resource is a resource that is intended to be edited and saved
+    /// GetResource will return the edited copy of the Resource if is leased or the original copy if it is not
+    /// This is so that Resources will be able to be previewed with unsaved changes in referenced Resources
     /// </summary>
 
     // TODO - Consider future implementation of lazy instantiation for some objects, especially for projects that have many, many files
@@ -39,16 +43,6 @@ namespace TileShop.Core
         /// List of in-use files on disk that can be read or written to by subeditors such as the arranger or palette editor
         /// </summary>
         //private Dictionary<string, DataFile> DataFileList = new Dictionary<string, DataFile>();
-
-        /// <summary>
-        /// List of arrangers that may be edited by the user
-        /// </summary>
-        //private Dictionary<string, Arranger> ArrangerList = new Dictionary<string, Arranger>();
-
-        /// <summary>
-        /// List of palettes that may be edited by the user
-        /// </summary>
-        //private Dictionary<string, Palette> PaletteList = new Dictionary<string, Palette>();
 
         /// <summary>
         /// List of cursors loaded
@@ -116,7 +110,7 @@ namespace TileShop.Core
             if (ResourceMap.ContainsKey(ResourceKey))
                 return ResourceMap[ResourceKey];
 
-            throw new KeyNotFoundException("Key '{ResourceKey}' not found in ResourceManager");
+            throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
         }
 
         /// <summary>
@@ -136,15 +130,6 @@ namespace TileShop.Core
         }
 
         /// <summary>
-        /// Gets the ResourceMap
-        /// </summary>
-        /// <returns></returns>
-        public Dictionary<string, IProjectResource> GetResourceMap()
-        {
-            return ResourceMap;
-        }
-
-        /// <summary>
         /// Leases a resource by key
         /// </summary>
         /// <param name="ResourceKey"></param>
@@ -155,7 +140,7 @@ namespace TileShop.Core
                 throw new ArgumentException("Null name argument passed into LeaseResource");
 
             if (LeasedResourceMap.ContainsKey(ResourceKey))
-                throw new InvalidOperationException("Key {ResourceKey} is already being leased");
+                throw new InvalidOperationException($"Key {ResourceKey} is already being leased");
 
             if(ResourceMap.ContainsKey(ResourceKey))
             {
@@ -164,7 +149,7 @@ namespace TileShop.Core
                 return resource;
             }
 
-            throw new KeyNotFoundException("Key '{ResourceKey}' not found in ResourceManager");
+            throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
         }
 
         /// <summary>
@@ -177,23 +162,45 @@ namespace TileShop.Core
             if (ResourceKey == null)
                 throw new ArgumentNullException("Null name argument passed into IsResourceLeased");
             if (!ResourceMap.ContainsKey(ResourceKey))
-                throw new KeyNotFoundException("Key '{ResourceKey}' not found in ResourceManager");
+                throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
 
             if (LeasedResourceMap.ContainsKey(ResourceKey))
                 return true;
             return false;
         }
 
-        public void ReturnLease(string ResourceKey)
+        // TODO: Attempt DataFile -> HasA relationship instead
+        public void ReturnLease(string ResourceKey, bool Save)
         {
             if (!LeasedResourceMap.ContainsKey(ResourceKey))
-                throw new KeyNotFoundException("Key '{ResourceKey}' attempted to return its lease but one is not active");
+                throw new KeyNotFoundException($"Key '{ResourceKey}' attempted to return its lease but one is not active");
 
             if (!ResourceMap.ContainsKey(ResourceKey))
-                throw new KeyNotFoundException("Key '{ResourceKey}' not found in ResourceManager");
+                throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
+
+            // TODO: Save leased object
 
             ResourceMap[ResourceKey] = LeasedResourceMap[ResourceKey];
             LeasedResourceMap.Remove(ResourceKey);
+        }
+
+        /// <summary>
+        /// Creates a SequentialArranger created from a DataFile
+        /// </summary>
+        /// <param name="DataFileKey">Key of a loaded DataFile</param>
+        /// <param name="ResourceKey">Key of the SequentialArranger Resource to create as a leased resource</param>
+        /// <returns></returns>
+        public bool LeaseDataFileAsArranger(string DataFileKey, string ResourceKey)
+        {
+            if (!HasResource(DataFileKey) || HasResource(ResourceKey) || LeasedResourceMap.ContainsKey(ResourceKey))
+                return false;
+
+            string formatname = Loader.GetDefaultFormatName(DataFileKey);
+            Arranger arranger = Arranger.NewSequentialArranger(DefaultElementsX, DefaultElementsY, DataFileKey, GetGraphicsFormat(formatname));
+
+            LeasedResourceMap.Add(ResourceKey, arranger);
+
+            return true;
         }
 
         /// <summary>
@@ -205,6 +212,22 @@ namespace TileShop.Core
         public bool RenameResource(string OldResourceName, string NewResourceName)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Clears all project resources
+        /// Does not remove graphic formats, cursors, or file loaders
+        /// </summary>
+        /// <returns></returns>
+        public void ClearResources()
+        {
+            foreach (KeyValuePair<string, IProjectResource> resource in ResourceMap)
+            {
+                if (resource.Value is DataFile df)
+                    df.Close();
+            }
+            LeasedResourceMap.Clear();
+            ResourceMap.Clear();
         }
         #endregion
 
@@ -243,46 +266,6 @@ namespace TileShop.Core
         #endregion
 
         #region DataFile Management
-        /// <summary>
-        /// Adds a data file to FileManager
-        /// </summary>
-        /// <param name="dataFile"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        /*public bool AddDataFile(DataFile dataFile, string key)
-        {
-            if (dataFile == null || key == null)
-                throw new ArgumentNullException();
-
-            if (!HasDataFile(key))
-            {
-                DataFileList[key] = dataFile;
-            }
-
-            return true;
-        }*/
-
-        /// <summary>
-        /// Retrieves a DataFile by its key
-        /// </summary>
-        /// <param name="dataFileKey"></param>
-        /// <returns></returns>
-        /*public DataFile GetDataFile(string dataFileKey)
-        {
-            if (DataFileList.ContainsKey(dataFileKey))
-                return DataFileList[dataFileKey];
-            else
-                throw new KeyNotFoundException();
-        }*/
-
-        public void RemoveFile(string FileName)
-        {
-            /*if (DataFileList.ContainsKey(FileName))
-            {
-                DataFileList[FileName].Close();
-                DataFileList.Remove(FileName);
-            }*/
-        }
 
         /// <summary>
         /// Renames a file that is currently loaded into the FileManager, renames it on disk, and remaps all references to it in the project
@@ -343,71 +326,7 @@ namespace TileShop.Core
 
         #endregion
 
-        #region Arranger Management
-        /*public void AddArranger(Arranger arr, string key)
-        {
-            if (arr == null || key == null)
-                throw new ArgumentNullException();
-
-            if (!HasArranger(key))
-            {
-                PersistentArrangerList.Add(key, arr);
-                ArrangerList.Add(key, arr.Clone());
-            }
-        }*/
-
-        /// <summary>
-        /// Creates a sequential arranger from a data file
-        /// </summary>
-        /// <param name="dataFileKey">Key of a previously loaded data file</param>
-        /// <returns></returns>
-        public bool LoadSequentialArranger(string dataFileKey)
-        {
-            string formatname = Loader.GetDefaultFormatName(dataFileKey);
-            Arranger arranger = Arranger.NewSequentialArranger(DefaultElementsX, DefaultElementsY, dataFileKey, GetGraphicsFormat(formatname));
-
-            // TODO: FIX ASAP
-            //AddArranger(arranger, dataFileKey); // TODO: Ensure that Filename is local to the XML project file
-
-            return true;
-        }
-
-        /// <summary>
-        /// Renames an arranger that is currently loaded into the FileManager
-        /// </summary>
-        /// <param name="ArrangerName">Arranger to be renamed</param>
-        /// <param name="NewArrangerName">Name that the arranger will be renamed to</param>
-        /// <returns></returns>
-        /*public bool RenameArranger(string ArrangerName, string NewArrangerName)
-        {
-            if (!HasArranger(ArrangerName) || HasArranger(NewArrangerName))
-                return false;
-
-            Arranger arr = GetResource(ArrangerName) as Arranger;
-            arr.Rename(NewArrangerName);
-            ArrangerList.Remove(ArrangerName);
-            ArrangerList.Add(NewArrangerName, arr);
-
-            return true;
-        }*/
-        #endregion
-
         #region Palette Management
-        /*public void AddPalette(Palette pal, string key)
-        {
-            if (pal == null || key == null)
-                throw new ArgumentNullException();
-
-            if (String.IsNullOrEmpty(pal.Name))
-                throw new ArgumentException();
-
-            if (!HasPalette(key))
-            {
-                PersistentPaletteList.Add(key, pal);
-                PaletteList.Add(key, pal.Clone());
-            }
-        }*/
-
         /// <summary>
         /// Loads and associates a palette within FileManager
         /// </summary>
@@ -426,25 +345,6 @@ namespace TileShop.Core
             AddResource(pal.Name, pal);
 
             return true;
-        }
-
-        /// <summary>
-        /// Gets the editable palette associated with the specified name
-        /// </summary>
-        /// <param name="PaletteName"></param>
-        /// <returns></returns>
-        /*public Palette GetPalette(string PaletteName)
-        {
-            if (PaletteList.ContainsKey(PaletteName))
-                return PaletteList[PaletteName];
-            else
-                throw new KeyNotFoundException(String.Format("Palette {0} was not found in the PaletteList", PaletteName));
-        }*/
-
-        public bool HasPalette(string PaletteName)
-        {
-            return false;
-            //return PersistentPaletteList.ContainsKey(PaletteName);
         }
 
         /// <summary>
@@ -496,22 +396,6 @@ namespace TileShop.Core
                 throw new KeyNotFoundException();
         }
         #endregion
-
-        /// <summary>
-        /// Clears all project resources
-        /// Does not remove graphic formats, cursors, or file loaders
-        /// </summary>
-        /// <returns></returns>
-        public void ClearResources()
-        {
-            foreach(KeyValuePair<string, IProjectResource> resource in ResourceMap)
-            {
-                if (resource.Value is DataFile df)
-                    df.Close();
-            }
-            LeasedResourceMap.Clear();
-            ResourceMap.Clear();
-        }
 
     }
 }

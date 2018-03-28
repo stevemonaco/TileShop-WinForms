@@ -523,7 +523,7 @@ namespace TileShop.Core
         /// Creates a deep clone of the Arranger
         /// </summary>
         /// <returns></returns>
-        public Arranger Clone()
+        public IProjectResource Clone()
         {
             Arranger arr = new Arranger()
             {

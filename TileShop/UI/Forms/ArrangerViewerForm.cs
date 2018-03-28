@@ -791,5 +791,17 @@ namespace TileShop
             }
             ReloadArranger();
         }
+
+        private void ArrangerViewerForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+
+        }
+
+        private void ArrangerViewerForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+
+            if (DisplayArranger.IsSequential && ResourceManager.Instance.IsResourceLeased(ContentSourceKey))
+                ResourceManager.Instance.ReturnLease(ContentSourceKey, false);
+        }
     }
 }
