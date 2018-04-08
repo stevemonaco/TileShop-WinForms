@@ -158,7 +158,6 @@ namespace TileShop
         }
 
         #region UI Events
-
         private void RunFileParserPlugin_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem viewItem = (ToolStripMenuItem)sender;
@@ -244,11 +243,17 @@ namespace TileShop
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
                     ProjectFileName = sfd.FileName;
-                    ptf.SaveProject(ProjectFileName);
+                    GameDescriptorSerializer gds = new GameDescriptorSerializer();
+                    gds.SaveProject(ProjectFileName);
+                    //ptf.SaveProject(ProjectFileName);
                 }
             }
             else
-                ptf.SaveProject(ProjectFileName);
+            {
+                GameDescriptorSerializer gds = new GameDescriptorSerializer();
+                gds.SaveProject(ProjectFileName);
+                //ptf.SaveProject(ProjectFileName);
+            }
         }
 
         private void SaveProjectAsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -275,7 +280,9 @@ namespace TileShop
                 ShowDialog() == DialogResult.OK)
             {
                 ProjectFileName = sfd.FileName;
-                ptf.SaveProject(ProjectFileName);
+                GameDescriptorSerializer gds = new GameDescriptorSerializer();
+                gds.SaveProject(ProjectFileName);
+                //ptf.SaveProject(ProjectFileName);
             }
         }
 
