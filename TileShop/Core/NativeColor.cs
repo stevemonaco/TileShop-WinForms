@@ -82,7 +82,7 @@ namespace TileShop.Core
                 case ColorModel.RGB15:
                     break;
                 default:
-                    throw new ArgumentException("Unsupported PaletteColorFormat " + format.ToString());
+                    throw new ArgumentException("Unsupported ColorModel " + format.ToString());
             }
 
             return fc;

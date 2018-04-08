@@ -17,7 +17,7 @@ namespace TileShop
         {
             InitializeComponent();
 
-            // Populate the dropdown with all supported PaletteColorFormats
+            // Populate the dropdown with all supported ColorModels
             colorFormatBox.Items.Clear();
             List<string> formatlist = Palette.GetColorModelNames();
 
@@ -64,7 +64,7 @@ namespace TileShop
 
         private void NewPaletteForm_Shown(object sender, EventArgs e)
         {
-            // Populate the dropdown with all supported PaletteColorFormats
+            // Populate the dropdown with all supported ColorModels
             colorFormatBox.Items.Clear();
             List<string> formatlist = Palette.GetColorModelNames();
 

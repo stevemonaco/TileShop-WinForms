@@ -197,7 +197,7 @@ namespace TileShop
                 idx++;
             }
 
-            throw new ArgumentException(String.Format("PaletteColorFormat {0} cannot be found in colorFormatBox's item collection", format.ToString()));
+            throw new ArgumentException(String.Format("ColorModel {0} cannot be found in colorFormatBox's item collection", format.ToString()));
         }
 
         private void SetPaletteNumericBounds(ColorModel ColorModel)
@@ -220,7 +220,7 @@ namespace TileShop
                     SetPaletteNumericBounds(0, 255, 0, 255, 0, 255, 0, 255);
                     break;
                 default:
-                    throw new ArgumentException(String.Format("PaletteColorFormat {0} not supported", ColorModel.ToString()));
+                    throw new ArgumentException(String.Format("ColorModel {0} not supported", ColorModel.ToString()));
             }
         }
 

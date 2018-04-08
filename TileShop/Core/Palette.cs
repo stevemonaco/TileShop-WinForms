@@ -382,7 +382,7 @@ namespace TileShop.Core
                 localColor |= 0xFF000000; // Alpha
             }
             else
-                throw new ArgumentException("Unsupported PaletteColorFormat");
+                throw new ArgumentException("Unsupported ColorModel");
 
             return localColor;
         }
@@ -422,7 +422,7 @@ namespace TileShop.Core
                 localColor |= 0xFF000000; // Alpha
             }
             else
-                throw new ArgumentException("Unsupported PaletteColorFormat");
+                throw new ArgumentException("Unsupported ColorModel");
 
             return localColor;
         }
@@ -577,7 +577,7 @@ namespace TileShop.Core
                     A = (byte)((foreignColor & 0x8000) >> 15);
                     break;
                 default:
-                    throw new ArgumentException("Unsupported PaletteColorFormat");
+                    throw new ArgumentException("Unsupported ColorModel");
             }
 
             return (A, R, G, B);
@@ -603,7 +603,7 @@ namespace TileShop.Core
                     foreignColor |= ((uint)A << 15);
                     break;
                 default:
-                    throw new ArgumentException("Unsupported PaletteColorFormat");
+                    throw new ArgumentException("Unsupported ColorModel");
             }
 
             return foreignColor;
@@ -769,7 +769,7 @@ namespace TileShop.Core
                 case "NES":
                     return ColorModel.NES;
                 default:
-                    throw new ArgumentException("PaletteColorFormat " + ColorModelName + " is not supported");
+                    throw new ArgumentException("ColorModel " + ColorModelName + " is not supported");
             }
         }
 
@@ -790,7 +790,7 @@ namespace TileShop.Core
                 case ColorModel.NES:
                     return "NES";
                 default:
-                    throw new ArgumentException("PaletteColorFormat " + colorFormat.ToString() + " is not supported");
+                    throw new ArgumentException("ColorModel " + colorFormat.ToString() + " is not supported");
             }
         }
 
@@ -807,15 +807,15 @@ namespace TileShop.Core
         {
             Palette pal = new Palette(Name)
             {
-                ColorModel = ColorModel,
-                FileAddress = FileAddress,
-                DataFileKey = DataFileKey,
-                Entries = Entries,
-                HasAlpha = HasAlpha,
-                ZeroIndexTransparent = ZeroIndexTransparent,
-                StorageSource = StorageSource,
-                LocalPalette = new uint[Entries],
-                ForeignPalette = new uint[Entries]
+                ColorModel = this.ColorModel,
+                FileAddress = this.FileAddress,
+                DataFileKey = this.DataFileKey,
+                Entries = this.Entries,
+                HasAlpha = this.HasAlpha,
+                ZeroIndexTransparent = this.ZeroIndexTransparent,
+                StorageSource = this.StorageSource,
+                LocalPalette = new uint[this.Entries],
+                ForeignPalette = new uint[this.Entries]
             };
 
             Buffer.BlockCopy(LocalPalette, 0, pal.LocalPalette, 0, Entries * sizeof(uint));

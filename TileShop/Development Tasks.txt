@@ -48,7 +48,7 @@ Switch file i/o to just-in-time for editing
 
 Long term tasks:
 Support for palettes with scattered color locations
-Implement new PaletteColorFormats
+Implement new ColorModels
 Test NewPaletteForm (Add bitwise)
 
 Misc tasks:

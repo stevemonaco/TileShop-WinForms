@@ -44,7 +44,7 @@ namespace TileShop.Core
                     Color |= ((uint)A << 15);
                     break;
                 default:
-                    throw new ArgumentException("Unsupported PaletteColorFormat");
+                    throw new ArgumentException("Unsupported ColorModel");
             }
         }
 
@@ -63,7 +63,7 @@ namespace TileShop.Core
                 case ColorModel.ABGR16:
                     return (byte)((Color & 0x8000) >> 15);
                 default:
-                    throw new ArgumentException("Unsupported PaletteColorFormat " + format.ToString());
+                    throw new ArgumentException("Unsupported ColorModel " + format.ToString());
             }
         }
 
@@ -81,7 +81,7 @@ namespace TileShop.Core
                 case ColorModel.RGB15:
                     return (byte)((Color & 0x7C00) >> 10);
                 default:
-                    throw new ArgumentException("Unsupported PaletteColorFormat " + format.ToString());
+                    throw new ArgumentException("Unsupported ColorModel " + format.ToString());
             }
         }
 
@@ -99,7 +99,7 @@ namespace TileShop.Core
                 case ColorModel.RGB15:
                     return (byte)((Color & 0x3E0) >> 5);
                 default:
-                    throw new ArgumentException("Unsupported PaletteColorFormat " + format.ToString());
+                    throw new ArgumentException("Unsupported ColorModel " + format.ToString());
             }
         }
 
@@ -117,7 +117,7 @@ namespace TileShop.Core
                 case ColorModel.RGB15:
                     return (byte)(Color & 0x1F);
                 default:
-                    throw new ArgumentException("Unsupported PaletteColorFormat " + format.ToString());
+                    throw new ArgumentException("Unsupported ColorModel " + format.ToString());
             }
         }
 
@@ -146,7 +146,7 @@ namespace TileShop.Core
         /// <summary>
         /// Converts into a NativeColor
         /// </summary>
-        /// <param name="format">PaletteColorFormat of foreignColor</param>
+        /// <param name="format">ColorModel of foreignColor</param>
         /// <returns>Local ARGB32 color value</returns>
         public NativeColor ToNativeColor(ColorModel format)
         {
@@ -174,7 +174,7 @@ namespace TileShop.Core
                     nc.Color |= 0xFF000000; // Alpha
                     break;
                 default:
-                    throw new ArgumentException("Unsupported PaletteColorFormat " + format.ToString());
+                    throw new ArgumentException("Unsupported ColorModel " + format.ToString());
             }
 
             return nc;
