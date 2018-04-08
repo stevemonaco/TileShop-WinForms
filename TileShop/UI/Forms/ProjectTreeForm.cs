@@ -161,50 +161,6 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Adds an Arranger to the TreeView and to FileManager
-        /// </summary>
-        /// <param name="arr">Arranger to add</param>
-        /// <param name="NodePath">Folder node path into the TreeView</param>
-        /// <param name="Show">Optionally shows the arranger immediately</param>
-        /// <returns></returns>
-        /*public bool AddArranger(Arranger arr, string NodePath, bool Show = false)
-        {
-            if (arr == null || NodePath == null)
-                throw new ArgumentNullException();
-
-            if(arr.Mode != ArrangerMode.ScatteredArranger)
-                throw new NotSupportedException("AddArranger does not support arranger types other than ScatteredArranger");
-
-            // Ensure arranger of the same name and path has not been previously added
-            TreeNode tn = FindNode(arr.Name, NodePath);
-
-            if (tn != null) // File has already been added
-                return false;
-
-            ArrangerNode an = new ArrangerNode()
-            {
-                Text = arr.Name,
-                Tag = arr.Name
-            };
-
-            if (NodePath == "") // Add to root
-                ProjectTreeView.Nodes.Add(an);
-            else
-            {
-                FolderNode folderNode = AddFolderNode(NodePath);
-                folderNode.Nodes.Add(an);
-            }
-
-            string arrangerKey = Path.Combine(NodePath, arr.Name);
-            ResourceManager.Instance.AddArranger(arr, arrangerKey);
-
-            if (Show)
-                return ShowScatteredArranger(arrangerKey);
-
-            return true;
-        }*/
-
-        /// <summary>
         /// Removes an Arranger from the TreeView
         /// </summary>
         /// <param name="ArrangerName">Name of the arranger to remove</param>
@@ -222,32 +178,6 @@ namespace TileShop
 
             return false;
         }
-
-        /// <summary>
-        /// Adds an Arranger to the TreeView and to FileManager
-        /// </summary>
-        /// <param name="pal">Palette to be added</param>
-        /// <param name="NodePath">Folder node path into the TreeView</param>
-        /// <returns></returns>
-        /*public bool AddPalette(Palette pal, string NodePath)
-        {
-            PaletteNode pn = new PaletteNode();
-            pn.Text = pal.Name;
-            pn.Tag = pal.Name;
-
-            if (NodePath == "") // Add to root
-                ProjectTreeView.Nodes.Add(pn);
-            else
-            {
-                FolderNode folderNode = AddFolderNode(NodePath);
-                folderNode.Nodes.Add(pn);
-            }
-
-            string key = Path.Combine(NodePath, pal.Name);
-            ResourceManager.Instance.AddPalette(pal, key);
-
-            return true;
-        }*/
 
         /// <summary>
         /// Removes a Palette from the TreeView
@@ -372,12 +302,6 @@ namespace TileShop
             ResourceManager.Instance.ClearResources();
 
             return true;
-        }
-
-        public bool LoadProject(string XmlFileName)
-        {
-            GameDescriptorSerializer gds = new GameDescriptorSerializer();
-            return gds.LoadProject(XmlFileName);
         }
 
         private bool AddResourceAsNode(string key, IProjectResource Resource)
