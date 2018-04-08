@@ -294,7 +294,7 @@ namespace TileShop
             if(DialogResult.OK == npf.ShowDialog())
             {
                 Palette pal = new Palette(npf.PaletteName);
-                pal.LoadPalette(npf.FileName, new FileBitAddress(npf.FileOffset, 0), npf.ColorFormat, true, npf.Entries); // TODO: Refactor for new FileBitAddress
+                pal.LoadPalette(npf.FileName, new FileBitAddress(npf.FileOffset, 0), npf.ColorModel, true, npf.Entries); // TODO: Refactor for new FileBitAddress
                 ResourceManager.Instance.AddResource(pal.Name, pal); ;
             }
         }

@@ -371,7 +371,7 @@ namespace TileShop
                     xmlpal.SetAttributeValue("fileoffset", String.Format("{0:X}", pal.FileAddress.FileOffset));
                     xmlpal.SetAttributeValue("bitoffset", String.Format("{0:X}", pal.FileAddress.BitOffset));
                     xmlpal.SetAttributeValue("datafile", pal.DataFileKey);
-                    xmlpal.SetAttributeValue("format", Palette.ColorFormatToString(pal.ColorFormat));
+                    xmlpal.SetAttributeValue("format", Palette.ColorFormatToString(pal.ColorModel));
                     xmlpal.SetAttributeValue("entries", pal.Entries);
                     xmlpal.SetAttributeValue("zeroindextransparent", pal.ZeroIndexTransparent);
                     palettes.Add(xmlpal);

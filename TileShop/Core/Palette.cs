@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.Drawing;
 using ColorMine.ColorSpaces.Comparisons;
@@ -12,7 +10,7 @@ using System.Drawing.Imaging;
 
 namespace TileShop.Core
 {
-    public enum PaletteColorFormat { RGB24 = 0, ARGB32, BGR15, ABGR16, RGB15, NES }
+    public enum ColorModel { RGB24 = 0, ARGB32, BGR15, ABGR16, RGB15, NES }
 
     /// <summary>
     /// Storage source of the palette
@@ -33,9 +31,9 @@ namespace TileShop.Core
         public string Name { get; private set; }
 
         /// <summary>
-        /// ColorFormat of the palette
+        /// ColorModel of the palette
         /// </summary>
-        public PaletteColorFormat ColorFormat { get; private set; }
+        public ColorModel ColorModel { get; private set; }
 
         /// <summary>
         /// DataFile key which contains the palette
@@ -116,7 +114,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public bool Reload()
         {
-            return LoadPalette(DataFileKey, FileAddress, ColorFormat, ZeroIndexTransparent, Entries);
+            return LoadPalette(DataFileKey, FileAddress, ColorModel, ZeroIndexTransparent, Entries);
         }
 
         /// <summary>
@@ -155,7 +153,7 @@ namespace TileShop.Core
                 foreignPalette[idx] = foreignColor;
             }
 
-            ColorFormat = PaletteColorFormat.ARGB32;
+            ColorModel = ColorModel.ARGB32;
             FileAddress = new FileBitAddress(0, 0);
             DataFileKey = filename;
             Entries = entrySize;
@@ -173,7 +171,7 @@ namespace TileShop.Core
         /// <param name="zeroIndexTransparent">If the 0-index of the palette is automatically transparent</param>
         /// <param name="numEntries">Number of entries the palette contains</param>
         /// <returns>Success value</returns>
-        public bool LoadPaletteFromFileName(string fileName, FileBitAddress address, PaletteColorFormat format, bool zeroIndexTransparent, int numEntries)
+        public bool LoadPaletteFromFileName(string fileName, FileBitAddress address, ColorModel format, bool zeroIndexTransparent, int numEntries)
         {
             if (numEntries > 256)
                 throw new ArgumentException("Maximum palette size must be 256 entries or less");
@@ -187,20 +185,20 @@ namespace TileShop.Core
 
                 switch (format)
                 {
-                    case PaletteColorFormat.BGR15:
-                    case PaletteColorFormat.RGB15:
+                    case ColorModel.BGR15:
+                    case ColorModel.RGB15:
                         readSize = 2;
                         HasAlpha = false;
                         break;
-                    case PaletteColorFormat.ABGR16:
+                    case ColorModel.ABGR16:
                         readSize = 2;
                         HasAlpha = true;
                         break;
-                    case PaletteColorFormat.RGB24:
+                    case ColorModel.RGB24:
                         readSize = 3;
                         HasAlpha = false;
                         break;
-                    case PaletteColorFormat.ARGB32:
+                    case ColorModel.ARGB32:
                         readSize = 4;
                         HasAlpha = true;
                         break;
@@ -249,7 +247,7 @@ namespace TileShop.Core
             if (ZeroIndexTransparent)
                 localPalette[0] &= 0x00FFFFFF;
 
-            ColorFormat = format;
+            ColorModel = format;
             FileAddress = address;
             DataFileKey = fileName; // TODO: Remove this and set key externally or through method
             Entries = numEntries;
@@ -267,7 +265,7 @@ namespace TileShop.Core
         /// <param name="zeroIndexTransparent">If the 0-index of the palette is automatically transparent</param>
         /// <param name="numEntries">Number of entries the palette contains</param>
         /// <returns>Success value</returns>
-        public bool LoadPalette(string dataFileKey, FileBitAddress address, PaletteColorFormat format, bool zeroIndexTransparent, int numEntries)
+        public bool LoadPalette(string dataFileKey, FileBitAddress address, ColorModel format, bool zeroIndexTransparent, int numEntries)
         {
             if (numEntries > 256)
                 throw new ArgumentException("Maximum palette size must be 256 entries or less");
@@ -281,19 +279,19 @@ namespace TileShop.Core
 
             switch(format)
             {
-                case PaletteColorFormat.BGR15: case PaletteColorFormat.RGB15:
+                case ColorModel.BGR15: case ColorModel.RGB15:
                     readSize = 2;
                     HasAlpha = false;
                     break;
-                case PaletteColorFormat.ABGR16:
+                case ColorModel.ABGR16:
                     readSize = 2;
                     HasAlpha = true;
                     break;
-                case PaletteColorFormat.RGB24:
+                case ColorModel.RGB24:
                     readSize = 3;
                     HasAlpha = false;
                     break;
-                case PaletteColorFormat.ARGB32:
+                case ColorModel.ARGB32:
                     readSize = 4;
                     HasAlpha = true;
                     break;
@@ -341,7 +339,7 @@ namespace TileShop.Core
             if (ZeroIndexTransparent)
                 localPalette[0] &= 0x00FFFFFF;
 
-            ColorFormat = format;
+            ColorModel = format;
             FileAddress = address;
             DataFileKey = dataFileKey;
             Entries = numEntries;
@@ -354,29 +352,29 @@ namespace TileShop.Core
         /// Converts a foreign color to a local color
         /// </summary>
         /// <param name="foreignColor">Foreign color to be converted</param>
-        /// <param name="format">PaletteColorFormat of foreignColor</param>
+        /// <param name="model">ColorModel of foreignColor</param>
         /// <returns>Local ARGB32 color value</returns>
-        public static uint ForeignToLocalArgb(uint foreignColor, PaletteColorFormat format)
+        public static uint ForeignToLocalArgb(uint foreignColor, ColorModel model)
         {
             uint localColor;
 
-            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignColor, format);
+            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignColor, model);
 
-            if (format == PaletteColorFormat.BGR15)
+            if (model == ColorModel.BGR15)
             {
                 localColor = (uint)R << 19; // Red
                 localColor |= (uint)G << 11; // Green
                 localColor |= (uint)B << 3; // Blue
                 localColor |= 0xFF000000; // Alpha
             }
-            else if (format == PaletteColorFormat.ABGR16)
+            else if (model == ColorModel.ABGR16)
             {
                 localColor = (uint)R << 19; // Red
                 localColor |= (uint)G << 11; // Green
                 localColor |= (uint)B << 3; // Blue
                 localColor |= ((uint)A * 255) << 24; // Alpha
             }
-            else if (format == PaletteColorFormat.RGB15)
+            else if (model == ColorModel.RGB15)
             {
                 localColor = (uint)R << 19; // Red
                 localColor |= (uint)G << 11; // Green
@@ -396,27 +394,27 @@ namespace TileShop.Core
         /// <param name="R">Foreign red channel to be converted</param>
         /// <param name="G">Foreign green channel to be converted</param>
         /// <param name="B">Foreign blue channel to be converted</param>
-        /// <param name="format">PaletteColorFormat of foreignColor</param>
+        /// <param name="model">ColorModel of foreignColor</param>
         /// <returns>Local ARGB32 color value</returns>
-        public static uint ForeignToLocalArgb(byte A, byte R, byte G, byte B, PaletteColorFormat format)
+        public static uint ForeignToLocalArgb(byte A, byte R, byte G, byte B, ColorModel model)
         {
             uint localColor;
 
-            if (format == PaletteColorFormat.BGR15)
+            if (model == ColorModel.BGR15)
             {
                 localColor = (uint) R << 19; // Red
                 localColor |= (uint) G << 11; // Green
                 localColor |= (uint) B << 3; // Blue
                 localColor |= 0xFF000000; // Alpha
             }
-            else if (format == PaletteColorFormat.ABGR16)
+            else if (model == ColorModel.ABGR16)
             {
                 localColor = (uint)R << 19; // Red
                 localColor |= (uint)G << 11; // Green
                 localColor |= (uint)B << 3; // Blue
                 localColor |= (uint) (A * 255) << 24; // Alpha
             }
-            else if (format == PaletteColorFormat.RGB15)
+            else if (model == ColorModel.RGB15)
             {
                 localColor = (uint)R << 19; // Red
                 localColor |= (uint)G << 11; // Green
@@ -551,28 +549,28 @@ namespace TileShop.Core
         {
             uint foreignColor = foreignPalette[index];
 
-            return SplitForeignColor(foreignColor, ColorFormat);
+            return SplitForeignColor(foreignColor, ColorModel);
         }
 
         /// <summary>
         /// Splits a foreign color into its foreign color components
         /// </summary>
         /// <param name="foreignColor">Foreign color to be converted</param>
-        /// <param name="colorFormat">PaletteColorFormat of foreignColor</param>
+        /// <param name="ColorModel">ColorModel of foreignColor</param>
         /// <returns>A tuple containing the alpha, red, green, and blue color components</returns>
-        public static (byte A, byte R, byte G, byte B) SplitForeignColor(uint foreignColor, PaletteColorFormat colorFormat)
+        public static (byte A, byte R, byte G, byte B) SplitForeignColor(uint foreignColor, ColorModel ColorModel)
         {
             byte A, R, G, B;
 
-            switch (colorFormat)
+            switch (ColorModel)
             {
-                case PaletteColorFormat.BGR15: case PaletteColorFormat.ABGR16:
+                case ColorModel.BGR15: case ColorModel.ABGR16:
                     R = (byte)(foreignColor & 0x1F);
                     G = (byte)((foreignColor & 0x3E0) >> 5);
                     B = (byte)((foreignColor & 0x7C00) >> 10);
                     A = (byte)((foreignColor & 0x8000) >> 15);
                     break;
-                case PaletteColorFormat.RGB15:
+                case ColorModel.RGB15:
                     R = (byte)((foreignColor & 0x7C00) >> 10);
                     G = (byte)((foreignColor & 0x3E0) >> 5);
                     B = (byte)(foreignColor & 0x1F);
@@ -585,20 +583,20 @@ namespace TileShop.Core
             return (A, R, G, B);
         }
 
-        public static uint MakeForeignColor(byte A, byte R, byte G, byte B, PaletteColorFormat colorFormat)
+        public static uint MakeForeignColor(byte A, byte R, byte G, byte B, ColorModel colorFormat)
         {
             uint foreignColor = 0;
 
             switch (colorFormat)
             {
                 // TODO: Validate color ranges
-                case PaletteColorFormat.BGR15: case PaletteColorFormat.ABGR16:
+                case ColorModel.BGR15: case ColorModel.ABGR16:
                     foreignColor |= R;
                     foreignColor |= ((uint)G << 5);
                     foreignColor |= ((uint)B << 10);
                     foreignColor |= ((uint)A << 15);
                     break;
-                case PaletteColorFormat.RGB15:
+                case ColorModel.RGB15:
                     foreignColor |= B;
                     foreignColor |= ((uint)G << 5);
                     foreignColor |= ((uint)R << 10);
@@ -618,7 +616,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public uint ForeignAlpha(int index)
         {
-            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorFormat);
+            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorModel);
 
             return R;
         }
@@ -630,7 +628,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public uint ForeignRed(int index)
         {
-            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorFormat);
+            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorModel);
 
             return R;
         }
@@ -642,7 +640,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public uint ForeignBlue(int index)
         {
-            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorFormat);
+            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorModel);
 
             return B;
         }
@@ -654,7 +652,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public uint ForeignGreen(int index)
         {
-            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorFormat);
+            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorModel);
 
             return G;
         }
@@ -674,7 +672,7 @@ namespace TileShop.Core
                 throw new ArgumentOutOfRangeException("index", index, "Index is outside the range of number of entries in the palette");
 
             foreignPalette[index] = foreignColor;
-            localPalette[index] = ForeignToLocalArgb(foreignColor, ColorFormat);
+            localPalette[index] = ForeignToLocalArgb(foreignColor, ColorModel);
         }
 
         /// <summary>
@@ -685,7 +683,7 @@ namespace TileShop.Core
         /// <param name=""></param>
         public void SetPaletteForeignColor(int index, byte A, byte R, byte G, byte B)
         {
-            uint foreignColor = Palette.MakeForeignColor(A, R, G, B, ColorFormat);
+            uint foreignColor = Palette.MakeForeignColor(A, R, G, B, ColorModel);
             SetPaletteForeignColor(index, foreignColor);
         }
 
@@ -699,25 +697,25 @@ namespace TileShop.Core
             {
                 int writeSize;
 
-                switch (ColorFormat)
+                switch (ColorModel)
                 {
-                    case PaletteColorFormat.BGR15:
+                    case ColorModel.BGR15:
                         writeSize = 2;
                         HasAlpha = false;
                         break;
-                    case PaletteColorFormat.ABGR16:
+                    case ColorModel.ABGR16:
                         writeSize = 2;
                         HasAlpha = true;
                         break;
-                    case PaletteColorFormat.RGB24:
+                    case ColorModel.RGB24:
                         writeSize = 3;
                         HasAlpha = false;
                         break;
-                    case PaletteColorFormat.ARGB32:
+                    case ColorModel.ARGB32:
                         writeSize = 4;
                         HasAlpha = true;
                         break;
-                    case PaletteColorFormat.RGB15:
+                    case ColorModel.RGB15:
                         writeSize = 2;
                         HasAlpha = false;
                         break;
@@ -750,55 +748,55 @@ namespace TileShop.Core
         }
 
         /// <summary>
-        /// Gets the string name associated with a PaletteColorFormat object
+        /// Gets the string name associated with a ColorModel object
         /// </summary>
-        /// <param name="colorFormatName">The specified PaletteColorFormat object</param>
-        /// <returns>A string name describing the PaletteColorFormat</returns>
-        public static PaletteColorFormat StringToColorFormat(string colorFormatName)
+        /// <param name="ColorModelName">Name of the ColorModel to retrieve</param>
+        /// <returns>A string name describing the ColorModel</returns>
+        public static ColorModel StringToColorModel(string ColorModelName)
         {
-            switch(colorFormatName)
+            switch(ColorModelName)
             {
                 case "RGB24":
-                    return PaletteColorFormat.RGB24;
+                    return ColorModel.RGB24;
                 case "ARGB32":
-                    return PaletteColorFormat.ARGB32;
+                    return ColorModel.ARGB32;
                 case "BGR15":
-                    return PaletteColorFormat.BGR15;
+                    return ColorModel.BGR15;
                 case "ABGR16":
-                    return PaletteColorFormat.ABGR16;
+                    return ColorModel.ABGR16;
                 case "RGB15":
-                    return PaletteColorFormat.RGB15;
+                    return ColorModel.RGB15;
                 case "NES":
-                    return PaletteColorFormat.NES;
+                    return ColorModel.NES;
                 default:
-                    throw new ArgumentException("PaletteColorFormat " + colorFormatName + " is not supported");
+                    throw new ArgumentException("PaletteColorFormat " + ColorModelName + " is not supported");
             }
         }
 
-        public static string ColorFormatToString(PaletteColorFormat colorFormat)
+        public static string ColorFormatToString(ColorModel colorFormat)
         {
             switch (colorFormat)
             {
-                case PaletteColorFormat.RGB24:
+                case ColorModel.RGB24:
                     return "RGB24";
-                case PaletteColorFormat.ARGB32:
+                case ColorModel.ARGB32:
                     return "ARGB32";
-                case PaletteColorFormat.BGR15:
+                case ColorModel.BGR15:
                     return "BGR15";
-                case PaletteColorFormat.ABGR16:
+                case ColorModel.ABGR16:
                     return "ABGR16";
-                case PaletteColorFormat.RGB15:
+                case ColorModel.RGB15:
                     return "RGB15";
-                case PaletteColorFormat.NES:
+                case ColorModel.NES:
                     return "NES";
                 default:
                     throw new ArgumentException("PaletteColorFormat " + colorFormat.ToString() + " is not supported");
             }
         }
 
-        public static List<string> GetPaletteColorFormatsNameList()
+        public static List<string> GetColorModelNames()
         {
-            return Enum.GetNames(typeof(PaletteColorFormat)).Cast<string>().ToList<string>();
+            return Enum.GetNames(typeof(ColorModel)).Cast<string>().ToList<string>();
         }
 
         /// <summary>
@@ -809,7 +807,7 @@ namespace TileShop.Core
         {
             Palette pal = new Palette(Name)
             {
-                ColorFormat = ColorFormat,
+                ColorModel = ColorModel,
                 FileAddress = FileAddress,
                 DataFileKey = DataFileKey,
                 Entries = Entries,

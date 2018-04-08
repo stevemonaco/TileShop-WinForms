@@ -113,7 +113,7 @@ namespace TileShop.Core
                 address = new FileBitAddress(fileoffset, int.Parse(paletteNode.Attribute("bitoffset").Value));
 
             Palette pal = new Palette(name);
-            PaletteColorFormat format = Palette.StringToColorFormat(formatname);
+            ColorModel format = Palette.StringToColorModel(formatname);
 
             pal.LoadPalette(datafile, address, format, zeroindextransparent, entries);
 
@@ -267,7 +267,7 @@ namespace TileShop.Core
             xe.SetAttributeValue("fileoffset", String.Format("{0:X}", pal.FileAddress.FileOffset));
             xe.SetAttributeValue("bitoffset", String.Format("{0:X}", pal.FileAddress.BitOffset));
             xe.SetAttributeValue("datafile", pal.DataFileKey);
-            xe.SetAttributeValue("format", Palette.ColorFormatToString(pal.ColorFormat));
+            xe.SetAttributeValue("format", Palette.ColorFormatToString(pal.ColorModel));
             xe.SetAttributeValue("entries", pal.Entries);
             xe.SetAttributeValue("zeroindextransparent", pal.ZeroIndexTransparent);
 

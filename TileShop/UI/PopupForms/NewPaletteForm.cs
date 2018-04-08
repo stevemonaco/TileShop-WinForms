@@ -9,7 +9,7 @@ namespace TileShop
     {
         public string PaletteName { get; private set; }
         public string FileName { get; private set; }
-        public PaletteColorFormat ColorFormat { get; private set; }
+        public ColorModel ColorModel { get; private set; }
         public int Entries { get; private set; }
         public long FileOffset { get; private set; }
 
@@ -19,7 +19,7 @@ namespace TileShop
 
             // Populate the dropdown with all supported PaletteColorFormats
             colorFormatBox.Items.Clear();
-            List<string> formatlist = Palette.GetPaletteColorFormatsNameList();
+            List<string> formatlist = Palette.GetColorModelNames();
 
             foreach (string s in formatlist)
                 colorFormatBox.Items.Add(s);
@@ -46,7 +46,7 @@ namespace TileShop
             FileName = (string)projectFileBox.SelectedItem;
             Entries = int.Parse(entriesBox.Text);
             FileOffset = long.Parse(offsetBox.Text);
-            ColorFormat = Palette.StringToColorFormat((string)colorFormatBox.Text);
+            ColorModel = Palette.StringToColorModel((string)colorFormatBox.Text);
 
             DialogResult = DialogResult.OK;
             this.Close();
@@ -66,7 +66,7 @@ namespace TileShop
         {
             // Populate the dropdown with all supported PaletteColorFormats
             colorFormatBox.Items.Clear();
-            List<string> formatlist = Palette.GetPaletteColorFormatsNameList();
+            List<string> formatlist = Palette.GetColorModelNames();
 
             if (formatlist.Count == 0)
             {

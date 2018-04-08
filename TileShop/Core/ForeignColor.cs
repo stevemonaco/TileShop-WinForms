@@ -1,16 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TileShop.Core
 {
     /// <summary>
     /// Manages the storage and conversion of foreign colors
     /// </summary>
-    class ForeignColor
+    struct ForeignColor
     {
+        /// <summary>
+        /// Gets or sets the foreign color value
+        /// </summary>
+        public UInt32 Color { get; set; }
+
         /// <summary>
         /// Construct a ForeignColor
         /// </summary>
@@ -20,19 +21,23 @@ namespace TileShop.Core
             Color = color;
         }
 
-        ForeignColor(byte A, byte R, byte G, byte B, PaletteColorFormat colorFormat)
+        ForeignColor(byte A, byte R, byte G, byte B, ColorModel colorFormat)
         {
             switch (colorFormat)
             {
                 // TODO: Validate color ranges
-                case PaletteColorFormat.BGR15:
-                case PaletteColorFormat.ABGR16:
+                case ColorModel.BGR15:
+                    Color = R;
+                    Color |= ((uint)G << 5);
+                    Color |= ((uint)B << 10);
+                    break;
+                case ColorModel.ABGR16:
                     Color = R;
                     Color |= ((uint)G << 5);
                     Color |= ((uint)B << 10);
                     Color |= ((uint)A << 15);
                     break;
-                case PaletteColorFormat.RGB15:
+                case ColorModel.RGB15:
                     Color = B;
                     Color |= ((uint)G << 5);
                     Color |= ((uint)R << 10);
@@ -43,25 +48,19 @@ namespace TileShop.Core
             }
         }
 
-        /// <summary>
-        /// Gets or sets the foreign color value
-        /// </summary>
-        public UInt32 Color;
-
         #region Color Channel Helper Functions
         /// <summary>
         /// Gets the foreign alpha channel intensity
         /// </summary>
         /// <returns></returns>
-        public byte A(PaletteColorFormat format)
+        public byte A(ColorModel format)
         {
             switch (format)
             {
-                case PaletteColorFormat.BGR15:
+                case ColorModel.RGB15:
+                case ColorModel.BGR15:
                     return 0;
-                case PaletteColorFormat.ABGR16:
-                    return (byte)((Color & 0x8000) >> 15);
-                case PaletteColorFormat.RGB15:
+                case ColorModel.ABGR16:
                     return (byte)((Color & 0x8000) >> 15);
                 default:
                     throw new ArgumentException("Unsupported PaletteColorFormat " + format.ToString());
@@ -72,14 +71,14 @@ namespace TileShop.Core
         /// Gets the foreign red channel intensity
         /// </summary>
         /// <returns></returns>
-        public byte R(PaletteColorFormat format)
+        public byte R(ColorModel format)
         {
             switch (format)
             {
-                case PaletteColorFormat.BGR15:
-                case PaletteColorFormat.ABGR16:
+                case ColorModel.BGR15:
+                case ColorModel.ABGR16:
                     return (byte)(Color & 0x1F);
-                case PaletteColorFormat.RGB15:
+                case ColorModel.RGB15:
                     return (byte)((Color & 0x7C00) >> 10);
                 default:
                     throw new ArgumentException("Unsupported PaletteColorFormat " + format.ToString());
@@ -90,14 +89,14 @@ namespace TileShop.Core
         /// Gets the foreign green channel intensity
         /// </summary>
         /// <returns></returns>
-        public byte G(PaletteColorFormat format)
+        public byte G(ColorModel format)
         {
             switch (format)
             {
-                case PaletteColorFormat.BGR15:
-                case PaletteColorFormat.ABGR16:
+                case ColorModel.BGR15:
+                case ColorModel.ABGR16:
                     return (byte)((Color & 0x3E0) >> 5);
-                case PaletteColorFormat.RGB15:
+                case ColorModel.RGB15:
                     return (byte)((Color & 0x3E0) >> 5);
                 default:
                     throw new ArgumentException("Unsupported PaletteColorFormat " + format.ToString());
@@ -108,14 +107,14 @@ namespace TileShop.Core
         /// Gets the foreign blue channel intensity
         /// </summary>
         /// <returns></returns>
-        public byte B(PaletteColorFormat format)
+        public byte B(ColorModel format)
         {
             switch (format)
             {
-                case PaletteColorFormat.BGR15:
-                case PaletteColorFormat.ABGR16:
+                case ColorModel.BGR15:
+                case ColorModel.ABGR16:
                     return (byte)((Color & 0x7C00) >> 10);
-                case PaletteColorFormat.RGB15:
+                case ColorModel.RGB15:
                     return (byte)(Color & 0x1F);
                 default:
                     throw new ArgumentException("Unsupported PaletteColorFormat " + format.ToString());
@@ -127,7 +126,7 @@ namespace TileShop.Core
         /// </summary>
         /// <param name="format"></param>
         /// <returns></returns>
-        public (byte A, byte R, byte G, byte B) Split(PaletteColorFormat format) => (A(format), R(format), G(format), B(format));
+        public (byte A, byte R, byte G, byte B) Split(ColorModel format) => (A(format), R(format), G(format), B(format));
 
         #endregion
 
@@ -138,7 +137,7 @@ namespace TileShop.Core
         /// </summary>
         /// <param name="format"></param>
         /// <returns></returns>
-        public (byte A, byte R, byte G, byte B) SplitToNative(PaletteColorFormat format)
+        public (byte A, byte R, byte G, byte B) SplitToNative(ColorModel format)
         {
             NativeColor nc = ToNativeColor(format);
             return nc.Split();
@@ -149,26 +148,26 @@ namespace TileShop.Core
         /// </summary>
         /// <param name="format">PaletteColorFormat of foreignColor</param>
         /// <returns>Local ARGB32 color value</returns>
-        public NativeColor ToNativeColor(PaletteColorFormat format)
+        public NativeColor ToNativeColor(ColorModel format)
         {
-            NativeColor nc = 0x00000000;
+            NativeColor nc = (NativeColor)0x00000000;
             (byte A, byte R, byte G, byte B) = Split(format);
 
             switch(format)
             {
-                case PaletteColorFormat.BGR15:
+                case ColorModel.BGR15:
                     nc.Color = ((uint)R << 19); // Red
                     nc.Color |= (uint)G << 11; // Green
                     nc.Color |= (uint)B << 3; // Blue
                     nc.Color |= 0xFF000000; // Alpha
                     break;
-                case PaletteColorFormat.ABGR16:
+                case ColorModel.ABGR16:
                     nc.Color = (uint)R << 19; // Red
                     nc.Color |= (uint)G << 11; // Green
                     nc.Color |= (uint)B << 3; // Blue
                     nc.Color |= (uint)(A * 255) << 24; // Alpha
                     break;
-                case PaletteColorFormat.RGB15:
+                case ColorModel.RGB15:
                     nc.Color = (uint)R << 19; // Red
                     nc.Color |= (uint)G << 11; // Green
                     nc.Color |= (uint)B << 3; // Blue

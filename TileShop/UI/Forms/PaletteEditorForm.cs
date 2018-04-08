@@ -37,7 +37,7 @@ namespace TileShop
                 if (NudRed.Value != foreignRed)
                     NudRed.Value = foreignRed;
 
-                ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorFormat));
+                ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
                 SavePaletteColors();
             }
         }
@@ -57,7 +57,7 @@ namespace TileShop
                 if (NudGreen.Value != foreignGreen)
                     NudGreen.Value = foreignGreen;
 
-                ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorFormat));
+                ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
                 SavePaletteColors();
             }
         }
@@ -77,7 +77,7 @@ namespace TileShop
                 if (NudBlue.Value != foreignBlue)
                     NudBlue.Value = foreignBlue;
 
-                ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorFormat));
+                ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
                 SavePaletteColors();
             }
         }
@@ -97,7 +97,7 @@ namespace TileShop
                 if (NudAlpha.Value != foreignAlpha)
                     NudAlpha.Value = foreignAlpha;
 
-                ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorFormat));
+                ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
                 SavePaletteColors();
             }
         }
@@ -110,7 +110,7 @@ namespace TileShop
             pal = ResourceManager.Instance.GetResource(paletteKey) as Palette;
 
             ColorFormatBox.Enabled = false;
-            List<string> colorList = Palette.GetPaletteColorFormatsNameList();
+            List<string> colorList = Palette.GetColorModelNames();
             foreach (string s in colorList)
                 ColorFormatBox.Items.Add(s);
             ColorFormatBox.Enabled = true;
@@ -119,7 +119,7 @@ namespace TileShop
             ProjectFileBox.Text = pal.DataFileKey;
             PaletteOffsetBox.Text = pal.FileAddress.FileOffset.ToString(); // TODO: Refactor for new FileBitAddress
             NudEntries.Value = pal.Entries;
-            SetColorFormatBox(pal.ColorFormat);
+            SetColorFormatBox(pal.ColorModel);
 
             SwatchControl.ShowPalette(pal, pal.Entries);
 
@@ -184,7 +184,7 @@ namespace TileShop
             projectFileBox.SelectedIndex = 0;
         }*/
 
-        private void SetColorFormatBox(PaletteColorFormat format)
+        private void SetColorFormatBox(ColorModel format)
         {
             int idx = 0;
             foreach(string s in ColorFormatBox.Items)
@@ -200,27 +200,27 @@ namespace TileShop
             throw new ArgumentException(String.Format("PaletteColorFormat {0} cannot be found in colorFormatBox's item collection", format.ToString()));
         }
 
-        private void SetPaletteNumericBounds(PaletteColorFormat palFormat)
+        private void SetPaletteNumericBounds(ColorModel ColorModel)
         {
-            switch(palFormat)
+            switch(ColorModel)
             {
-                case PaletteColorFormat.BGR15: case PaletteColorFormat.RGB15:
+                case ColorModel.BGR15: case ColorModel.RGB15:
                     SliderAlpha.Visible = false;
                     NudAlpha.Enabled = false;
                     SetPaletteNumericBounds(0, 31, 0, 31, 0, 31, 0, 31);
                     break;
-                case PaletteColorFormat.RGB24:
+                case ColorModel.RGB24:
                     SliderAlpha.Visible = false;
                     NudAlpha.Enabled = false;
                     SetPaletteNumericBounds(0, 255, 0, 255, 0, 255, 0, 255);
                     break;
-                case PaletteColorFormat.ARGB32:
+                case ColorModel.ARGB32:
                     SliderAlpha.Visible = true;
                     NudAlpha.Enabled = true;
                     SetPaletteNumericBounds(0, 255, 0, 255, 0, 255, 0, 255);
                     break;
                 default:
-                    throw new ArgumentException(String.Format("PaletteColorFormat {0} not supported", palFormat.ToString()));
+                    throw new ArgumentException(String.Format("PaletteColorFormat {0} not supported", ColorModel.ToString()));
             }
         }
 
@@ -293,11 +293,11 @@ namespace TileShop
 
         private void ColorFormatBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            PaletteColorFormat format = (PaletteColorFormat)Enum.Parse(typeof(PaletteColorFormat), (string)ColorFormatBox.SelectedItem);
+            ColorModel model = (ColorModel)Enum.Parse(typeof(ColorModel), (string)ColorFormatBox.SelectedItem);
 
-            SetPaletteNumericBounds(format);
+            SetPaletteNumericBounds(model);
 
-            pal.LoadPalette(pal.DataFileKey, pal.FileAddress, format, pal.ZeroIndexTransparent, pal.Entries);
+            pal.LoadPalette(pal.DataFileKey, pal.FileAddress, model, pal.ZeroIndexTransparent, pal.Entries);
             SwatchControl.Invalidate();
         }
 

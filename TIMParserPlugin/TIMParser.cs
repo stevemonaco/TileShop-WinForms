@@ -169,7 +169,7 @@ namespace TIMParserPlugin
             {
                 string palName = String.Format("{0}.CLUT.{1}", BaseName, i);
                 Palette pal = new Palette(palName);
-                pal.LoadPaletteFromFileName(TimFileName, new FileBitAddress(td.ClutOffsets[i], 0), PaletteColorFormat.BGR15, false, td.ClutColors);
+                pal.LoadPaletteFromFileName(TimFileName, new FileBitAddress(td.ClutOffsets[i], 0), ColorModel.BGR15, false, td.ClutColors);
                 resources.Add(pal);
 
                 Arranger arr = Arranger.NewScatteredArranger(ArrangerLayout.LinearArranger, 1, 1, td.ImageWidth, td.ImageHeight);

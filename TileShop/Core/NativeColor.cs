@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TileShop.Core
 {
@@ -16,6 +12,11 @@ namespace TileShop.Core
         private const int GreenShift = 8;
         private const int BlueShift = 0;
 
+        /// <summary>
+        /// Gets or sets the native 32bit ARGB Color
+        /// </summary>
+        public UInt32 Color;
+
         NativeColor(UInt32 color)
         {
             Color = color;
@@ -25,11 +26,6 @@ namespace TileShop.Core
         {
             Color = ((UInt32)A << AlphaShift | ((UInt32)R << RedShift) | ((UInt32)G << GreenShift) | ((UInt32)B << BlueShift));
         }
-
-        /// <summary>
-        /// Gets or sets the native 32bit ARGB Color
-        /// </summary>
-        public UInt32 Color;
 
         #region Color Channel Helper Functions
 
@@ -73,19 +69,17 @@ namespace TileShop.Core
 
         #endregion
 
-        public static ForeignColor ToForeignColor(PaletteColorFormat format)
+        public static ForeignColor ToForeignColor(ColorModel format)
         {
-            throw new NotImplementedException();
-
             ForeignColor fc;
 
             switch(format)
             {
-                case PaletteColorFormat.BGR15:
+                case ColorModel.BGR15:
                     break;
-                case PaletteColorFormat.ABGR16:
+                case ColorModel.ABGR16:
                     break;
-                case PaletteColorFormat.RGB15:
+                case ColorModel.RGB15:
                     break;
                 default:
                     throw new ArgumentException("Unsupported PaletteColorFormat " + format.ToString());
@@ -95,12 +89,12 @@ namespace TileShop.Core
         }
 
         #region Cast operators
-        public static implicit operator NativeColor(uint color)
+        public static explicit operator NativeColor(uint color)
         {
             return new NativeColor(color);
         }
 
-        public static implicit operator UInt32(NativeColor color)
+        public static explicit operator UInt32(NativeColor color)
         {
             return color.Color;
         }
