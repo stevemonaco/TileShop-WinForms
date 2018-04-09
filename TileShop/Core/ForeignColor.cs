@@ -5,7 +5,7 @@ namespace TileShop.Core
     /// <summary>
     /// Manages the storage and conversion of foreign colors
     /// </summary>
-    struct ForeignColor
+    public struct ForeignColor
     {
         /// <summary>
         /// Gets or sets the foreign color value
@@ -16,12 +16,12 @@ namespace TileShop.Core
         /// Construct a ForeignColor
         /// </summary>
         /// <param name="color">Foreign Color ARGB value</param>
-        ForeignColor(UInt32 color)
+        public ForeignColor(UInt32 color)
         {
             Color = color;
         }
 
-        ForeignColor(byte A, byte R, byte G, byte B, ColorModel colorFormat)
+        public ForeignColor(byte A, byte R, byte G, byte B, ColorModel colorFormat)
         {
             switch (colorFormat)
             {
@@ -146,28 +146,31 @@ namespace TileShop.Core
         /// <summary>
         /// Converts into a NativeColor
         /// </summary>
-        /// <param name="format">ColorModel of foreignColor</param>
-        /// <returns>Local ARGB32 color value</returns>
+        /// <param name="format">ColorModel of ForeignColor</param>
+        /// <returns>Native ARGB32 color value</returns>
         public NativeColor ToNativeColor(ColorModel format)
         {
-            NativeColor nc = (NativeColor)0x00000000;
-            (byte A, byte R, byte G, byte B) = Split(format);
+            NativeColor nc = (NativeColor) 0;
+            byte A, R, G, B;
 
             switch(format)
             {
                 case ColorModel.BGR15:
+                    (A, R, G, B) = Split(format); // Split into foreign color components
                     nc.Color = ((uint)R << 19); // Red
                     nc.Color |= (uint)G << 11; // Green
                     nc.Color |= (uint)B << 3; // Blue
                     nc.Color |= 0xFF000000; // Alpha
                     break;
                 case ColorModel.ABGR16:
+                    (A, R, G, B) = Split(format); // Split into foreign color components
                     nc.Color = (uint)R << 19; // Red
                     nc.Color |= (uint)G << 11; // Green
                     nc.Color |= (uint)B << 3; // Blue
                     nc.Color |= (uint)(A * 255) << 24; // Alpha
                     break;
                 case ColorModel.RGB15:
+                    (A, R, G, B) = Split(format); // Split into foreign color components
                     nc.Color = (uint)R << 19; // Red
                     nc.Color |= (uint)G << 11; // Green
                     nc.Color |= (uint)B << 3; // Blue
@@ -180,6 +183,18 @@ namespace TileShop.Core
             return nc;
         }
 
+        #endregion
+
+        #region Cast operators
+        public static explicit operator ForeignColor(uint color)
+        {
+            return new ForeignColor(color);
+        }
+
+        public static explicit operator UInt32(ForeignColor color)
+        {
+            return color.Color;
+        }
         #endregion
     }
 }

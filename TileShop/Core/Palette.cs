@@ -25,6 +25,7 @@ namespace TileShop.Core
     /// </summary>
     public class Palette : IProjectResource
     {
+        #region Properties
         /// <summary>
         /// Identifying name of the palette
         /// </summary>
@@ -66,24 +67,15 @@ namespace TileShop.Core
         public PaletteStorageSource StorageSource { get; private set; }
 
         /// <summary>
-        /// Gets the internal palette containing local ARGB32 colors
+        /// Gets the internal palette containing native ARGB32 colors
         /// </summary>
-        public uint[] LocalPalette
-        {
-            get { return localPalette; }
-            private set { localPalette = value; }
-        }
-        private uint[] localPalette;
+        public NativeColor[] NativePalette { get; private set; }
 
         /// <summary>
         /// Gets the internal palette containing foreign colors
         /// </summary>
-        public uint[] ForeignPalette
-        {
-            get { return foreignPalette; }
-            private set { foreignPalette = value; }
-        }
-        private uint[] foreignPalette;
+        public ForeignColor[] ForeignPalette { get; private set; }
+        #endregion
 
         /// <summary>
         /// Constructs a new named Palette object
@@ -136,8 +128,8 @@ namespace TileShop.Core
         {
             int entrySize = 256;
 
-            localPalette = new uint[entrySize];
-            foreignPalette = new uint[entrySize];
+            NativePalette = new NativeColor[entrySize];
+            ForeignPalette = new ForeignColor[entrySize];
 
             BinaryReader br = new BinaryReader(File.OpenRead(filename));
 
@@ -148,9 +140,10 @@ namespace TileShop.Core
 
             for (int idx = 0; idx < numColors; idx++)
             {
-                uint foreignColor = br.ReadUInt32();
-                localPalette[idx] = foreignColor | 0xFF000000; // Disable transparency
-                foreignPalette[idx] = foreignColor;
+                uint color = br.ReadUInt32();
+                NativeColor nativeColor = (NativeColor) (color | 0xFF000000); // Disable transparency
+                NativePalette[idx] = nativeColor;
+                ForeignPalette[idx] = (ForeignColor)color;
             }
 
             ColorModel = ColorModel.ARGB32;
@@ -176,8 +169,8 @@ namespace TileShop.Core
             if (numEntries > 256)
                 throw new ArgumentException("Maximum palette size must be 256 entries or less");
 
-            localPalette = new UInt32[numEntries];
-            foreignPalette = new UInt32[numEntries];
+            NativePalette = new NativeColor[numEntries];
+            ForeignPalette = new ForeignColor[numEntries];
 
             using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
@@ -236,16 +229,16 @@ namespace TileShop.Core
                     else
                         throw new NotSupportedException("Palette formats with entry sizes larger than 4 bytes are not supported");
 
-                    uint localColor = ForeignToLocalArgb(foreignColor, format);
-                    foreignPalette[i] = foreignColor;
-                    localPalette[i] = localColor;
+                    uint nativeColor = ForeignToNativeArgb((ForeignColor)foreignColor, format);
+                    ForeignPalette[i] = (ForeignColor) foreignColor;
+                    NativePalette[i] = (NativeColor) nativeColor;
                 }
             }
 
             ZeroIndexTransparent = zeroIndexTransparent;
 
             if (ZeroIndexTransparent)
-                localPalette[0] &= 0x00FFFFFF;
+                NativePalette[0].Color &= 0x00FFFFFF;
 
             ColorModel = format;
             FileAddress = address;
@@ -270,8 +263,8 @@ namespace TileShop.Core
             if (numEntries > 256)
                 throw new ArgumentException("Maximum palette size must be 256 entries or less");
 
-            localPalette = new UInt32[numEntries];
-            foreignPalette = new UInt32[numEntries];
+            NativePalette = new NativeColor[numEntries];
+            ForeignPalette = new ForeignColor[numEntries];
 
             FileStream fs = ((DataFile)ResourceManager.Instance.GetResource(dataFileKey)).Stream;
 
@@ -329,15 +322,15 @@ namespace TileShop.Core
                 else
                     throw new NotSupportedException("Palette formats with entry sizes larger than 4 bytes are not supported");
 
-                uint localColor = ForeignToLocalArgb(foreignColor, format);
-                foreignPalette[i] = foreignColor;
-                localPalette[i] = localColor;
+                ForeignPalette[i] = (ForeignColor)foreignColor;
+                uint nativeColor = ForeignToNativeArgb((ForeignColor)foreignColor, format);
+                NativePalette[i] = (NativeColor) nativeColor;
             }
 
             ZeroIndexTransparent = zeroIndexTransparent;
 
             if (ZeroIndexTransparent)
-                localPalette[0] &= 0x00FFFFFF;
+                NativePalette[0].Color &= 0x00FFFFFF;
 
             ColorModel = format;
             FileAddress = address;
@@ -354,11 +347,11 @@ namespace TileShop.Core
         /// <param name="foreignColor">Foreign color to be converted</param>
         /// <param name="model">ColorModel of foreignColor</param>
         /// <returns>Local ARGB32 color value</returns>
-        public static uint ForeignToLocalArgb(uint foreignColor, ColorModel model)
+        public static uint ForeignToNativeArgb(ForeignColor foreignColor, ColorModel model)
         {
             uint localColor;
 
-            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignColor, model);
+            (byte A, byte R, byte G, byte B) = SplitForeignColor((uint)foreignColor, model);
 
             if (model == ColorModel.BGR15)
             {
@@ -428,18 +421,18 @@ namespace TileShop.Core
         }
 
         /// <summary>
-        /// Returns the local color at the specified index
+        /// Returns the native color at the specified index
         /// </summary>
         /// <param name="index">Zero-based palette index</param>
-        /// <returns>Local ARGB32 color</returns>
-        public uint this[int index]
+        /// <returns>Native ARGB32 color</returns>
+        public NativeColor this[int index]
         {
             get
             {
-                if (localPalette == null)
+                if (NativePalette == null)
                     throw new ArgumentNullException();
 
-                return localPalette[index];
+                return NativePalette[index];
             }
         }
 
@@ -450,10 +443,10 @@ namespace TileShop.Core
         /// <returns>Local Color</returns>
         public Color GetLocalColor(int index)
         {
-            if (localPalette == null)
+            if (NativePalette == null)
                 throw new ArgumentNullException();
 
-            return Color.FromArgb((int)localPalette[index]);
+            return Color.FromArgb((int)NativePalette[index].Color);
         }
 
         /// <summary>
@@ -481,7 +474,7 @@ namespace TileShop.Core
             {
                 for (byte i = 0; i < Entries; i++)
                 {
-                    if (localPalette[i] == color)
+                    if (NativePalette[i].Color == color)
                         return i;
                 }
 
@@ -499,7 +492,7 @@ namespace TileShop.Core
 
             for(byte i = 0; i < Entries; i++)
             {
-                var c2 = new ColorMine.ColorSpaces.Rgb { R = RFromARGB(localPalette[i]), G = GFromARGB(localPalette[i]), B = BFromARGB(localPalette[i]) };
+                var c2 = new ColorMine.ColorSpaces.Rgb { R = RFromARGB((uint)NativePalette[i]), G = GFromARGB((uint)NativePalette[i]), B = BFromARGB((uint)NativePalette[i]) };
                 var h2 = c2.To<ColorMine.ColorSpaces.Hsl>();
 
                 double Distance = c1.Compare(c2, comparator);
@@ -547,7 +540,7 @@ namespace TileShop.Core
         /// <returns>A tuple containing the alpha, red, green, and blue color components of the foreign color</returns>
         public (byte A, byte R, byte G, byte B) SplitForeignColor(int index)
         {
-            uint foreignColor = foreignPalette[index];
+            uint foreignColor = ForeignPalette[index].Color;
 
             return SplitForeignColor(foreignColor, ColorModel);
         }
@@ -616,7 +609,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public uint ForeignAlpha(int index)
         {
-            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorModel);
+            (byte A, byte R, byte G, byte B) = SplitForeignColor(ForeignPalette[index].Color, ColorModel);
 
             return R;
         }
@@ -628,7 +621,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public uint ForeignRed(int index)
         {
-            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorModel);
+            (byte A, byte R, byte G, byte B) = SplitForeignColor(ForeignPalette[index].Color, ColorModel);
 
             return R;
         }
@@ -640,7 +633,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public uint ForeignBlue(int index)
         {
-            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorModel);
+            (byte A, byte R, byte G, byte B) = SplitForeignColor(ForeignPalette[index].Color, ColorModel);
 
             return B;
         }
@@ -652,7 +645,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public uint ForeignGreen(int index)
         {
-            (byte A, byte R, byte G, byte B) = SplitForeignColor(foreignPalette[index], ColorModel);
+            (byte A, byte R, byte G, byte B) = SplitForeignColor(ForeignPalette[index].Color, ColorModel);
 
             return G;
         }
@@ -665,14 +658,14 @@ namespace TileShop.Core
         /// <param name=""></param>
         public void SetPaletteForeignColor(int index, uint foreignColor)
         {
-            if (foreignPalette == null)
+            if (ForeignPalette == null)
                 throw new NullReferenceException();
 
             if (index >= Entries)
                 throw new ArgumentOutOfRangeException("index", index, "Index is outside the range of number of entries in the palette");
 
-            foreignPalette[index] = foreignColor;
-            localPalette[index] = ForeignToLocalArgb(foreignColor, ColorModel);
+            ForeignPalette[index] = (ForeignColor) foreignColor;
+            NativePalette[index] = (NativeColor) ForeignToNativeArgb((ForeignColor)foreignColor, ColorModel);
         }
 
         /// <summary>
@@ -731,17 +724,17 @@ namespace TileShop.Core
                 for (int i = 0; i < Entries; i++)
                 {
                     if (writeSize == 1)
-                        bw.Write((byte)foreignPalette[i]);
+                        bw.Write((byte)ForeignPalette[i].Color);
                     else if (writeSize == 2)
-                        bw.Write((short)foreignPalette[i]);
+                        bw.Write((short)ForeignPalette[i].Color);
                     else if (writeSize == 3)
                     {
-                        bw.Write((byte)(foreignPalette[i] & 0xFF));
-                        bw.Write((byte)((foreignPalette[i] >> 8) & 0xFF));
-                        bw.Write((byte)((foreignPalette[i] >> 16) & 0xFF));
+                        bw.Write((byte)(ForeignPalette[i].Color & 0xFF));
+                        bw.Write((byte)((ForeignPalette[i].Color >> 8) & 0xFF));
+                        bw.Write((byte)((ForeignPalette[i].Color >> 16) & 0xFF));
                     }
                     else if (writeSize == 4)
-                        bw.Write(foreignPalette[i]);
+                        bw.Write(ForeignPalette[i].Color);
                 }
             }
             return true;
@@ -814,12 +807,12 @@ namespace TileShop.Core
                 HasAlpha = this.HasAlpha,
                 ZeroIndexTransparent = this.ZeroIndexTransparent,
                 StorageSource = this.StorageSource,
-                LocalPalette = new uint[this.Entries],
-                ForeignPalette = new uint[this.Entries]
+                NativePalette = new NativeColor[this.Entries],
+                ForeignPalette = new ForeignColor[this.Entries]
             };
 
-            Buffer.BlockCopy(LocalPalette, 0, pal.LocalPalette, 0, Entries * sizeof(uint));
-            Buffer.BlockCopy(ForeignPalette, 0, pal.ForeignPalette, 0, Entries * sizeof(uint));
+            NativePalette.CopyTo(pal.NativePalette, 0);
+            ForeignPalette.CopyTo(pal.ForeignPalette, 0);
 
             return pal;
         }

@@ -241,7 +241,7 @@ namespace TileShop
             if(DrawState == PixelDrawState.PencilState)
             {
                 Palette pal = ResourceManager.Instance.GetResource(EditArranger.GetElement(0, 0).PaletteKey) as Palette;
-                SetPixel(unscaledLoc.X, unscaledLoc.Y, Color.FromArgb((int)pal[SwatchControl.SelectedIndex]));
+                SetPixel(unscaledLoc.X, unscaledLoc.Y, Color.FromArgb((int)pal[SwatchControl.SelectedIndex].Color));
 
                 PencilDragActive = true;
             }
@@ -267,7 +267,7 @@ namespace TileShop
                         unscaledLoc.Y = (e.Location.Y - PixelMargin.Height) / Zoom;
 
                         Palette pal = ResourceManager.Instance.GetResource(EditArranger.GetElement(0, 0).PaletteKey) as Palette;
-                        SetPixel(unscaledLoc.X, unscaledLoc.Y, Color.FromArgb((int)pal[SwatchControl.SelectedIndex]));
+                        SetPixel(unscaledLoc.X, unscaledLoc.Y, Color.FromArgb((int)pal[SwatchControl.SelectedIndex].Color));
                     }
 
                 }
@@ -281,10 +281,10 @@ namespace TileShop
         private void SetPixel(int X, int Y, Color color)
         {
             Palette pal = ResourceManager.Instance.GetResource(EditArranger.GetElement(0, 0).PaletteKey) as Palette;
-            Color col = Color.FromArgb((int)pal[SwatchControl.SelectedIndex]);
+            Color col = Color.FromArgb((int)pal[SwatchControl.SelectedIndex].Color);
             if (rm.GetPixel(X, Y) != col)
             {
-                rm.SetPixel(X, Y, Color.FromArgb((int)pal[SwatchControl.SelectedIndex]));
+                rm.SetPixel(X, Y, Color.FromArgb((int)pal[SwatchControl.SelectedIndex].Color));
                 ContainsModifiedContent = true;
                 OnContentModified(EventArgs.Empty);
                 PixelPanel.Invalidate();

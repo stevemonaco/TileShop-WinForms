@@ -99,7 +99,7 @@ namespace TileShop
                 Rectangle HighlightRect = DrawRect;
                 HighlightRect.Inflate(1, 1);
 
-                Brush b = new SolidBrush(Color.FromArgb((int)(pal[idx] | 0xFF000000))); // Draw the color with no transparency
+                Brush b = new SolidBrush(Color.FromArgb((int)(pal[idx].Color | 0xFF000000))); // Draw the color with no transparency
                 e.Graphics.FillRectangle(b, DrawRect);
 
                 // Draw border

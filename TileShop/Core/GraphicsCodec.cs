@@ -202,7 +202,7 @@ namespace TileShop.Core
                     dest += el.X1; // Seek to PixelX in the scanline
                     for (int x = 0; x < Width; x++)
                     {
-                        *dest = pal[*src];
+                        *dest = pal[*src].Color;
                         dest++;
                         src++;
                     }

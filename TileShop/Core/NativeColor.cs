@@ -5,7 +5,7 @@ namespace TileShop.Core
     /// <summary>
     /// Manages the storage and conversion of internal 32bit ARGB colors
     /// </summary>
-    struct NativeColor
+    public struct NativeColor
     {
         private const int AlphaShift = 24;
         private const int RedShift = 16;
@@ -17,12 +17,12 @@ namespace TileShop.Core
         /// </summary>
         public UInt32 Color;
 
-        NativeColor(UInt32 color)
+        public NativeColor(UInt32 color)
         {
             Color = color;
         }
 
-        NativeColor(byte A, byte R, byte G, byte B)
+        public NativeColor(byte A, byte R, byte G, byte B)
         {
             Color = ((UInt32)A << AlphaShift | ((UInt32)R << RedShift) | ((UInt32)G << GreenShift) | ((UInt32)B << BlueShift));
         }
@@ -69,24 +69,45 @@ namespace TileShop.Core
 
         #endregion
 
-        public static ForeignColor ToForeignColor(ColorModel format)
+        #region Native to Foreign Conversion Functions
+        /// <summary>
+        /// Converts into a Foreign Color
+        /// </summary>
+        /// <param name="model">ColorModel of ForeignColor</param>
+        /// <returns>Foreign color value</returns>
+        public ForeignColor ToForeignColor(ColorModel model)
         {
-            ForeignColor fc;
+            ForeignColor fc = (ForeignColor) 0;
+            byte A, R, G, B;
 
-            switch(format)
+            switch(model)
             {
                 case ColorModel.BGR15:
+                    (A, R, G, B) = Split();
+                    fc.Color = ((uint)B >> 3) << 10;
+                    fc.Color |= ((uint)G >> 3) << 5;
+                    fc.Color |= ((uint)R >> 3);
                     break;
                 case ColorModel.ABGR16:
+                    (A, R, G, B) = Split();
+                    fc.Color = ((uint)B >> 3) << 10;
+                    fc.Color |= ((uint)G >> 3) << 5;
+                    fc.Color |= ((uint)R >> 3);
+                    fc.Color |= ((uint)A << 15);
                     break;
                 case ColorModel.RGB15:
+                    (A, R, G, B) = Split();
+                    fc.Color = (uint)B >> 3;
+                    fc.Color |= ((uint)G >> 3) << 5;
+                    fc.Color |= ((uint)R >> 3) << 10;
                     break;
                 default:
-                    throw new ArgumentException("Unsupported ColorModel " + format.ToString());
+                    throw new ArgumentException("Unsupported ColorModel " + model.ToString());
             }
 
             return fc;
         }
+        #endregion
 
         #region Cast operators
         public static explicit operator NativeColor(uint color)
