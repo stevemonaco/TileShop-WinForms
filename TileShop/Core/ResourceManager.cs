@@ -25,7 +25,7 @@ namespace TileShop.Core
         /// </summary>
         private Dictionary<string, IProjectResource> ResourceMap = new Dictionary<string, IProjectResource>();
         /// <summary>
-        /// Maps resource keys to resources that are currently leased
+        /// Maps resource keys to copies of resources that are currently leased
         /// </summary>
         private Dictionary<string, IProjectResource> LeasedResourceMap = new Dictionary<string, IProjectResource>();
 
@@ -41,11 +41,6 @@ namespace TileShop.Core
         private Dictionary<string, GraphicsFormat> FormatList = new Dictionary<string, GraphicsFormat>();
 
         /// <summary>
-        /// List of in-use files on disk that can be read or written to by subeditors such as the arranger or palette editor
-        /// </summary>
-        //private Dictionary<string, DataFile> DataFileList = new Dictionary<string, DataFile>();
-
-        /// <summary>
         /// List of cursors loaded
         /// </summary>
         private Dictionary<string, Cursor> CursorList = new Dictionary<string, Cursor>();
@@ -54,9 +49,6 @@ namespace TileShop.Core
         /// FileTypeLoader which is used to match file extensions with the default graphics codec upon opening for sequential arranger
         /// </summary>
         private FileTypeLoader Loader = new FileTypeLoader();
-
-        const int DefaultElementsX = 16;
-        const int DefaultElementsY = 16;
 
         #region Lazy Singleton implementation
         public static readonly Lazy<ResourceManager> lazySingleton = new Lazy<ResourceManager>(() => new ResourceManager());
@@ -201,13 +193,13 @@ namespace TileShop.Core
         /// <param name="DataFileKey">Key of a loaded DataFile</param>
         /// <param name="ResourceKey">Key of the SequentialArranger Resource to create as a leased resource</param>
         /// <returns></returns>
-        public bool LeaseDataFileAsArranger(string DataFileKey, string ResourceKey)
+        public bool LeaseDataFileAsArranger(string DataFileKey, string ResourceKey, int ArrangerWidth, int ArrangerHeight)
         {
             if (!HasResource(DataFileKey) || HasResource(ResourceKey) || LeasedResourceMap.ContainsKey(ResourceKey))
                 return false;
 
             string formatname = Loader.GetDefaultFormatName(DataFileKey);
-            Arranger arranger = Arranger.NewSequentialArranger(DefaultElementsX, DefaultElementsY, DataFileKey, GetGraphicsFormat(formatname));
+            Arranger arranger = Arranger.NewSequentialArranger(ArrangerWidth, ArrangerHeight, DataFileKey, GetGraphicsFormat(formatname));
 
             LeasedResourceMap.Add(ResourceKey, arranger);
 

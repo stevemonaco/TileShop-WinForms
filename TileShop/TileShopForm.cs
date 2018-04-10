@@ -84,6 +84,7 @@ namespace TileShop
             SelectionLabel.Text = text;
         }
 
+        #region Startup loading functions
         private void LoadCodecs(string path)
         {
             string[] filenames = Directory.GetFiles(path);
@@ -156,6 +157,7 @@ namespace TileShop
                 nameItem.DropDownItems.Add(viewItem);
             }
         }
+        #endregion
 
         #region UI Events
         private void RunFileParserPlugin_Click(object sender, EventArgs e)
