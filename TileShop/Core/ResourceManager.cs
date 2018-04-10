@@ -18,10 +18,8 @@ namespace TileShop.Core
     /// </summary>
 
     // TODO - Consider future implementation of lazy instantiation for some objects, especially for projects that have many, many files
-    public class ResourceManager
+    public sealed class ResourceManager
     {
-        public static readonly ResourceManager Instance = new ResourceManager();
-
         /// <summary>
         /// Maps resource keys to resources
         /// </summary>
@@ -31,6 +29,9 @@ namespace TileShop.Core
         /// </summary>
         private Dictionary<string, IProjectResource> LeasedResourceMap = new Dictionary<string, IProjectResource>();
 
+        /// <summary>
+        /// Events to notify UI components when resources have been added or renamed
+        /// </summary>
         public EventHandler<ResourceEventArgs> ResourceAdded;
         public EventHandler<ResourceEventArgs> ResourceRenamed;
 
@@ -56,6 +57,16 @@ namespace TileShop.Core
 
         const int DefaultElementsX = 16;
         const int DefaultElementsY = 16;
+
+        #region Lazy Singleton implementation
+        public static readonly Lazy<ResourceManager> lazySingleton = new Lazy<ResourceManager>(() => new ResourceManager());
+
+        public static ResourceManager Instance { get { return lazySingleton.Value; } }
+
+        private ResourceManager()
+        {
+        }
+        #endregion
 
         #region IProjectResource Management
         /// <summary>
