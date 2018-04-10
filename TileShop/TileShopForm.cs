@@ -249,14 +249,12 @@ namespace TileShop
                     ProjectFileName = sfd.FileName;
                     GameDescriptorSerializer gds = new GameDescriptorSerializer();
                     gds.SaveProject(ProjectFileName);
-                    //ptf.SaveProject(ProjectFileName);
                 }
             }
             else
             {
                 GameDescriptorSerializer gds = new GameDescriptorSerializer();
                 gds.SaveProject(ProjectFileName);
-                //ptf.SaveProject(ProjectFileName);
             }
         }
 
@@ -286,7 +284,6 @@ namespace TileShop
                 ProjectFileName = sfd.FileName;
                 GameDescriptorSerializer gds = new GameDescriptorSerializer();
                 gds.SaveProject(ProjectFileName);
-                //ptf.SaveProject(ProjectFileName);
             }
         }
 
