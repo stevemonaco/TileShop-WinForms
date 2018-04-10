@@ -64,6 +64,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>External\gTrackBar.dll</HintPath>
     </Reference>
+    <Reference Include="MoreLinq, Version=2.10.21623.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
+      <HintPath>..\packages\morelinq.2.10.0\lib\net40\MoreLinq.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Annotations, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ComponentModel.Annotations.4.4.1\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
@@ -98,6 +101,7 @@
   <ItemGroup>
     <Compile Include="Core\ResourceEventArgs.cs" />
     <Compile Include="ExtensionMethods\ColorExtensions.cs" />
+    <Compile Include="ExtensionMethods\RectangularArrayExtensions.cs" />
     <Compile Include="ExtensionMethods\TreeNodeExtensions.cs" />
     <Compile Include="UI\Controls\CheckedDropDownButton.cs">
       <SubType>Component</SubType>

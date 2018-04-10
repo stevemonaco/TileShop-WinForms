@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MoreLinq;
 using System.Xml;
 using System.Xml.Linq;
 using System.IO;
@@ -19,6 +20,7 @@ namespace TileShop.Core
         /// </summary>
         private string baseDirectory = null;
 
+        #region XML Deserialization methods
         /// <summary>
         /// Loads data files, palettes, and arrangers from XML
         /// Sets up the nodes in the project tree
@@ -67,8 +69,6 @@ namespace TileShop.Core
         /// <returns></returns>
         private bool AddFolderNode(XElement folderNode)
         {
-            //ptf.AddFolderNode(folderNode.NodeKey);
-
             foreach (XElement node in folderNode.Elements())
             {
                 if (node.Name == "folder")
@@ -93,7 +93,6 @@ namespace TileShop.Core
             df.Open(location);
 
             ResourceManager.Instance.AddResource(fileNode.NodeKey(), df);
-            //ptf.AddDataFile(df, fileNode.NodePath());
             return true;
         }
 
@@ -118,7 +117,6 @@ namespace TileShop.Core
             pal.LoadPalette(datafile, address, format, zeroindextransparent, entries);
 
             ResourceManager.Instance.AddResource(paletteNode.NodeKey(), pal);
-            //ptf.AddPalette(pal, paletteNode.NodePath());
 
             return true;
         }
@@ -189,7 +187,9 @@ namespace TileShop.Core
             //ptf.AddArranger(arr, arrangerNode.NodePath());
             return true;
         }
+        #endregion
 
+        #region XML Serialization methods
         /// <summary>
         /// Iterates over tree nodes and saves project settings to XML
         /// </summary>
@@ -291,9 +291,9 @@ namespace TileShop.Core
             else if (arr.Layout == ArrangerLayout.LinearArranger)
                 xe.SetAttributeValue("layout", "linear");
 
-            string DefaultPalette = FindMostFrequentValue(arr, "PaletteName");
-            string DefaultFile = FindMostFrequentValue(arr, "FileName");
-            string DefaultFormat = FindMostFrequentValue(arr, "FormatName");
+            string DefaultPalette = FindMostFrequentElementValue(arr, "PaletteName");
+            string DefaultFile = FindMostFrequentElementValue(arr, "FileName");
+            string DefaultFormat = FindMostFrequentElementValue(arr, "FormatName");
 
             xe.SetAttributeValue("defaultformat", DefaultFormat);
             xe.SetAttributeValue("defaultfile", DefaultFile);
@@ -323,6 +323,7 @@ namespace TileShop.Core
 
             return xe;
         }
+        #endregion
 
         /// <summary>
         /// Find most frequent of an attribute within an arranger's elements
@@ -330,9 +331,18 @@ namespace TileShop.Core
         /// <param name="arr">Arranger to search</param>
         /// <param name="attributeName">Name of the attribute to find most frequent value of</param>
         /// <returns></returns>
-        private string FindMostFrequentValue(Arranger arr, string attributeName)
+        private string FindMostFrequentElementValue(Arranger arr, string attributeName)
         {
-            Dictionary<string, int> freq = new Dictionary<string, int>();
+            Type T = typeof(ArrangerElement);
+            PropertyInfo P = T.GetProperty(attributeName);
+
+            var query = from ArrangerElement el in arr.ElementGrid
+                        group el by P.GetValue(el) into grp
+                        select new { key = grp.Key, count = grp.Count() };
+
+            return query.MaxBy(x => x.count).key as string;
+
+            /*Dictionary<string, int> freq = new Dictionary<string, int>();
             Type T = typeof(ArrangerElement);
             PropertyInfo P = T.GetProperty(attributeName);
 
@@ -349,9 +359,9 @@ namespace TileShop.Core
                     freq.Add(s, 1);
             }
 
-            var max = freq.FirstOrDefault(x => x.Value == freq.Values.Max()).Key;
+            var max = freq.FirstOrDefault(x => x.Value == freq.Values.Max()).Key;*/
 
-            return max;
+            //return max;
         }
     }
 }
