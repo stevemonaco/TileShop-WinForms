@@ -17,6 +17,8 @@ namespace TileShop
     {
         TileShopForm tsf = null;
         ContextMenu contextMenu = new ContextMenu();
+        const int DefaultArrangerWidth = 8;
+        const int DefaultArrangerHeight = 16;
 
         public ProjectTreeForm(TileShopForm tileShopForm)
         {
@@ -216,7 +218,7 @@ namespace TileShop
             // Workaround to lease a data file without explicitly adding a sequential arranger to the project
             string LeasedFileKey = DataFileKey + ".SeqArranger";
 
-            if (ResourceManager.Instance.LeaseDataFileAsArranger(DataFileKey, LeasedFileKey))
+            if (ResourceManager.Instance.LeaseDataFileAsArranger(DataFileKey, LeasedFileKey, DefaultArrangerWidth, DefaultArrangerHeight))
             {
                 ArrangerViewerForm avf = new ArrangerViewerForm(LeasedFileKey);
                 avf.WindowState = FormWindowState.Maximized;
@@ -553,14 +555,12 @@ namespace TileShop
             if (nodepaths.Length == 0) // No separators implies a root level path was specified
                 return null;
 
-            string path = "";
             TreeNodeCollection tnc = ProjectTreeView.Nodes;
             ResourceNode node = null;
 
             for(int i = 0; i < nodepaths.Length; i++)
             {
-                path = Path.Combine(path, nodepaths[i]);
-                TreeNode[] nodeList = tnc.Find(path, false);
+                TreeNode[] nodeList = tnc.Find(nodepaths[i], false);
 
                 if (nodeList.Length == 0) // No entry, must create a new FolderNode
                 {
