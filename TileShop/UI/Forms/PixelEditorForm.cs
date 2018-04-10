@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Reflection;
 using TileShop.Core;
+using TileShop.ExtensionMethods;
 
 namespace TileShop
 {
@@ -249,7 +250,7 @@ namespace TileShop
             {
                 Color c = rm.GetPixel(unscaledLoc.X, unscaledLoc.Y);
                 Palette pal = ResourceManager.Instance.GetResource(EditArranger.GetElement(0, 0).PaletteKey) as Palette;
-                SwatchControl.SelectedIndex = pal.GetIndexByLocalColor(c, true);
+                SwatchControl.SelectedIndex = pal.GetIndexByNativeColor(c.ToNativeColor(), true);
             }
         }
 

@@ -37,7 +37,9 @@ namespace TileShop
                 if (NudRed.Value != foreignRed)
                     NudRed.Value = foreignRed;
 
-                ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
+                //ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
+                ForeignColor fc = new ForeignColor(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel);
+                ActiveColor = fc.ToColor(pal.ColorModel);
                 SavePaletteColors();
             }
         }
@@ -57,7 +59,9 @@ namespace TileShop
                 if (NudGreen.Value != foreignGreen)
                     NudGreen.Value = foreignGreen;
 
-                ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
+                //ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
+                ForeignColor fc = new ForeignColor(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel);
+                ActiveColor = fc.ToColor(pal.ColorModel);
                 SavePaletteColors();
             }
         }
@@ -77,7 +81,9 @@ namespace TileShop
                 if (NudBlue.Value != foreignBlue)
                     NudBlue.Value = foreignBlue;
 
-                ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
+                //ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
+                ForeignColor fc = new ForeignColor(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel);
+                ActiveColor = fc.ToColor(pal.ColorModel);
                 SavePaletteColors();
             }
         }
@@ -97,7 +103,9 @@ namespace TileShop
                 if (NudAlpha.Value != foreignAlpha)
                     NudAlpha.Value = foreignAlpha;
 
-                ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
+                //ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
+                ForeignColor fc = new ForeignColor(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel);
+                ActiveColor = fc.ToColor(pal.ColorModel);
                 SavePaletteColors();
             }
         }
@@ -126,7 +134,7 @@ namespace TileShop
             typeof(Panel).InvokeMember("DoubleBuffered", BindingFlags.SetProperty | BindingFlags.Instance | BindingFlags.NonPublic, null,
                 activeColorPanel, new object[] { true }); // Enable double buffering
 
-            (byte A, byte R, byte G, byte B) = pal.SplitForeignColor(0);
+            (byte A, byte R, byte G, byte B) = (0, 0, 0, 0);
             ForeignAlpha = A;
             ForeignRed = R;
             ForeignGreen = G;
@@ -148,7 +156,8 @@ namespace TileShop
             SwatchControl.Invalidate();
             ActiveColor = pal.GetLocalColor(0);
 
-            (byte A, byte R, byte G, byte B) = pal.SplitForeignColor(SwatchControl.SelectedIndex);
+            //(byte A, byte R, byte G, byte B) = pal.SplitForeignColor(SwatchControl.SelectedIndex);
+            (byte A, byte R, byte G, byte B) = pal.ForeignPalette[SwatchControl.SelectedIndex].Split(pal.ColorModel);
 
             ForeignAlpha = A;
             ForeignRed = R;
@@ -321,7 +330,7 @@ namespace TileShop
         private void SwatchControl_SelectedIndexChanged(object sender, EventArgs e)
         {
             ActiveColor = pal.GetLocalColor(SwatchControl.SelectedIndex);
-            (byte A, byte R, byte G, byte B) = pal.SplitForeignColor(SwatchControl.SelectedIndex);
+            (byte A, byte R, byte G, byte B) = pal.ForeignPalette[SwatchControl.SelectedIndex].Split(pal.ColorModel);
 
             ForeignAlpha = A;
             ForeignRed = R;

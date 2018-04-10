@@ -338,7 +338,7 @@ namespace TileShop.Core
                     src += el.X1; // Seek to PixelX in the scanline
                     for (int x = 0; x < Width; x++)
                     {
-                        *dest = pal.GetIndexByColor(*src, true);
+                        *dest = pal.GetIndexByNativeColor((NativeColor)(*src), true);
                         dest++;
                         src++;
                     }

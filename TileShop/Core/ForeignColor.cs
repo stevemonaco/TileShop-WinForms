@@ -146,41 +146,51 @@ namespace TileShop.Core
         /// <summary>
         /// Converts into a NativeColor
         /// </summary>
-        /// <param name="format">ColorModel of ForeignColor</param>
+        /// <param name="model">ColorModel of ForeignColor</param>
         /// <returns>Native ARGB32 color value</returns>
-        public NativeColor ToNativeColor(ColorModel format)
+        public NativeColor ToNativeColor(ColorModel model)
         {
             NativeColor nc = (NativeColor) 0;
             byte A, R, G, B;
 
-            switch(format)
+            switch(model)
             {
                 case ColorModel.BGR15:
-                    (A, R, G, B) = Split(format); // Split into foreign color components
+                    (A, R, G, B) = Split(model); // Split into foreign color components
                     nc.Color = ((uint)R << 19); // Red
                     nc.Color |= (uint)G << 11; // Green
                     nc.Color |= (uint)B << 3; // Blue
                     nc.Color |= 0xFF000000; // Alpha
                     break;
                 case ColorModel.ABGR16:
-                    (A, R, G, B) = Split(format); // Split into foreign color components
+                    (A, R, G, B) = Split(model); // Split into foreign color components
                     nc.Color = (uint)R << 19; // Red
                     nc.Color |= (uint)G << 11; // Green
                     nc.Color |= (uint)B << 3; // Blue
                     nc.Color |= (uint)(A * 255) << 24; // Alpha
                     break;
                 case ColorModel.RGB15:
-                    (A, R, G, B) = Split(format); // Split into foreign color components
+                    (A, R, G, B) = Split(model); // Split into foreign color components
                     nc.Color = (uint)R << 19; // Red
                     nc.Color |= (uint)G << 11; // Green
                     nc.Color |= (uint)B << 3; // Blue
                     nc.Color |= 0xFF000000; // Alpha
                     break;
                 default:
-                    throw new ArgumentException("Unsupported ColorModel " + format.ToString());
+                    throw new ArgumentException("Unsupported ColorModel " + model.ToString());
             }
 
             return nc;
+        }
+
+        /// <summary>
+        /// Converts into a Color with native representation
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public System.Drawing.Color ToColor(ColorModel model)
+        {
+            return ToNativeColor(model).ToColor();
         }
 
         #endregion

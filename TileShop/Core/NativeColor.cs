@@ -69,7 +69,7 @@ namespace TileShop.Core
 
         #endregion
 
-        #region Native to Foreign Conversion Functions
+        #region Conversion Functions
         /// <summary>
         /// Converts into a Foreign Color
         /// </summary>
@@ -106,6 +106,16 @@ namespace TileShop.Core
             }
 
             return fc;
+        }
+
+        /// <summary>
+        /// Converts to a Color
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public System.Drawing.Color ToColor()
+        {
+            return System.Drawing.Color.FromArgb((int)Color);
         }
         #endregion
 

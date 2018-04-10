@@ -171,7 +171,7 @@ namespace TileShop
                 if (!plugin.Value.DisplayPluginInterface()) // If no arrangers/palettes to add
                     break;
 
-                List<IProjectResource> resources = plugin.Value.RetrieveResources();
+                var resources = plugin.Value.RetrieveResourceMap();
 
                 if (resources == null)
                 {
@@ -179,12 +179,14 @@ namespace TileShop
                     return;
                 }
 
-                foreach (IProjectResource res in resources)
+                foreach (string key in resources.Keys)
                 {
+                    // TODO: Add checks to ensure resources were added
+                    IProjectResource res = resources[key];
                     if (res is DataFile df)
-                        ResourceManager.Instance.AddResource(pluginName, df);
+                        ResourceManager.Instance.AddResource(key, res);
                     else
-                        ResourceManager.Instance.AddResource(pluginName, res.Clone());
+                        ResourceManager.Instance.AddResource(key, res.Clone());
                 }
             }
         }

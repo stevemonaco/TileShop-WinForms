@@ -57,8 +57,8 @@
       <HintPath>..\packages\ColorMine.1.1.3.0\lib\ColorMine.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="FluentValidation, Version=7.0.0.0, Culture=neutral, PublicKeyToken=7de548da2fbae0f0, processorArchitecture=MSIL">
-      <HintPath>..\packages\FluentValidation.7.5.2\lib\net45\FluentValidation.dll</HintPath>
+    <Reference Include="Ensure.That, Version=7.2.1.70, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ensure.That.7.2.1\lib\net451\Ensure.That.dll</HintPath>
     </Reference>
     <Reference Include="gTrackBar, Version=1.0.9.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -97,6 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\ResourceEventArgs.cs" />
+    <Compile Include="ExtensionMethods\ColorExtensions.cs" />
     <Compile Include="ExtensionMethods\TreeNodeExtensions.cs" />
     <Compile Include="UI\Controls\CheckedDropDownButton.cs">
       <SubType>Component</SubType>
