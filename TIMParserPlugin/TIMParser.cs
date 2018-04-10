@@ -18,8 +18,9 @@ namespace TIMParserPlugin
     [ExportMetadata("Description", "Parses file(s) for TIMs and automatically creates the appropriate arrangers and palettes")]
     public class TIMParser : IFileParserContract
     {
-        List<IProjectResource> resources = new List<IProjectResource>();
+        Dictionary<string, IProjectResource> resourceMap = new Dictionary<string, IProjectResource>();
 
+        const string BaseFolderName = "Imported TIMs";
         const uint TimTag = 0x00000010;
 
         /// <summary>
@@ -40,7 +41,7 @@ namespace TIMParserPlugin
                 return false;
 
             // Clear data for multiple runs
-            resources.Clear();
+            resourceMap.Clear();
 
             foreach (string fname in ofd.FileNames)
             {
@@ -49,7 +50,7 @@ namespace TIMParserPlugin
                 {
                     DataFile df = new DataFile(Path.GetFileName(fname));
                     df.Open(fname); // TODO: Refactor not opening these files plugin-side; do it TileShop-side instead
-                    resources.Add(df);
+                    resourceMap.Add(Path.Combine(BaseFolderName, df.Name), df);
                 }
             }
 
@@ -140,7 +141,8 @@ namespace TIMParserPlugin
                         td.ImageDataOffset = fs.Position;
                         fs.Seek(td.ImageDataSize, SeekOrigin.Current);
 
-                        Arrange(td, FileName, String.Format("{0}.{1}", FileName, TimCount));
+                        string shortName = Path.GetFileName(FileName);
+                        Arrange(td, fs, Path.Combine(BaseFolderName, shortName), $"{shortName}.{TimCount}");
                         TimCount++;
                     }
                 }
@@ -153,32 +155,39 @@ namespace TIMParserPlugin
             return TimCount;
         }
 
-        public List<IProjectResource> RetrieveResources()
+        public Dictionary<string, IProjectResource> RetrieveResourceMap()
         {
-            return resources;
+            return resourceMap;
         }
 
-        void Arrange(TimData td, string TimFileName, string BaseName)
+        /// <summary>
+        /// Builds an Arranger for every Palette within the TIM and adds them to the resource list
+        /// </summary>
+        /// <param name="td"></param>
+        /// <param name="TimFileName"></param>
+        /// <param name="BaseTimName"></param>
+        void Arrange(TimData td, FileStream fs, string DataFileKey, string BaseTimName)
         {
             if (td == null)
                 throw new ArgumentNullException();
 
-            string InitialPaletteName = String.Format("{0}.CLUT.{1}", BaseName, 0);
-
             for (int i = 0; i < td.ClutCount; i++)
             {
-                string palName = String.Format("{0}.CLUT.{1}", BaseName, i);
+                string palName = $"{BaseTimName}.CLUT.{i}";
+                string palKey = Path.Combine(BaseFolderName, palName);
+
                 Palette pal = new Palette(palName);
-                pal.LoadPaletteFromFileName(TimFileName, new FileBitAddress(td.ClutOffsets[i], 0), ColorModel.BGR15, false, td.ClutColors);
-                resources.Add(pal);
+                pal.LoadPalette(fs, DataFileKey, new FileBitAddress(td.ClutOffsets[i], 0), ColorModel.BGR15, false, td.ClutColors);
+                resourceMap.Add(palKey, pal);
 
                 Arranger arr = Arranger.NewScatteredArranger(ArrangerLayout.LinearArranger, 1, 1, td.ImageWidth, td.ImageHeight);
-                arr.Rename(String.Format("{0}.{1}", BaseName, i));
+                arr.Rename($"{BaseTimName}.{i}");
+                string arrKey = Path.Combine(BaseFolderName, arr.Name);
 
                 ArrangerElement el = arr.GetElement(0, 0);
 
-                el.DataFileKey = TimFileName;
-                el.PaletteKey = palName;
+                el.DataFileKey = DataFileKey;
+                el.PaletteKey = palKey;
                 el.FileAddress = new FileBitAddress(td.ImageDataOffset, 0);
                 el.Height = td.ImageHeight;
                 el.Width = td.ImageWidth;
@@ -203,12 +212,12 @@ namespace TIMParserPlugin
                         el.FormatName = "PSX 24bpp";
                         break;
                     default:
-                        throw new InvalidOperationException(String.Format("ColorDepth {0} is not supported", td.ColorDepth));
+                        throw new InvalidOperationException($"ColorDepth {td.ColorDepth} is not supported");
                 }
 
                 el.AllocateBuffers();
                 arr.SetElement(el, 0, 0);
-                resources.Add(arr);
+                resourceMap.Add(arrKey, arr);
             }
         }
 
