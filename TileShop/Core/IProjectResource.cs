@@ -1,4 +1,6 @@
-﻿namespace TileShop.Core
+﻿using System.Xml.Linq;
+
+namespace TileShop.Core
 {
     /// <summary>
     /// Interface specifying how TileShop Project Resource objects must be implemented
@@ -20,5 +22,18 @@
         /// Deep-clone copy of the object
         /// </summary>
         IProjectResource Clone();
+
+        /// <summary>
+        /// Serializes resource into an XElement
+        /// </summary>
+        /// <returns></returns>
+        //XElement Serialize();
+
+        /// <summary>
+        /// Deserialize XElement into IProjectResource
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        //bool Deserialize(XElement element);
     }
 }

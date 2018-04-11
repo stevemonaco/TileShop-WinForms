@@ -51,7 +51,7 @@ namespace TileShop.Core
         private FileTypeLoader Loader = new FileTypeLoader();
 
         #region Lazy Singleton implementation
-        public static readonly Lazy<ResourceManager> lazySingleton = new Lazy<ResourceManager>(() => new ResourceManager());
+        private static readonly Lazy<ResourceManager> lazySingleton = new Lazy<ResourceManager>(() => new ResourceManager());
 
         public static ResourceManager Instance { get { return lazySingleton.Value; } }
 
@@ -232,6 +232,8 @@ namespace TileShop.Core
             LeasedResourceMap.Clear();
             ResourceMap.Clear();
         }
+
+        public IEnumerable<string> ResourceKeys { get { return ResourceMap.Keys; } }
         #endregion
 
         #region GraphicsFormat Management

@@ -352,9 +352,9 @@ namespace TileShop
                     }*/
 
                     // Load new XML project file
+                    ProjectFileName = ofd.FileName;
                     GameDescriptorSerializer gds = new GameDescriptorSerializer();
                     gds.LoadProject(ofd.FileName);
-                    ProjectFileName = ofd.FileName;
                 }
                 else
                 {

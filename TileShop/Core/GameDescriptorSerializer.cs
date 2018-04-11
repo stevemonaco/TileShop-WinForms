@@ -206,6 +206,87 @@ namespace TileShop.Core
 
             xmlRoot.Add(settingsRoot);
 
+            // Sort so that we create 
+            /*var sortedKeys = from string res in ResourceManager.Instance.ResourceKeys
+                             orderby res.Count(x => x == Path.DirectorySeparatorChar)
+                             orderby res
+                             select res;*/
+
+            // Create a map of referenceable XElement folder nodes
+
+            var FolderMap = new Dictionary<string, XElement>();
+            foreach (string key in ResourceManager.Instance.ResourceKeys)
+            {
+                if (key.Contains(".SequentialArranger") || key.Contains("Default"))
+                    continue;
+
+                int index = key.LastIndexOf(Path.DirectorySeparatorChar);
+                string folderName;
+
+                while(index != -1) // Has parent folders
+                {
+                    folderName = key.Substring(0, index);
+
+                    if (FolderMap.ContainsKey(folderName))
+                        break;
+
+                    XElement xFolder = new XElement("folder");
+                    xFolder.SetAttributeValue("name", folderName);
+                    FolderMap.Add(folderName, xFolder);
+
+                    index = folderName.LastIndexOf(Path.DirectorySeparatorChar);
+                }
+            }
+
+            // Now add resource nodes to folder nodes
+            foreach(string key in ResourceManager.Instance.ResourceKeys)
+            {
+                IProjectResource res = ResourceManager.Instance.GetResource(key);
+                XElement xe;
+
+                if (key.Contains(".SequentialArranger") || key.Contains("Default"))
+                    continue;
+
+                if (res is DataFile df)
+                    xe = SaveDataFile(df);
+                else if (res is Arranger arr)
+                    xe = SaveArranger(arr);
+                else if (res is Palette pal)
+                    xe = SavePalette(pal);
+                else
+                    throw new NotImplementedException($"Resource serialization not supported for {res.Name}");
+
+                int index = key.LastIndexOf(Path.DirectorySeparatorChar);
+
+                if (index == -1) // File in root directory
+                    FolderMap.Add(key, xe);
+                else
+                {
+                    string folderName = key.Substring(0, index);
+                    XElement xFolder = FolderMap[folderName];
+                    xFolder.Add(xe);
+                }
+            }
+
+            var sortedKeys = from key in FolderMap.Keys
+                             orderby key.Count(x => x == Path.DirectorySeparatorChar)
+                             orderby key
+                             select key;
+
+            foreach(string key in sortedKeys)
+            {
+                int index = key.LastIndexOf(Path.DirectorySeparatorChar);
+
+                if (index == -1) // Folder in root directory
+                    projectRoot.Add(FolderMap[key]);
+                else
+                {
+                    string parentFolderName = key.Substring(0, index);
+                    XElement xFolder = FolderMap[parentFolderName];
+                    xFolder.Add(FolderMap[key]);
+                }
+            }
+
             /*foreach (TreeNode tn in tnc)
             {
                 if (tn is FolderNode folderNode)
@@ -245,10 +326,8 @@ namespace TileShop.Core
             return xe;
         }
 
-        public XElement SaveDataFileNode(DataFileNode dfn)
+        public XElement SaveDataFile(DataFile df)
         {
-            DataFile df = ResourceManager.Instance.GetResource(dfn.GetNodeKey()) as DataFile;
-
             XElement xe = new XElement("datafile");
             xe.SetAttributeValue("name", df.Name);
             xe.SetAttributeValue("location", df.Location);
@@ -256,14 +335,11 @@ namespace TileShop.Core
             return xe;
         }
 
-        public XElement SavePaletteNode(PaletteNode pn)
+        public XElement SavePalette(Palette pal)
         {
-            Palette pal = ResourceManager.Instance.GetResource(pn.GetNodeKey()) as Palette;
-
             XElement xe = new XElement("palette");
 
             xe.SetAttributeValue("name", pal.Name);
-            xe.SetAttributeValue("folder", pn.GetNodePath());
             xe.SetAttributeValue("fileoffset", String.Format("{0:X}", pal.FileAddress.FileOffset));
             xe.SetAttributeValue("bitoffset", String.Format("{0:X}", pal.FileAddress.BitOffset));
             xe.SetAttributeValue("datafile", pal.DataFileKey);
@@ -274,13 +350,11 @@ namespace TileShop.Core
             return xe;
         }
 
-        public XElement SaveArrangerNode(ArrangerNode an)
+        public XElement SaveArranger(Arranger arr)
         {
-            Arranger arr = ResourceManager.Instance.GetResource(an.GetNodeKey()) as Arranger;
             XElement xe = new XElement("arranger");
 
             xe.SetAttributeValue("name", arr.Name);
-            xe.SetAttributeValue("folder", an.GetNodePath());
             xe.SetAttributeValue("elementsx", arr.ArrangerElementSize.Width);
             xe.SetAttributeValue("elementsy", arr.ArrangerElementSize.Height);
             xe.SetAttributeValue("width", arr.ElementPixelSize.Width);
@@ -291,23 +365,24 @@ namespace TileShop.Core
             else if (arr.Layout == ArrangerLayout.LinearArranger)
                 xe.SetAttributeValue("layout", "linear");
 
-            string DefaultPalette = FindMostFrequentElementValue(arr, "PaletteName");
-            string DefaultFile = FindMostFrequentElementValue(arr, "FileName");
+            string DefaultPalette = FindMostFrequentElementValue(arr, "PaletteKey");
+            string DefaultFile = FindMostFrequentElementValue(arr, "DataFileKey");
             string DefaultFormat = FindMostFrequentElementValue(arr, "FormatName");
 
             xe.SetAttributeValue("defaultformat", DefaultFormat);
-            xe.SetAttributeValue("defaultfile", DefaultFile);
+            xe.SetAttributeValue("defaultdatafile", DefaultFile);
             xe.SetAttributeValue("defaultpalette", DefaultPalette);
 
             for (int y = 0; y < arr.ArrangerElementSize.Height; y++)
             {
                 for (int x = 0; x < arr.ArrangerElementSize.Width; x++)
                 {
-                    var graphic = new XElement("graphic");
+                    var graphic = new XElement("element");
                     ArrangerElement el = arr.GetElement(x, y);
 
                     graphic.SetAttributeValue("fileoffset", String.Format("{0:X}", el.FileAddress.FileOffset));
-                    graphic.SetAttributeValue("bitoffset", String.Format("{0:X}", el.FileAddress.BitOffset));
+                    if(el.FileAddress.BitOffset != 0)
+                        graphic.SetAttributeValue("bitoffset", String.Format("{0:X}", el.FileAddress.BitOffset));
                     graphic.SetAttributeValue("posx", x);
                     graphic.SetAttributeValue("posy", y);
                     if (el.FormatName != DefaultFormat)
