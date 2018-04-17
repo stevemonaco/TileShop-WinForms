@@ -77,13 +77,13 @@ namespace TileShop
 
         internal void OnResourceAdded(object sender, ResourceEventArgs e)
         {
-            IProjectResource res = ResourceManager.Instance.GetResource(e.ResourceKey);
+            ProjectResource res = ResourceManager.Instance.GetResource(e.ResourceKey);
             AddResourceAsNode(e.ResourceKey, res);
 
             if(res is DataFile df) // Add sequential arranger below
             {
                 FileTypeLoader ftl = new FileTypeLoader();
-                Arranger arr = Arranger.NewSequentialArranger(8, 16, e.ResourceKey, ftl.GetDefaultFormat(df.Location));
+                var arr = new SequentialArranger(8, 16, e.ResourceKey, ftl.GetDefaultFormat(df.Location));
                 string arrangerName = res.Name + ".SequentialArranger";
                 arr.Rename(arrangerName);
                 ResourceManager.Instance.AddResource(Path.Combine(e.ResourceKey, arrangerName), arr);
@@ -306,7 +306,7 @@ namespace TileShop
             return true;
         }
 
-        private bool AddResourceAsNode(string key, IProjectResource Resource)
+        private bool AddResourceAsNode(string key, ProjectResource Resource)
         {
             ResourceNode rn = null;
             if (Resource is DataFile df)

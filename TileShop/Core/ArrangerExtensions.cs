@@ -38,7 +38,7 @@ namespace TileShop.Core
         /// </summary>
         /// <param name="moveType">Type of move requested</param>
         /// <returns>Updated address of first element</returns>
-        public static FileBitAddress Move(this Arranger self, ArrangerMoveType moveType)
+        public static FileBitAddress Move(this SequentialArranger self, ArrangerMoveType moveType)
         {
             if (self.Mode != ArrangerMode.SequentialArranger)
                 throw new InvalidOperationException();
@@ -106,7 +106,7 @@ namespace TileShop.Core
         /// </summary>
         /// <param name="absoluteAddress">Specified address to move the arranger to</param>
         /// <returns></returns>
-        public static FileBitAddress Move(this Arranger self, FileBitAddress absoluteAddress)
+        public static FileBitAddress Move(this SequentialArranger self, FileBitAddress absoluteAddress)
         {
             if (self.Mode != ArrangerMode.SequentialArranger)
                 throw new InvalidOperationException();

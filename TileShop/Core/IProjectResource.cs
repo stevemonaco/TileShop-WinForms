@@ -5,7 +5,7 @@ namespace TileShop.Core
     /// <summary>
     /// Interface specifying how TileShop Project Resource objects must be implemented
     /// </summary>
-    public interface IProjectResource
+    /*public interface IProjectResource
     {
         /// <summary>
         /// Identifying name of the resource
@@ -40,5 +40,5 @@ namespace TileShop.Core
         /// <param name="element"></param>
         /// <returns></returns>
         //bool Deserialize(XElement element);
-    }
+    }*/
 }

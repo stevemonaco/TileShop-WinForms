@@ -23,11 +23,11 @@ namespace TileShop.Core
         /// <summary>
         /// Maps resource keys to resources
         /// </summary>
-        private Dictionary<string, IProjectResource> ResourceMap = new Dictionary<string, IProjectResource>();
+        private Dictionary<string, ProjectResource> ResourceMap = new Dictionary<string, ProjectResource>();
         /// <summary>
         /// Maps resource keys to copies of resources that are currently leased
         /// </summary>
-        private Dictionary<string, IProjectResource> LeasedResourceMap = new Dictionary<string, IProjectResource>();
+        private Dictionary<string, ProjectResource> LeasedResourceMap = new Dictionary<string, ProjectResource>();
 
         /// <summary>
         /// Events to notify UI components when resources have been added or renamed
@@ -66,7 +66,7 @@ namespace TileShop.Core
         /// </summary>
         /// <param name="Resource"></param>
         /// <returns></returns>
-        public bool AddResource(string ResourceKey, IProjectResource Resource)
+        public bool AddResource(string ResourceKey, ProjectResource Resource)
         {
             if (Resource == null)
                 throw new ArgumentNullException("Null argument passed into AddResource");
@@ -103,7 +103,7 @@ namespace TileShop.Core
         /// </summary>
         /// <param name="ResourceKey"></param>
         /// <returns>A leased resource if available, otherwise the original resource</returns>
-        public IProjectResource GetResource(string ResourceKey)
+        public ProjectResource GetResource(string ResourceKey)
         {
             if (ResourceKey == null)
                 throw new ArgumentException("Null name argument passed into GetResource");
@@ -137,7 +137,7 @@ namespace TileShop.Core
         /// </summary>
         /// <param name="ResourceKey"></param>
         /// <returns>A leased resource</returns>
-        public IProjectResource LeaseResource(string ResourceKey)
+        public ProjectResource LeaseResource(string ResourceKey)
         {
             if (ResourceKey == null)
                 throw new ArgumentException("Null name argument passed into LeaseResource");
@@ -147,7 +147,7 @@ namespace TileShop.Core
 
             if(ResourceMap.ContainsKey(ResourceKey))
             {
-                IProjectResource resource = ResourceMap[ResourceKey];
+                ProjectResource resource = ResourceMap[ResourceKey];
                 LeasedResourceMap.Add(ResourceKey, resource);
                 return resource;
             }
@@ -199,7 +199,7 @@ namespace TileShop.Core
                 return false;
 
             string formatname = Loader.GetDefaultFormatName(DataFileKey);
-            Arranger arranger = Arranger.NewSequentialArranger(ArrangerWidth, ArrangerHeight, DataFileKey, GetGraphicsFormat(formatname));
+            var arranger = new SequentialArranger(ArrangerWidth, ArrangerHeight, DataFileKey, GetGraphicsFormat(formatname));
 
             LeasedResourceMap.Add(ResourceKey, arranger);
 
@@ -224,7 +224,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public void ClearResources()
         {
-            foreach (KeyValuePair<string, IProjectResource> resource in ResourceMap)
+            foreach (KeyValuePair<string, ProjectResource> resource in ResourceMap)
             {
                 if (resource.Value is DataFile df)
                     df.Close();

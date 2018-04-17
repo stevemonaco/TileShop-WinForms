@@ -103,6 +103,8 @@
     <Compile Include="Core\ResourceEventArgs.cs" />
     <Compile Include="Core\ResourceFolder.cs" />
     <Compile Include="Core\ResourceTree.cs" />
+    <Compile Include="Core\ScatteredArranger.cs" />
+    <Compile Include="Core\SequentialArranger.cs" />
     <Compile Include="ExtensionMethods\ColorExtensions.cs" />
     <Compile Include="ExtensionMethods\RectangularArrayExtensions.cs" />
     <Compile Include="ExtensionMethods\TreeNodeExtensions.cs" />

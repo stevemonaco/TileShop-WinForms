@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Xml.Linq;
 
 namespace TileShop.Core
 {
@@ -27,10 +28,9 @@ namespace TileShop.Core
     /// <summary>
     /// Arranger for graphical screen elements
     /// </summary>
-    public class Arranger : IProjectResource
+    public abstract class Arranger : ProjectResource
     {
         // General Arranger variables
-
         /// <summary>
         /// Gets individual Elements that compose the Arranger
         /// </summary>
@@ -39,83 +39,39 @@ namespace TileShop.Core
         /// <summary>
         /// Gets the size of the entire Arranger in Elements
         /// </summary>
-        public Size ArrangerElementSize { get; private set; }
+        public Size ArrangerElementSize { get; protected set; }
 
         /// <summary>
         /// Gets the Size of the entire Arranger in unzoomed pixels
         /// </summary>
-        public Size ArrangerPixelSize { get; private set; }
+        public Size ArrangerPixelSize { get; protected set; }
 
         /// <summary>
         /// Gets the size of an individual Element in unzoomed pixels
         /// Only valid for Sequential Arranger
         /// </summary>
-        public Size ElementPixelSize { get; private set; }
+        public Size ElementPixelSize { get; protected set; }
 
         /// <summary>
         /// Gets the Mode of the Arranger
         /// </summary>
-        public ArrangerMode Mode { get; private set; }
+        public ArrangerMode Mode { get; protected set; }
 
         /// <summary>
         /// Gets the ArrangerLayout of the Arranger
         /// </summary>
-        public ArrangerLayout Layout { get; private set; }
-
-        /// <summary>
-        /// Gets the name of the Arranger
-        /// </summary>
-        public string Name { get; private set; }
-
-        /// <summary>
-        /// Gets whether the Arranger mode is Sequential or not
-        /// </summary>
-        public bool IsSequential { get; private set; }
-
-        /// <summary>
-        /// Gets the filesize of the file associated with a Sequential Arranger
-        /// </summary>
-        public long FileSize
-        {
-            get
-            {
-                if (Mode != ArrangerMode.SequentialArranger)
-                    throw new InvalidOperationException("Cannot retrieve the FileSize for an arranger that is not a SequentialArranger");
-                else
-                    return fileSize;
-            }
-            private set { fileSize = value; }
-        }
-        private long fileSize;
-
-        /// <summary>
-        /// Number of bits required to be read from file sequentially
-        /// </summary>
-        public long ArrangerBitSize
-        {
-            get
-            {
-                if (Mode != ArrangerMode.SequentialArranger)
-                    throw new InvalidOperationException("Cannot retrieve the ArrangerBitSize for an arranger that is not a SequentialArranger");
-                else
-                    return arrangerBitSize;
-            }
-            private set { arrangerBitSize = value; }
-        }
-        private long arrangerBitSize;
-
-        private Arranger()
-        {
-        }
+        public ArrangerLayout Layout { get; protected set; }
 
         /// <summary>
         /// Renames an Arranger to a new name
         /// </summary>
         /// <param name="name"></param>
-        public void Rename(string name)
+        public override void Rename(string name)
         {
             Name = name;
         }
+
+        public abstract void Resize(int arrangerWidth, int arrangerHeight);
 
         /*void NewBlankArranger(int ElementsX, int ElementsY, GraphicsFormat format)
         {
@@ -153,208 +109,6 @@ namespace TileShop.Core
         }*/
 
         /// <summary>
-        /// Creates a new instance of an arranger in sequential reading mode
-        /// </summary>
-        /// <param name="arrangerWidth">Width of Arranger in Elements</param>
-        /// <param name="arrangerHeight">Height of Arranger in Elements</param>
-        /// <param name="dataFileKey">DataFile key for FileManager</param>
-        /// <param name="format">GraphicsFormat for encoding/decoding Elements</param>
-        /// <returns></returns>
-        public static Arranger NewSequentialArranger(int arrangerWidth, int arrangerHeight, string dataFileKey, GraphicsFormat format)
-        {
-            DataFile df = ResourceManager.Instance.GetResource(dataFileKey) as DataFile;
-
-            Arranger arr = new Arranger()
-            {
-                Mode = ArrangerMode.SequentialArranger,
-                IsSequential = true,
-                FileSize = df.Stream.Length,
-                Name = df.Name
-            };
-            arr.ResizeSequentialArranger(arrangerWidth, arrangerHeight, dataFileKey, format);
-
-            return arr;
-        }
-
-        /// <summary>
-        /// Resizes a Sequential Arranger with a new number of elements
-        /// </summary>
-        /// <param name="arrangerWidth">Width of Arranger in Elements</param>
-        /// <param name="arrangerHeight">Height of Arranger in Elements</param>
-        /// <param name="dataFileKey">DataFile key in FileManager</param>
-        /// <param name="format">GraphicsFormat for encoding/decoding Elements</param>
-        /// <returns></returns>
-        private FileBitAddress ResizeSequentialArranger(int arrangerWidth, int arrangerHeight, string dataFileKey, GraphicsFormat format)
-        {
-            if (Mode != ArrangerMode.SequentialArranger)
-                throw new InvalidOperationException();
-
-            FileBitAddress address;
-
-            if (ElementGrid == null) // New Arranger being resized
-                address = 0;
-            else address = GetInitialSequentialFileAddress();
-
-            ElementGrid = new ArrangerElement[arrangerWidth, arrangerHeight];
-
-            int x = 0;
-            int y = 0;
-
-            for (int i = 0; i < arrangerHeight; i++)
-            {
-                x = 0;
-                for (int j = 0; j < arrangerWidth; j++)
-                {
-                    ArrangerElement el = new ArrangerElement()
-                    {
-                        FileAddress = address,
-                        X1 = x,
-                        Y1 = y,
-                        X2 = x + ElementPixelSize.Width - 1,
-                        Y2 = y + ElementPixelSize.Height - 1,
-                        Width = ElementPixelSize.Width,
-                        Height = ElementPixelSize.Height,
-                        DataFileKey = dataFileKey,
-                        FormatName = format.Name,
-                    };
-                    if (el.ElementData.Count == 0 || el.MergedData == null)
-                        el.AllocateBuffers();
-
-                    ElementGrid[j, i] = el;
-
-                    if (format.Layout == ImageLayout.Tiled)
-                        address += el.StorageSize;
-                    else // Linear
-                        address += (ElementPixelSize.Width + format.RowStride) * format.ColorDepth / 4; // TODO: Fix sequential arranger offsets to be bit-wise
-
-                    x += ElementPixelSize.Width;
-                }
-                y += ElementPixelSize.Height;
-            }
-
-            ArrangerElement lastElem = ElementGrid[arrangerWidth - 1, arrangerHeight - 1];
-            ArrangerPixelSize = new Size(lastElem.X2 + 1, lastElem.Y2 + 1);
-            ArrangerElementSize = new Size(arrangerWidth, arrangerHeight);
-            ElementPixelSize = new Size(ElementPixelSize.Width, ElementPixelSize.Height);
-
-            ArrangerBitSize = arrangerWidth * arrangerHeight * lastElem.StorageSize;
-
-            address = GetInitialSequentialFileAddress();
-            address = this.Move(address);
-
-            return address;
-        }
-
-        /// <summary>
-        /// Resizes a Sequential Arranger to the specified number of Elements and repopulates Element data
-        /// </summary>
-        /// <param name="arrangerWidth">Width of Arranger in Elements</param>
-        /// <param name="arrangerHeight">Height of Arranger in Elements</param>
-        /// <returns></returns>
-        public FileBitAddress ResizeSequentialArranger(int arrangerWidth, int arrangerHeight)
-        {
-            if (Mode != ArrangerMode.SequentialArranger)
-                throw new ArgumentException();
-
-            return ResizeSequentialArranger(arrangerWidth, arrangerHeight, ElementGrid[0, 0].DataFileKey, ResourceManager.Instance.GetGraphicsFormat(ElementGrid[0, 0].FormatName));
-        }
-
-        /// <summary>
-        /// Resizes a scattered arranger to the specified number of elements and default initializes any new elements
-        /// </summary>
-        /// <param name="arrangerWidth">Width of Arranger in Elements</param>
-        /// <param name="arrangerHeight">Height of Arranger in Elements</param>
-        public void ResizeScatteredArranger(int arrangerWidth, int arrangerHeight)
-        {
-            if (Mode != ArrangerMode.ScatteredArranger)
-                throw new ArgumentException();
-
-            ArrangerElement[,] newList = new ArrangerElement[arrangerWidth, arrangerHeight];
-
-            int xCopy = Math.Min(arrangerWidth, ArrangerElementSize.Width);
-            int yCopy = Math.Min(arrangerHeight, ArrangerElementSize.Height);
-            int Width = ElementPixelSize.Width;
-            int Height = ElementPixelSize.Height;
-
-            for (int y = 0; y < arrangerHeight; y++)
-            {
-                for (int x = 0; x < arrangerWidth; x++)
-                {
-                    if ((y < ArrangerElementSize.Height) && (x < ArrangerElementSize.Width)) // Copy from old arranger
-                        newList[x, y] = ElementGrid[x, y].Clone();
-                    else // Create new blank element
-                    {
-                        ArrangerElement el = new ArrangerElement()
-                        {
-                            X1 = x * Width,
-                            Y1 = y * Height,
-                            X2 = x * Width + Width - 1,
-                            Y2 = y * Height + Height - 1,
-                            Width = Width,
-                            Height = Height,
-                        };
-
-                        newList[x, y] = el;
-                    }
-                }
-            }
-
-            ElementGrid = newList;
-            ArrangerElementSize = new Size(arrangerWidth, arrangerHeight);
-            ArrangerPixelSize = new Size(arrangerWidth * Width, arrangerHeight * Height);
-        }
-
-        /// <summary>
-        /// Creates a new scattered arranger with default initialized elements
-        /// </summary>
-        /// <param name="layout">Layout type of the arranger</param>
-        /// <param name="arrangerWidth">Width of Arranger in Elements</param>
-        /// <param name="arrangerHeight">Height of Arranger in Elements</param>
-        /// <param name="elementWidth">Width of each element</param>
-        /// <param name="elementHeight">Height of each element</param>
-        /// <returns></returns>
-        public static Arranger NewScatteredArranger(ArrangerLayout layout, int arrangerWidth, int arrangerHeight, int elementWidth, int elementHeight)
-        {
-            Arranger arr = new Arranger();
-            arr.Mode = ArrangerMode.ScatteredArranger;
-            arr.IsSequential = false;
-            arr.Layout = layout;
-
-            arr.ElementGrid = new ArrangerElement[arrangerWidth, arrangerHeight];
-
-            int x = 0;
-            int y = 0;
-
-            for (int i = 0; i < arrangerHeight; i++)
-            {
-                x = 0;
-                for (int j = 0; j < arrangerWidth; j++)
-                {
-                    ArrangerElement el = new ArrangerElement()
-                    {
-                        X1 = x,
-                        Y1 = y,
-                        X2 = x + elementWidth - 1,
-                        Y2 = y + elementHeight - 1,
-                        Width = elementWidth,
-                        Height = elementHeight,
-                    };
-                    arr.ElementGrid[j, i] = el;
-
-                    x += elementWidth;
-                }
-                y += elementHeight;
-            }
-
-            ArrangerElement LastElem = arr.ElementGrid[arrangerWidth - 1, arrangerHeight - 1];
-            arr.ArrangerPixelSize = new Size(LastElem.X2 + 1, LastElem.Y2 + 1);
-            arr.ArrangerElementSize = new Size(arrangerWidth, arrangerHeight);
-            arr.ElementPixelSize = new Size(elementWidth, elementHeight);
-
-            return arr;
-        }
-
-        /// <summary>
         /// Creates a new Scattered Arranger from an existing Arranger
         /// </summary>
         /// <param name="subArrangerName">Arranger name for the newly created Arranger</param>
@@ -370,12 +124,13 @@ namespace TileShop.Core
 
             if ((arrangerPosY < 0) || (arrangerPosY + copyHeight > ArrangerElementSize.Height))
                 throw new ArgumentOutOfRangeException();
+            Arranger sub = new ScatteredArranger(Layout, ArrangerElementSize.Width, ArrangerElementSize.Height, ElementPixelSize.Width, ElementPixelSize.Height);
 
-            Arranger subArranger = new Arranger()
+            Arranger subArranger = new ScatteredArranger()
             {
                 Mode = ArrangerMode.ScatteredArranger, // Default to scattered arranger
-                IsSequential = false,
                 Name = subArrangerName,
+                Layout = Layout,
                 ElementGrid = new ArrangerElement[copyWidth, copyHeight],
                 ArrangerElementSize = new Size(copyWidth, copyHeight),
                 ElementPixelSize = ElementPixelSize,
@@ -430,81 +185,6 @@ namespace TileShop.Core
         }
 
         /// <summary>
-        /// Gets the initial file address of a Sequential Arranger
-        /// </summary>
-        /// <returns></returns>
-        public FileBitAddress GetInitialSequentialFileAddress()
-        {
-            if (ElementGrid == null)
-                throw new NullReferenceException();
-
-            if (Mode != ArrangerMode.SequentialArranger)
-                throw new InvalidOperationException();
-
-            return ElementGrid[0, 0].FileAddress;
-        }
-
-        /// <summary>
-        /// Gets the GraphicsFormat name for a Sequential Arranger
-        /// </summary>
-        /// <returns></returns>
-        public string GetSequentialGraphicsFormat()
-        {
-            if (ElementGrid == null)
-                throw new NullReferenceException();
-
-            return ElementGrid[0, 0].FormatName;
-        }
-
-        /// <summary>
-        /// Sets the GraphicsFormat name and Element size for a Sequential Arranger
-        /// </summary>
-        /// <param name="Format">Name of the GraphicsFormat</param>
-        /// <param name="ElementSize">Size of each Element in pixels</param>
-        /// <returns></returns>
-        public bool SetGraphicsFormat(string Format, Size ElementSize)
-        {
-            if (ElementGrid == null)
-                throw new NullReferenceException();
-
-            if (Mode != ArrangerMode.SequentialArranger)
-                throw new InvalidOperationException();
-
-            FileBitAddress address = ElementGrid[0, 0].FileAddress;
-            GraphicsFormat fmt = ResourceManager.Instance.GetGraphicsFormat(Format);
-
-            ElementPixelSize = ElementSize;
-
-            int elembitsize = fmt.StorageSize(ElementSize.Width, ElementSize.Height);
-            ArrangerBitSize = ArrangerElementSize.Width * ArrangerElementSize.Height * elembitsize;
-
-            if (FileSize * 8 < address + ArrangerBitSize)
-                address = new FileBitAddress(FileSize * 8 - ArrangerBitSize);
-
-            for (int i = 0; i < ArrangerElementSize.Height; i++)
-            {
-                for (int j = 0; j < ArrangerElementSize.Width; j++)
-                {
-                    ElementGrid[j, i].FileAddress = address;
-                    ElementGrid[j, i].FormatName = Format;
-                    ElementGrid[j, i].Width = ElementPixelSize.Width;
-                    ElementGrid[j, i].Height = ElementPixelSize.Height;
-                    ElementGrid[j, i].X1 = j * ElementPixelSize.Width;
-                    ElementGrid[j, i].X2 = j * ElementPixelSize.Width + (ElementPixelSize.Width - 1);
-                    ElementGrid[j, i].Y1 = i * ElementPixelSize.Height;
-                    ElementGrid[j, i].Y2 = i * ElementPixelSize.Height + (ElementPixelSize.Height - 1);
-                    ElementGrid[j, i].AllocateBuffers();
-                    address += elembitsize;
-                }
-            }
-
-            ArrangerElement LastElem = ElementGrid[ArrangerElementSize.Width - 1, ArrangerElementSize.Height - 1];
-            ArrangerPixelSize = new Size(LastElem.X2 + 1, LastElem.Y2 + 1);
-
-            return true;
-        }
-
-        /// <summary>
         /// Tests the Arranger Elements to see if any Elements are blank
         /// </summary>
         /// <returns></returns>
@@ -523,7 +203,7 @@ namespace TileShop.Core
         /// Creates a deep clone of the Arranger
         /// </summary>
         /// <returns></returns>
-        public IProjectResource Clone()
+        /*public override ProjectResource Clone()
         {
             Arranger arr = new Arranger()
             {
@@ -547,6 +227,16 @@ namespace TileShop.Core
             }
 
             return arr;
+        }*/
+
+        public override XElement Serialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool Deserialize(XElement element)
+        {
+            throw new NotImplementedException();
         }
     }
 }
