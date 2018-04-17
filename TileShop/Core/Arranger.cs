@@ -63,7 +63,7 @@ namespace TileShop.Core
         public ArrangerLayout Layout { get; private set; }
 
         /// <summary>
-        /// Gets or sets the name of the Arranger
+        /// Gets the name of the Arranger
         /// </summary>
         public string Name { get; private set; }
 
