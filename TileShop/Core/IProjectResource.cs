@@ -13,6 +13,11 @@ namespace TileShop.Core
         string Name { get; }
 
         /// <summary>
+        /// 
+        /// </summary>
+        //bool CanContainResources { get; set; }
+
+        /// <summary>
         /// Rename a resource with a new name
         /// </summary>
         /// <param name="name"></param>
