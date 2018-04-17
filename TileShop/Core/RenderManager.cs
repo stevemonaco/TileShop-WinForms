@@ -43,8 +43,9 @@ namespace TileShop.Core
             // TODO: Consider using Tile Cache
 
             FileStream fs = null;
+            bool IsSequential = arranger is SequentialArranger;
 
-            if(arranger.IsSequential) // Sequential requires only one seek per render
+            if(IsSequential) // Sequential requires only one seek per render
             {
                 fs = ((DataFile)ResourceManager.Instance.GetResource(arranger.ElementGrid[0, 0].DataFileKey)).Stream;
                 fs.Seek(arranger.ElementGrid[0, 0].FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise
@@ -57,7 +58,7 @@ namespace TileShop.Core
                 for(int x = 0; x < arranger.ArrangerElementSize.Width; x++)
                 {
                     ArrangerElement el = arranger.ElementGrid[x, y];
-                    if (!arranger.IsSequential) // Non-sequential requires a seek for each element rendered
+                    if (!IsSequential) // Non-sequential requires a seek for each element rendered
                     {
                         if (el.IsBlank())
                         {
@@ -102,11 +103,13 @@ namespace TileShop.Core
             string PrevFileKey = "";
 
             FileStream fs = null; // Used for seeking the DataFile associated with an ArrangerElement before encoding it
+            bool IsSequential = false;
 
-            if (arranger.IsSequential) // Seek to the first element
+            if (arranger is SequentialArranger seqArranger) // Seek to the first element
             {
+                IsSequential = true;
                 fs = ((DataFile)ResourceManager.Instance.GetResource(arranger.ElementGrid[0, 0].DataFileKey)).Stream;
-                fs.Seek(arranger.GetInitialSequentialFileAddress().FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise seeking
+                fs.Seek(seqArranger.GetInitialSequentialFileAddress().FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise seeking
             }
 
             for (int y = 0; y < arranger.ArrangerElementSize.Height; y++)
@@ -114,7 +117,7 @@ namespace TileShop.Core
                 for (int x = 0; x < arranger.ArrangerElementSize.Width; x++)
                 {
                     ArrangerElement el = arranger.ElementGrid[x, y];
-                    if (!arranger.IsSequential) // Non-sequential requires a seek for each element rendered
+                    if (!IsSequential) // Non-sequential requires a seek for each element rendered
                     {
                         if (el.FormatName == "") // Empty format means a blank tile
                             continue;

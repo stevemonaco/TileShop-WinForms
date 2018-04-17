@@ -8,6 +8,6 @@ namespace TileShop.Core
 {
     public class ResourceTree
     {
-        public ICollection<IProjectResource> Items { get; set; }
+        //public ICollection<IProjectResource> Items { get; set; }
     }
 }

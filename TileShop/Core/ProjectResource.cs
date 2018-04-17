@@ -12,9 +12,12 @@ namespace TileShop.Core
         /// <summary>
         /// Identifying name of the resource
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; protected set; }
 
-        private ICollection<KeyValuePair<string, ProjectResource>> ChildResources;
+        /// <summary>
+        /// The child resources
+        /// </summary>
+        internal ICollection<KeyValuePair<string, ProjectResource>> ChildResources;
 
         /// <summary>
         /// Determines if the ProjectResource can contain child resources
@@ -22,7 +25,7 @@ namespace TileShop.Core
         /// <value>
         ///   <c>true</c> if this instance can contain child resources; otherwise, <c>false</c>.
         /// </value>
-        public bool CanContainChildResources { get; private set; }
+        public bool CanContainChildResources { get; protected set; }
 
         /// <summary>
         /// Gets a value indicating whether the ProjectResource should be serialized.
@@ -36,7 +39,7 @@ namespace TileShop.Core
         /// Rename a resource with a new name
         /// </summary>
         /// <param name="name">The new name.</param>
-        protected virtual void Rename(string name)
+        public virtual void Rename(string name)
         {
             Name = name;
         }
@@ -45,19 +48,19 @@ namespace TileShop.Core
         /// Deep-clone copy of the object
         /// </summary>
         /// <returns></returns>
-        protected abstract IProjectResource Clone();
+        public abstract ProjectResource Clone();
 
         /// <summary>
         /// Serializes resource into an XElement
         /// </summary>
         /// <returns></returns>
-        //protected abstract XElement Serialize();
+        public abstract XElement Serialize();
 
         /// <summary>
-        /// Deserialize XElement into IProjectResource
+        /// Deserialize XElement into ProjectResource
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        //protected abstract bool Deserialize(XElement element);
+        public abstract bool Deserialize(XElement element);
     }
 }

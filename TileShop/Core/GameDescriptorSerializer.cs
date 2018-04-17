@@ -21,6 +21,36 @@ namespace TileShop.Core
         private string baseDirectory = null;
 
         #region XML Deserialization methods
+        public bool LoadProject(Stream stream, string baseDirectory)
+        {
+            if (stream == null)
+                throw new ArgumentNullException("LoadProject was called with a null stream");
+            if (String.IsNullOrEmpty(baseDirectory))
+                throw new ArgumentException("LoadProject was called with a null or empty baseDirectory");
+
+            XElement doc = XElement.Load(stream);
+            XElement projectNode = doc.Element("project");
+
+            Directory.SetCurrentDirectory(baseDirectory);
+
+            foreach (XElement node in projectNode.Elements())
+            {
+                if (node.Name == "folder")
+                {
+                    var folder = new ResourceFolder();
+                    AddFolderNode(node);
+                }
+                else if (node.Name == "datafile")
+                    AddDataFileNode(node);
+                else if (node.Name == "palette")
+                    AddPaletteNode(node);
+                else if (node.Name == "arranger")
+                    AddArrangerNode(node);
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Loads data files, palettes, and arrangers from XML
         /// Sets up the nodes in the project tree
@@ -134,7 +164,6 @@ namespace TileShop.Core
             string layoutName = arrangerNode.Attribute("layout").Value;
             IEnumerable<XElement> elementList = arrangerNode.Descendants("element");
 
-            Arranger arr;
             ArrangerLayout layout;
 
             if (layoutName == "tiled")
@@ -144,7 +173,7 @@ namespace TileShop.Core
             else
                 throw new XmlException("Incorrect arranger layout type ('" + layoutName + "') for " + name);
 
-            arr = Arranger.NewScatteredArranger(layout, elementsx, elementsy, width, height);
+            var arr = new ScatteredArranger(layout, elementsx, elementsy, width, height);
             arr.Rename(name);
 
             var xmlElements = elementList.Select(e => new
@@ -241,7 +270,7 @@ namespace TileShop.Core
             // Now add resource nodes to folder nodes
             foreach(string key in ResourceManager.Instance.ResourceKeys)
             {
-                IProjectResource res = ResourceManager.Instance.GetResource(key);
+                ProjectResource res = ResourceManager.Instance.GetResource(key);
                 XElement xe;
 
                 if (key.Contains(".SequentialArranger") || key.Contains("Default"))

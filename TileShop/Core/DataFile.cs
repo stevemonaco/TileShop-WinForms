@@ -4,15 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Xml.Linq;
 
 namespace TileShop.Core
 {
     /// <summary>
     /// DataFile manages access to user-modifiable files
     /// </summary>
-    public class DataFile : IProjectResource
+    public class DataFile : ProjectResource
     {
-        public string Name { get; private set; } = null;
         public string Location { get; private set; } = null;
         public FileStream Stream { get; private set; } = null;
 
@@ -25,12 +25,12 @@ namespace TileShop.Core
         /// Renames a DataFile to a new name
         /// </summary>
         /// <param name="name"></param>
-        public void Rename(string name)
+        public override void Rename(string name)
         {
             Name = name;
         }
 
-        public IProjectResource Clone()
+        public override ProjectResource Clone()
         {
             DataFile df = new DataFile(Name);
             df.Open(Location);
@@ -59,6 +59,16 @@ namespace TileShop.Core
         {
             if (Stream != null)
                 Stream.Close();
+        }
+
+        public override XElement Serialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool Deserialize(XElement element)
+        {
+            throw new NotImplementedException();
         }
     }
 }

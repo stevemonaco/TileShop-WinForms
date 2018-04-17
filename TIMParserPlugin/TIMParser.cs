@@ -18,7 +18,7 @@ namespace TIMParserPlugin
     [ExportMetadata("Description", "Parses file(s) for TIMs and automatically creates the appropriate arrangers and palettes")]
     public class TIMParser : IFileParserContract
     {
-        Dictionary<string, IProjectResource> resourceMap = new Dictionary<string, IProjectResource>();
+        Dictionary<string, ProjectResource> resourceMap = new Dictionary<string, ProjectResource>();
 
         const string BaseFolderName = "Imported TIMs";
         const uint TimTag = 0x00000010;
@@ -155,7 +155,7 @@ namespace TIMParserPlugin
             return TimCount;
         }
 
-        public Dictionary<string, IProjectResource> RetrieveResourceMap()
+        public Dictionary<string, ProjectResource> RetrieveResourceMap()
         {
             return resourceMap;
         }
@@ -180,7 +180,7 @@ namespace TIMParserPlugin
                 pal.LoadPalette(fs, DataFileKey, new FileBitAddress(td.ClutOffsets[i], 0), ColorModel.BGR15, false, td.ClutColors);
                 resourceMap.Add(palKey, pal);
 
-                Arranger arr = Arranger.NewScatteredArranger(ArrangerLayout.LinearArranger, 1, 1, td.ImageWidth, td.ImageHeight);
+                var arr = new ScatteredArranger(ArrangerLayout.LinearArranger, 1, 1, td.ImageWidth, td.ImageHeight);
                 arr.Rename($"{BaseTimName}.{i}");
                 string arrKey = Path.Combine(BaseFolderName, arr.Name);
 

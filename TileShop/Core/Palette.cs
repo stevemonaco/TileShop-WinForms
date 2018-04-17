@@ -7,6 +7,7 @@ using ColorMine.ColorSpaces.Comparisons;
 using ColorMine.ColorSpaces.Conversions;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Xml.Linq;
 
 namespace TileShop.Core
 {
@@ -23,14 +24,9 @@ namespace TileShop.Core
     /// Local colors are internally ARGB32
     /// Foreign colors are the same as the target system
     /// </summary>
-    public class Palette : IProjectResource
+    public class Palette : ProjectResource
     {
         #region Properties
-        /// <summary>
-        /// Identifying name of the palette
-        /// </summary>
-        public string Name { get; private set; }
-
         /// <summary>
         /// ColorModel of the palette
         /// </summary>
@@ -95,7 +91,7 @@ namespace TileShop.Core
         /// Renames a Palette to a new name
         /// </summary>
         /// <param name="name"></param>
-        public void Rename(string name)
+        public override void Rename(string name)
         {
             Name = name;
         }
@@ -484,7 +480,7 @@ namespace TileShop.Core
         /// Creates a deep copy of the palette
         /// </summary>
         /// <returns></returns>
-        public IProjectResource Clone()
+        public override ProjectResource Clone()
         {
             Palette pal = new Palette(Name)
             {
@@ -503,6 +499,16 @@ namespace TileShop.Core
             ForeignPalette.CopyTo(pal.ForeignPalette, 0);
 
             return pal;
+        }
+
+        public override XElement Serialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool Deserialize(XElement element)
+        {
+            throw new NotImplementedException();
         }
     }
 

@@ -39,7 +39,7 @@ namespace TileShop
             LoadCodecs(CodecDirectoryPath);
             LoadPalettes(PaletteDirectoryPath);
             LoadCursors();
-            LoadPlugins();
+            //LoadPlugins();
 
             this.Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
 
@@ -184,7 +184,7 @@ namespace TileShop
                 foreach (string key in resources.Keys)
                 {
                     // TODO: Add checks to ensure resources were added
-                    IProjectResource res = resources[key];
+                    ProjectResource res = resources[key];
                     if (res is DataFile df)
                         ResourceManager.Instance.AddResource(key, res);
                     else
@@ -315,7 +315,7 @@ namespace TileShop
                 Size ArrSize = sapf.ArrangerSize;
                 Size ElementSize = sapf.ElementPixelSize;
 
-                Arranger arr = Arranger.NewScatteredArranger(sapf.ArrangerLayout, ArrSize.Width, ArrSize.Height, ElementSize.Width, ElementSize.Height);
+                var arr = new ScatteredArranger(sapf.ArrangerLayout, ArrSize.Width, ArrSize.Height, ElementSize.Width, ElementSize.Height);
                 arr.Rename(sapf.ArrangerName);
                 ResourceManager.Instance.AddResource(arr.Name, arr);
             }

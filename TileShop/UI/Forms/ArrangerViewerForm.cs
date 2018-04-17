@@ -69,9 +69,9 @@ namespace TileShop
             selectionData = new ArrangerSelectionData(ContentSourceKey);
             selectionData.Zoom = 1;
 
-            if (DisplayArranger.Mode == ArrangerMode.SequentialArranger)
+            if (DisplayArranger is SequentialArranger seqArranger)
             {
-                GraphicsFormat graphicsFormat = ResourceManager.Instance.GetGraphicsFormat(DisplayArranger.GetSequentialGraphicsFormat());
+                GraphicsFormat graphicsFormat = ResourceManager.Instance.GetGraphicsFormat(seqArranger.GetSequentialGraphicsFormat());
 
                 SaveButton.Visible = false;
                 ReloadButton.Visible = false;
@@ -86,7 +86,7 @@ namespace TileShop
 
                 FormatSelectBox.SelectedIndex = FormatSelectBox.Items.IndexOf(graphicsFormat.Name);
             }
-            else if (DisplayArranger.Mode == ArrangerMode.ScatteredArranger)
+            else if (DisplayArranger is ScatteredArranger)
             {
                 JumpButton.Visible = false;
                 toolStripSeparator1.Visible = false;
@@ -390,146 +390,166 @@ namespace TileShop
         #region Keyboard Actions
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            if (keyData == Keys.Add || keyData == Keys.Oemplus && DisplayArranger.Mode == ArrangerMode.SequentialArranger)
+            if (DisplayArranger is SequentialArranger seqArranger) // Check all SequentialArranger specific input
             {
-                DisplayArranger.Move(ArrangerMoveType.ByteDown);
-                UpdateAddressLabel();
-                CancelSelection();
-                rm.Invalidate();
-                RenderPanel.Invalidate();
-                return true;
+                if (keyData == Keys.Add || keyData == Keys.Oemplus)
+                {
+                    seqArranger.Move(ArrangerMoveType.ByteDown);
+                    UpdateAddressLabel();
+                    CancelSelection();
+                    rm.Invalidate();
+                    RenderPanel.Invalidate();
+                    return true;
+                }
+                if (keyData == Keys.Subtract || keyData == Keys.OemMinus)
+                {
+                    seqArranger.Move(ArrangerMoveType.ByteUp);
+                    UpdateAddressLabel();
+                    CancelSelection();
+                    rm.Invalidate();
+                    RenderPanel.Invalidate();
+                    return true;
+                }
+                if (keyData == Keys.Down)
+                {
+                    seqArranger.Move(ArrangerMoveType.RowDown);
+                    UpdateAddressLabel();
+                    CancelSelection();
+                    rm.Invalidate();
+                    RenderPanel.Invalidate();
+                    return true;
+                }
+                else if (keyData == Keys.Up)
+                {
+                    seqArranger.Move(ArrangerMoveType.RowUp);
+                    UpdateAddressLabel();
+                    CancelSelection();
+                    rm.Invalidate();
+                    RenderPanel.Invalidate();
+                    return true;
+                }
+                else if (keyData == Keys.Right)
+                {
+                    seqArranger.Move(ArrangerMoveType.ColRight);
+                    UpdateAddressLabel();
+                    CancelSelection();
+                    rm.Invalidate();
+                    RenderPanel.Invalidate();
+                    return true;
+                }
+                else if (keyData == Keys.Left)
+                {
+                    seqArranger.Move(ArrangerMoveType.ColLeft);
+                    UpdateAddressLabel();
+                    CancelSelection();
+                    rm.Invalidate();
+                    RenderPanel.Invalidate();
+                    return true;
+                }
+                else if (keyData == Keys.PageDown)
+                {
+                    seqArranger.Move(ArrangerMoveType.PageDown);
+                    UpdateAddressLabel();
+                    CancelSelection();
+                    rm.Invalidate();
+                    RenderPanel.Invalidate();
+                    return true;
+                }
+                else if (keyData == Keys.PageUp)
+                {
+                    seqArranger.Move(ArrangerMoveType.PageUp);
+                    UpdateAddressLabel();
+                    CancelSelection();
+                    rm.Invalidate();
+                    RenderPanel.Invalidate();
+                    return true;
+                }
+                else if (keyData == Keys.Home)
+                {
+                    seqArranger.Move(ArrangerMoveType.Home);
+                    UpdateAddressLabel();
+                    CancelSelection();
+                    rm.Invalidate();
+                    RenderPanel.Invalidate();
+                    return true;
+                }
+                else if (keyData == Keys.End)
+                {
+                    seqArranger.Move(ArrangerMoveType.End);
+                    UpdateAddressLabel();
+                    CancelSelection();
+                    rm.Invalidate();
+                    RenderPanel.Invalidate();
+                    return true;
+                }
+                else if (keyData == Keys.OemQuestion && DisplayArranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element wider
+                {
+                    DisplayElements.Width++;
+                    DisplayArranger.Resize(DisplayElements.Width, DisplayElements.Height);
+                    UpdateAddressLabel();
+                    DisplayRect = new Rectangle(0, 0, DisplayArranger.ArrangerPixelSize.Width * Zoom, DisplayArranger.ArrangerPixelSize.Height * Zoom);
+                    rm.Invalidate();
+                    RenderPanel.Invalidate();
+                    return true;
+                }
+                else if (keyData == Keys.OemPeriod && DisplayArranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element thinner
+                {
+                    DisplayElements.Width--;
+                    if (DisplayElements.Width < 1)
+                        DisplayElements.Width = 1;
+
+                    DisplayArranger.Resize(DisplayElements.Width, DisplayElements.Height);
+                    UpdateAddressLabel();
+                    DisplayRect = new Rectangle(0, 0, DisplayArranger.ArrangerPixelSize.Width * Zoom, DisplayArranger.ArrangerPixelSize.Height * Zoom);
+                    rm.Invalidate();
+                    RenderPanel.Invalidate();
+                    return true;
+                }
+                else if (keyData == Keys.L && DisplayArranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element shorter
+                {
+                    DisplayElements.Height--;
+                    if (DisplayElements.Height < 1)
+                        DisplayElements.Height = 1;
+
+                    DisplayArranger.Resize(DisplayElements.Width, DisplayElements.Height);
+                    UpdateAddressLabel();
+                    DisplayRect = new Rectangle(0, 0, DisplayArranger.ArrangerPixelSize.Width * Zoom, DisplayArranger.ArrangerPixelSize.Height * Zoom);
+                    rm.Invalidate();
+                    RenderPanel.Invalidate();
+                    return true;
+                }
+                else if (keyData == Keys.OemSemicolon && DisplayArranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element taller
+                {
+                    DisplayElements.Height++;
+                    DisplayArranger.Resize(DisplayElements.Width, DisplayElements.Height);
+                    UpdateAddressLabel();
+                    DisplayRect = new Rectangle(0, 0, DisplayArranger.ArrangerPixelSize.Width * Zoom, DisplayArranger.ArrangerPixelSize.Height * Zoom);
+                    rm.Invalidate();
+                    RenderPanel.Invalidate();
+                    return true;
+                }
+                else if (keyData == Keys.A && DisplayArranger.Mode == ArrangerMode.SequentialArranger) // Next codec
+                {
+                    if (FormatSelectBox.SelectedIndex + 1 == FormatSelectBox.Items.Count)
+                        FormatSelectBox.SelectedIndex = 0;
+                    else
+                        FormatSelectBox.SelectedIndex++;
+                    return true;
+                }
+                else if (keyData == Keys.S && DisplayArranger.Mode == ArrangerMode.SequentialArranger) // Previous codec
+                {
+                    if (FormatSelectBox.SelectedIndex == 0)
+                        FormatSelectBox.SelectedIndex = FormatSelectBox.Items.Count - 1;
+                    else
+                        FormatSelectBox.SelectedIndex--;
+                    return true;
+                }
             }
-            if (keyData == Keys.Subtract || keyData == Keys.OemMinus && DisplayArranger.Mode == ArrangerMode.SequentialArranger)
-            {
-                DisplayArranger.Move(ArrangerMoveType.ByteUp);
-                UpdateAddressLabel();
-                CancelSelection();
-                rm.Invalidate();
-                RenderPanel.Invalidate();
-                return true;
-            }
-            if (keyData == Keys.Down && DisplayArranger.Mode == ArrangerMode.SequentialArranger)
-            {
-                DisplayArranger.Move(ArrangerMoveType.RowDown);
-                UpdateAddressLabel();
-                CancelSelection();
-                rm.Invalidate();
-                RenderPanel.Invalidate();
-                return true;
-            }
-            else if (keyData == Keys.Up && DisplayArranger.Mode == ArrangerMode.SequentialArranger)
-            {
-                DisplayArranger.Move(ArrangerMoveType.RowUp);
-                UpdateAddressLabel();
-                CancelSelection();
-                rm.Invalidate();
-                RenderPanel.Invalidate();
-                return true;
-            }
-            else if (keyData == Keys.Right && DisplayArranger.Mode == ArrangerMode.SequentialArranger)
-            {
-                DisplayArranger.Move(ArrangerMoveType.ColRight);
-                UpdateAddressLabel();
-                CancelSelection();
-                rm.Invalidate();
-                RenderPanel.Invalidate();
-                return true;
-            }
-            else if (keyData == Keys.Left && DisplayArranger.Mode == ArrangerMode.SequentialArranger)
-            {
-                DisplayArranger.Move(ArrangerMoveType.ColLeft);
-                UpdateAddressLabel();
-                CancelSelection();
-                rm.Invalidate();
-                RenderPanel.Invalidate();
-                return true;
-            }
-            else if (keyData == Keys.PageDown && DisplayArranger.Mode == ArrangerMode.SequentialArranger)
-            {
-                DisplayArranger.Move(ArrangerMoveType.PageDown);
-                UpdateAddressLabel();
-                CancelSelection();
-                rm.Invalidate();
-                RenderPanel.Invalidate();
-                return true;
-            }
-            else if (keyData == Keys.PageUp && DisplayArranger.Mode == ArrangerMode.SequentialArranger)
-            {
-                DisplayArranger.Move(ArrangerMoveType.PageUp);
-                UpdateAddressLabel();
-                CancelSelection();
-                rm.Invalidate();
-                RenderPanel.Invalidate();
-                return true;
-            }
-            else if (keyData == Keys.Home && DisplayArranger.Mode == ArrangerMode.SequentialArranger)
-            {
-                DisplayArranger.Move(ArrangerMoveType.Home);
-                UpdateAddressLabel();
-                CancelSelection();
-                rm.Invalidate();
-                RenderPanel.Invalidate();
-                return true;
-            }
-            else if (keyData == Keys.End && DisplayArranger.Mode == ArrangerMode.SequentialArranger)
-            {
-                DisplayArranger.Move(ArrangerMoveType.End);
-                UpdateAddressLabel();
-                CancelSelection();
-                rm.Invalidate();
-                RenderPanel.Invalidate();
-                return true;
-            }
-            else if (keyData == Keys.Escape) // Cancel selection
+
+            if (keyData == Keys.Escape) // Cancel selection
             {
                 CancelSelection();
                 RenderPanel.Cursor = Cursors.Arrow;
-                RenderPanel.Invalidate();
-                return true;
-            }
-            else if (keyData == Keys.OemQuestion && DisplayArranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element wider
-            {
-                DisplayElements.Width++;
-                DisplayArranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                UpdateAddressLabel();
-                DisplayRect = new Rectangle(0, 0, DisplayArranger.ArrangerPixelSize.Width * Zoom, DisplayArranger.ArrangerPixelSize.Height * Zoom);
-                rm.Invalidate();
-                RenderPanel.Invalidate();
-                return true;
-            }
-            else if (keyData == Keys.OemPeriod && DisplayArranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element thinner
-            {
-                DisplayElements.Width--;
-                if (DisplayElements.Width < 1)
-                    DisplayElements.Width = 1;
-
-                DisplayArranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                UpdateAddressLabel();
-                DisplayRect = new Rectangle(0, 0, DisplayArranger.ArrangerPixelSize.Width * Zoom, DisplayArranger.ArrangerPixelSize.Height * Zoom);
-                rm.Invalidate();
-                RenderPanel.Invalidate();
-                return true;
-            }
-            else if (keyData == Keys.L && DisplayArranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element shorter
-            {
-                DisplayElements.Height--;
-                if (DisplayElements.Height < 1)
-                    DisplayElements.Height = 1;
-
-                DisplayArranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                UpdateAddressLabel();
-                DisplayRect = new Rectangle(0, 0, DisplayArranger.ArrangerPixelSize.Width * Zoom, DisplayArranger.ArrangerPixelSize.Height * Zoom);
-                rm.Invalidate();
-                RenderPanel.Invalidate();
-                return true;
-            }
-            else if (keyData == Keys.OemSemicolon && DisplayArranger.Mode == ArrangerMode.SequentialArranger) // Make arranger one element taller
-            {
-                DisplayElements.Height++;
-                DisplayArranger.ResizeSequentialArranger(DisplayElements.Width, DisplayElements.Height);
-                UpdateAddressLabel();
-                DisplayRect = new Rectangle(0, 0, DisplayArranger.ArrangerPixelSize.Width * Zoom, DisplayArranger.ArrangerPixelSize.Height * Zoom);
-                rm.Invalidate();
                 RenderPanel.Invalidate();
                 return true;
             }
@@ -544,29 +564,17 @@ namespace TileShop
                     Zoom--;
                 return true;
             }
-            else if (keyData == Keys.A && DisplayArranger.Mode == ArrangerMode.SequentialArranger) // Next codec
-            {
-                if (FormatSelectBox.SelectedIndex + 1 == FormatSelectBox.Items.Count)
-                    FormatSelectBox.SelectedIndex = 0;
-                else
-                    FormatSelectBox.SelectedIndex++;
-                return true;
-            }
-            else if (keyData == Keys.S && DisplayArranger.Mode == ArrangerMode.SequentialArranger) // Previous codec
-            {
-                if (FormatSelectBox.SelectedIndex == 0)
-                    FormatSelectBox.SelectedIndex = FormatSelectBox.Items.Count - 1;
-                else
-                    FormatSelectBox.SelectedIndex--;
-                return true;
-            }
             else if (keyData == Keys.G) // Toggle Gridlines
             {
                 ShowGridlinesButton.Checked ^= true;
                 RenderPanel.Invalidate();
+                return true;
             }
             else if (keyData == Keys.J) // Show jump dialog
+            {
                 ShowJumpDialog();
+                return true;
+            }
 
             return base.ProcessCmdKey(ref msg, keyData);
         }
@@ -575,20 +583,20 @@ namespace TileShop
         #region User Interface Events
         private void FormatSelectBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (DisplayArranger.Mode != ArrangerMode.SequentialArranger)
-                return;
+            if (DisplayArranger is SequentialArranger seqArranger)
+            {
+                GraphicsFormat format = ResourceManager.Instance.GetGraphicsFormat((string)FormatSelectBox.SelectedItem);
+                seqArranger.SetGraphicsFormat((string)FormatSelectBox.SelectedItem, new Size(format.DefaultWidth, format.DefaultHeight));
+                ElementSize = DisplayArranger.ElementPixelSize;
 
-            GraphicsFormat format = ResourceManager.Instance.GetGraphicsFormat((string)FormatSelectBox.SelectedItem);
-            DisplayArranger.SetGraphicsFormat((string)FormatSelectBox.SelectedItem, new Size(format.DefaultWidth, format.DefaultHeight));
-            ElementSize = DisplayArranger.ElementPixelSize;
+                UpdateAddressLabel();
+                cache.Clear();
+                CancelSelection();
 
-            UpdateAddressLabel();
-            cache.Clear();
-            CancelSelection();
-
-            rm.Invalidate();
-            RenderPanel.Invalidate();
-            RenderPanel.Focus(); // Removes the focus from the FormatSelectBox
+                rm.Invalidate();
+                RenderPanel.Invalidate();
+                RenderPanel.Focus(); // Removes the focus from the FormatSelectBox
+            }
 
             return;
         }
@@ -692,7 +700,7 @@ namespace TileShop
                     if (DialogResult.Cancel == MessageBox.Show("Arranger elements will be lost due to a reduction in size. Continue?", "Resize Arranger", MessageBoxButtons.OKCancel))
                         return;
 
-                DisplayArranger.ResizeScatteredArranger(newArrangerSize.Width, newArrangerSize.Height);
+                DisplayArranger.Resize(newArrangerSize.Width, newArrangerSize.Height);
 
                 if (newArrangerName != DisplayArranger.Name) // TODO: Rename arranger, requires refactoring to access ProjectTreeForm...
                 {
@@ -762,20 +770,22 @@ namespace TileShop
 
         private void UpdateAddressLabel()
         {
-            if (DisplayArranger.Mode != ArrangerMode.SequentialArranger)
+            if(DisplayArranger is SequentialArranger seqArranger)
+            {
+                FileBitAddress address = seqArranger.GetInitialSequentialFileAddress();
+                string sizestring = seqArranger.FileSize.ToString("X");
+
+                int maxdigit = sizestring.Length;
+                if (maxdigit % 2 == 1)
+                    maxdigit++; // Pad out a zero
+
+                if (address.BitOffset == 0) // Byte-aligned offset
+                    offsetLabel.Text = String.Format("{0:X" + maxdigit.ToString() + "} / {1:X" + maxdigit.ToString() + "}", address.FileOffset, seqArranger.FileSize);
+                else // Print label with bit display
+                    offsetLabel.Text = String.Format("{0:X" + maxdigit.ToString() + "}.{1} / {2:X" + maxdigit.ToString() + "}", address.FileOffset, address.BitOffset, seqArranger.FileSize);
+            }
+            else
                 throw new InvalidOperationException();
-
-            FileBitAddress address = DisplayArranger.GetInitialSequentialFileAddress();
-            string sizestring = DisplayArranger.FileSize.ToString("X");
-
-            int maxdigit = sizestring.Length;
-            if (maxdigit % 2 == 1)
-                maxdigit++; // Pad out a zero
-
-            if (address.BitOffset == 0) // Byte-aligned offset
-                offsetLabel.Text = String.Format("{0:X" + maxdigit.ToString() + "} / {1:X" + maxdigit.ToString() + "}", address.FileOffset, DisplayArranger.FileSize);
-            else // Print label with bit display
-                offsetLabel.Text = String.Format("{0:X" + maxdigit.ToString() + "}.{1} / {2:X" + maxdigit.ToString() + "}", address.FileOffset, address.BitOffset, DisplayArranger.FileSize);
         }
 
         private void ShowJumpDialog()
@@ -786,7 +796,8 @@ namespace TileShop
             if (dr == DialogResult.OK)
             {
                 long address = jtaf.Address;
-                DisplayArranger.Move(address * 8);
+                var seqArranger = DisplayArranger as SequentialArranger;
+                seqArranger.Move(address * 8);
                 UpdateAddressLabel();
             }
             ReloadArranger();
@@ -799,8 +810,7 @@ namespace TileShop
 
         private void ArrangerViewerForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-
-            if (DisplayArranger.IsSequential && ResourceManager.Instance.IsResourceLeased(ContentSourceKey))
+            if (DisplayArranger is SequentialArranger && ResourceManager.Instance.IsResourceLeased(ContentSourceKey))
                 ResourceManager.Instance.ReturnLease(ContentSourceKey, false);
         }
     }
