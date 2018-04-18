@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Xml.Linq;
 using System.Linq;
 
 namespace TileShop.Core
@@ -196,7 +197,8 @@ namespace TileShop.Core
             return true;
         }
 
-        public override ProjectResource Clone()
+        #region ProjectResource implementation
+        public override ProjectResourceBase Clone()
         {
             Arranger arr = new SequentialArranger()
             {
@@ -216,5 +218,17 @@ namespace TileShop.Core
 
             return arr;
         }
+
+        public override XElement Serialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool Deserialize(XElement element)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }

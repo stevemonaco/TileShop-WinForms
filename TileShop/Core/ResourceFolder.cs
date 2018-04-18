@@ -7,12 +7,12 @@ using System.Xml.Linq;
 
 namespace TileShop.Core
 {
-    public class ResourceFolder: ProjectResource
+    public class ResourceFolder: ProjectResourceBase
     {
         public ResourceFolder()
         {
             CanContainChildResources = true;
-            ChildResources = new Dictionary<string, ProjectResource>();
+            ChildResources = new Dictionary<string, ProjectResourceBase>();
         }
 
         public override void Rename(string name)
@@ -20,7 +20,7 @@ namespace TileShop.Core
             throw new NotImplementedException();
         }
 
-        public override ProjectResource Clone()
+        public override ProjectResourceBase Clone()
         {
             ResourceFolder rf = new ResourceFolder();
             rf.Name = Name;
@@ -43,26 +43,30 @@ namespace TileShop.Core
                 {
                     var folder = new ResourceFolder();
                     folder.Deserialize(node);
-                    ChildResources.Add(new KeyValuePair<string, ProjectResource>(node.Attribute("name").Value, folder));
+                    folder.Parent = this;
+                    ChildResources.Add(new KeyValuePair<string, ProjectResourceBase>(node.Attribute("name").Value, folder));
                 }
                 else if (node.Name == "datafile")
                 {
                     var df = new DataFile(node.Attribute("name").Value);
                     df.Deserialize(node);
-                    ChildResources.Add(new KeyValuePair<string, ProjectResource>(df.Name, df));
+                    df.Parent = this;
+                    ChildResources.Add(new KeyValuePair<string, ProjectResourceBase>(df.Name, df));
                 }
                 else if (node.Name == "palette")
                 {
                     var pal = new Palette(node.Attribute("name").Value);
                     pal.Deserialize(node);
-                    ChildResources.Add(new KeyValuePair<string, ProjectResource>(pal.Name, pal));
+                    pal.Parent = this;
+                    ChildResources.Add(new KeyValuePair<string, ProjectResourceBase>(pal.Name, pal));
                 }
                 else if (node.Name == "arranger")
                 {
-                    //Arranger arr = Arranger.NewScatteredArranger()
-                    //var arr = new DataFile(node.Attribute("name").Value);
-                    //df.Deserialize(node);
-                    //ChildResources.Add(new KeyValuePair<string, ProjectResource>(node.Attribute("name").Value, df));
+                    var arr = new ScatteredArranger();
+                    arr.Rename(node.Attribute("name").Value);
+                    arr.Deserialize(node);
+                    arr.Parent = this;
+                    ChildResources.Add(new KeyValuePair<string, ProjectResourceBase>(arr.Name, arr));
                 }
             }
 

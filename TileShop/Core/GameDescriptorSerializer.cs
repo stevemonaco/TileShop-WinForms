@@ -21,7 +21,7 @@ namespace TileShop.Core
         private string baseDirectory = null;
 
         #region XML Deserialization methods
-        public bool LoadProject(Stream stream, string baseDirectory)
+        public ICollection<KeyValuePair<string, ProjectResourceBase>> LoadProject(Stream stream, string baseDirectory)
         {
             if (stream == null)
                 throw new ArgumentNullException("LoadProject was called with a null stream");
@@ -33,22 +33,38 @@ namespace TileShop.Core
 
             Directory.SetCurrentDirectory(baseDirectory);
 
+            var resourceTree = new Dictionary<string, ProjectResourceBase>();
+
             foreach (XElement node in projectNode.Elements())
             {
                 if (node.Name == "folder")
                 {
                     var folder = new ResourceFolder();
-                    AddFolderNode(node);
+                    folder.Deserialize(node);
+                    resourceTree.Add(node.Attribute("name").Value, folder);
                 }
                 else if (node.Name == "datafile")
-                    AddDataFileNode(node);
+                {
+                    var df = new DataFile(node.Attribute("name").Value);
+                    df.Deserialize(node);
+                    resourceTree.Add(df.Name, df);
+                }
                 else if (node.Name == "palette")
-                    AddPaletteNode(node);
+                {
+                    var pal = new Palette(node.Attribute("name").Value);
+                    pal.Deserialize(node);
+                    resourceTree.Add(pal.Name, pal);
+                }
                 else if (node.Name == "arranger")
-                    AddArrangerNode(node);
+                {
+                    var arr = new ScatteredArranger();
+                    arr.Rename(node.Attribute("name").Value);
+                    arr.Deserialize(node);
+                    resourceTree.Add(arr.Name, arr);
+                }
             }
 
-            return true;
+            return resourceTree;
         }
 
         /// <summary>
@@ -270,7 +286,7 @@ namespace TileShop.Core
             // Now add resource nodes to folder nodes
             foreach(string key in ResourceManager.Instance.ResourceKeys)
             {
-                ProjectResource res = ResourceManager.Instance.GetResource(key);
+                ProjectResourceBase res = ResourceManager.Instance.GetResource(key);
                 XElement xe;
 
                 if (key.Contains(".SequentialArranger") || key.Contains("Default"))

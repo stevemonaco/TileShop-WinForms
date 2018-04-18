@@ -11,7 +11,7 @@ namespace TileShop.Core
     /// <summary>
     /// DataFile manages access to user-modifiable files
     /// </summary>
-    public class DataFile : ProjectResource
+    public class DataFile : ProjectResourceBase
     {
         public string Location { get; private set; } = null;
         public FileStream Stream { get; private set; } = null;
@@ -30,7 +30,7 @@ namespace TileShop.Core
             Name = name;
         }
 
-        public override ProjectResource Clone()
+        public override ProjectResourceBase Clone()
         {
             DataFile df = new DataFile(Name);
             df.Open(Location);

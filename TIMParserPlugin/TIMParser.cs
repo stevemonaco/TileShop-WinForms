@@ -18,7 +18,7 @@ namespace TIMParserPlugin
     [ExportMetadata("Description", "Parses file(s) for TIMs and automatically creates the appropriate arrangers and palettes")]
     public class TIMParser : IFileParserContract
     {
-        Dictionary<string, ProjectResource> resourceMap = new Dictionary<string, ProjectResource>();
+        Dictionary<string, ProjectResourceBase> resourceMap = new Dictionary<string, ProjectResourceBase>();
 
         const string BaseFolderName = "Imported TIMs";
         const uint TimTag = 0x00000010;
@@ -155,7 +155,7 @@ namespace TIMParserPlugin
             return TimCount;
         }
 
-        public Dictionary<string, ProjectResource> RetrieveResourceMap()
+        public Dictionary<string, ProjectResourceBase> RetrieveResourceMap()
         {
             return resourceMap;
         }

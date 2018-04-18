@@ -24,7 +24,7 @@ namespace TileShop.Core
     /// Local colors are internally ARGB32
     /// Foreign colors are the same as the target system
     /// </summary>
-    public class Palette : ProjectResource
+    public class Palette : ProjectResourceBase
     {
         #region Properties
         /// <summary>
@@ -480,7 +480,7 @@ namespace TileShop.Core
         /// Creates a deep copy of the palette
         /// </summary>
         /// <returns></returns>
-        public override ProjectResource Clone()
+        public override ProjectResourceBase Clone()
         {
             Palette pal = new Palette(Name)
             {

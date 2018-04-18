@@ -77,7 +77,7 @@ namespace TileShop
 
         internal void OnResourceAdded(object sender, ResourceEventArgs e)
         {
-            ProjectResource res = ResourceManager.Instance.GetResource(e.ResourceKey);
+            ProjectResourceBase res = ResourceManager.Instance.GetResource(e.ResourceKey);
             AddResourceAsNode(e.ResourceKey, res);
 
             if(res is DataFile df) // Add sequential arranger below
@@ -306,7 +306,7 @@ namespace TileShop
             return true;
         }
 
-        private bool AddResourceAsNode(string key, ProjectResource Resource)
+        private bool AddResourceAsNode(string key, ProjectResourceBase Resource)
         {
             ResourceNode rn = null;
             if (Resource is DataFile df)
