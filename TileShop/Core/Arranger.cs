@@ -28,7 +28,7 @@ namespace TileShop.Core
     /// <summary>
     /// Arranger for graphical screen elements
     /// </summary>
-    public abstract class Arranger : ProjectResource
+    public abstract class Arranger : ProjectResourceBase
     {
         // General Arranger variables
         /// <summary>
@@ -198,36 +198,6 @@ namespace TileShop.Core
 
             return false;
         }
-
-        /// <summary>
-        /// Creates a deep clone of the Arranger
-        /// </summary>
-        /// <returns></returns>
-        /*public override ProjectResource Clone()
-        {
-            Arranger arr = new Arranger()
-            {
-                ElementGrid = new ArrangerElement[ArrangerElementSize.Width, ArrangerElementSize.Height],
-                ArrangerElementSize = ArrangerElementSize,
-                ElementPixelSize = ElementPixelSize,
-                ArrangerPixelSize = ArrangerPixelSize,
-                Mode = Mode,
-                Name = Name,
-                IsSequential = IsSequential
-            };
-
-            for (int y = 0; y < ArrangerElementSize.Height; y++)
-                for (int x = 0; x < ArrangerElementSize.Width; x++)
-                    arr.SetElement(ElementGrid[x, y], x, y);
-
-            if (IsSequential)
-            {
-                arr.FileSize = fileSize;
-                arr.ArrangerBitSize = arrangerBitSize;
-            }
-
-            return arr;
-        }*/
 
         public override XElement Serialize()
         {

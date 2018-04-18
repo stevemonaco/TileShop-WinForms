@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Drawing;
+using System.Xml.Linq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using TileShop.ExtensionMethods;
 
 namespace TileShop.Core
 {
@@ -102,7 +105,8 @@ namespace TileShop.Core
             ArrangerPixelSize = new Size(arrangerWidth * Width, arrangerHeight * Height);
         }
 
-        public override ProjectResource Clone()
+        #region ProjectResource implementation
+        public override ProjectResourceBase Clone()
         {
             Arranger arr = new ScatteredArranger()
             {
@@ -120,5 +124,74 @@ namespace TileShop.Core
 
             return arr;
         }
+
+        public override XElement Serialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool Deserialize(XElement element)
+        {
+            string name = element.Attribute("name").Value;
+            int elementsx = int.Parse(element.Attribute("elementsx").Value); // Width of arranger in elements
+            int elementsy = int.Parse(element.Attribute("elementsy").Value); // Height of arranger in elements
+            int width = int.Parse(element.Attribute("width").Value); // Width of element in pixels
+            int height = int.Parse(element.Attribute("height").Value); // Height of element in pixels
+            string defaultFormat = element.Attribute("defaultformat").Value;
+            string defaultdDataFile = element.Attribute("defaultdatafile").Value;
+            string defaultPalette = element.Attribute("defaultpalette").Value;
+            string layoutName = element.Attribute("layout").Value;
+            IEnumerable<XElement> elementList = element.Descendants("element");
+
+            if (layoutName == "tiled")
+                Layout = ArrangerLayout.TiledArranger;
+            else if (layoutName == "linear")
+                Layout = ArrangerLayout.LinearArranger;
+            else
+                throw new XmlException("Incorrect arranger layout type ('" + layoutName + "') for " + name);
+
+            Name = name;
+            ElementPixelSize = new Size(width, height);
+            Resize(elementsx, elementsy);
+
+            var xmlElements = elementList.Select(e => new
+            {
+                fileoffset = long.Parse(e.Attribute("fileoffset").Value, System.Globalization.NumberStyles.HexNumber),
+                bitoffset = e.Attribute("bitoffset"),
+                posx = int.Parse(e.Attribute("posx").Value),
+                posy = int.Parse(e.Attribute("posy").Value),
+                format = e.Attribute("format"),
+                palette = e.Attribute("palette"),
+                file = e.Attribute("file")
+            });
+
+            foreach (var xmlElement in xmlElements)
+            {
+                ArrangerElement el = GetElement(xmlElement.posx, xmlElement.posy);
+
+                el.DataFileKey = xmlElement.file?.Value ?? defaultdDataFile;
+                el.PaletteKey = xmlElement.palette?.Value ?? defaultPalette;
+                el.FormatName = xmlElement.format?.Value ?? defaultFormat;
+
+                if (xmlElement.bitoffset != null)
+                    el.FileAddress = new FileBitAddress(xmlElement.fileoffset, int.Parse(xmlElement.bitoffset.Value));
+                else
+                    el.FileAddress = new FileBitAddress(xmlElement.fileoffset, 0);
+
+                el.Height = height;
+                el.Width = width;
+                el.X1 = xmlElement.posx * el.Width;
+                el.Y1 = xmlElement.posy * el.Height;
+                el.X2 = el.X1 + el.Width - 1;
+                el.Y2 = el.Y1 + el.Height - 1;
+
+                el.AllocateBuffers();
+
+                SetElement(el, xmlElement.posx, xmlElement.posy);
+            }
+
+            return true;
+        }
+        #endregion
     }
 }

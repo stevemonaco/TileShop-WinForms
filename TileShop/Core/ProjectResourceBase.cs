@@ -7,7 +7,7 @@ using System.Xml.Linq;
 
 namespace TileShop.Core
 {
-    public abstract class ProjectResource
+    public abstract class ProjectResourceBase
     {
         /// <summary>
         /// Identifying name of the resource
@@ -15,9 +15,17 @@ namespace TileShop.Core
         public string Name { get; protected set; }
 
         /// <summary>
+        /// Gets or sets the parent.
+        /// </summary>
+        /// <value>
+        /// The parent.
+        /// </value>
+        public ProjectResourceBase Parent { get; set; }
+
+        /// <summary>
         /// The child resources
         /// </summary>
-        internal ICollection<KeyValuePair<string, ProjectResource>> ChildResources;
+        internal ICollection<KeyValuePair<string, ProjectResourceBase>> ChildResources;
 
         /// <summary>
         /// Determines if the ProjectResource can contain child resources
@@ -36,6 +44,14 @@ namespace TileShop.Core
         public bool ShouldBeSerialized { get; private set; } = true;
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is leased.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is leased; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsLeased { get; set; } = false;
+
+        /// <summary>
         /// Rename a resource with a new name
         /// </summary>
         /// <param name="name">The new name.</param>
@@ -48,7 +64,7 @@ namespace TileShop.Core
         /// Deep-clone copy of the object
         /// </summary>
         /// <returns></returns>
-        public abstract ProjectResource Clone();
+        public abstract ProjectResourceBase Clone();
 
         /// <summary>
         /// Serializes resource into an XElement

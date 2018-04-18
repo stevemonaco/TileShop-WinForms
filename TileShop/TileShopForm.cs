@@ -184,7 +184,7 @@ namespace TileShop
                 foreach (string key in resources.Keys)
                 {
                     // TODO: Add checks to ensure resources were added
-                    ProjectResource res = resources[key];
+                    ProjectResourceBase res = resources[key];
                     if (res is DataFile df)
                         ResourceManager.Instance.AddResource(key, res);
                     else
@@ -218,7 +218,8 @@ namespace TileShop
 
             ProjectFileName = "D:\\Projects\\ff2newxml.xml";
             GameDescriptorSerializer gds = new GameDescriptorSerializer();
-            gds.LoadProject(ProjectFileName);
+            //gds.LoadProject(ProjectFileName);
+            var resourceTree = gds.LoadProject(File.OpenRead(ProjectFileName), ProjectFileName);
         }
 
         private void SaveProjectToolStripMenuItem_Click(object sender, EventArgs e)

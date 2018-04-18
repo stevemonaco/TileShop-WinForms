@@ -99,10 +99,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\ProjectResource.cs" />
+    <Compile Include="Core\ProjectResourceBase.cs" />
     <Compile Include="Core\ResourceEventArgs.cs" />
     <Compile Include="Core\ResourceFolder.cs" />
-    <Compile Include="Core\ResourceTree.cs" />
     <Compile Include="Core\ScatteredArranger.cs" />
     <Compile Include="Core\SequentialArranger.cs" />
     <Compile Include="ExtensionMethods\ColorExtensions.cs" />
@@ -119,7 +118,6 @@
     <Compile Include="Core\NativeColor.cs" />
     <Compile Include="UI\CustomCursor.cs" />
     <Compile Include="Core\DataFile.cs" />
-    <Compile Include="Core\IProjectResource.cs" />
     <Compile Include="UI\Forms\EditorDockContent.cs">
       <SubType>Form</SubType>
     </Compile>
