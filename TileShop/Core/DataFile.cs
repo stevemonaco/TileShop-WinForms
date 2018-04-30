@@ -11,14 +11,29 @@ namespace TileShop.Core
     /// <summary>
     /// DataFile manages access to user-modifiable files
     /// </summary>
-    public class DataFile : ProjectResourceBase
+    public class DataFile: ProjectResourceBase
     {
-        public string Location { get; private set; } = null;
-        public FileStream Stream { get; private set; } = null;
+        public string Location { get; private set; }
 
-        public DataFile(string name)
+        Lazy<FileStream> _stream;
+        public FileStream Stream { get => _stream.Value; }
+
+        public DataFile(string name): this(name, "")
+        {
+        }
+
+        public DataFile(string name, string location)
         {
             Name = name;
+            Location = location;
+
+            _stream = new Lazy<FileStream>(() =>
+            {
+                if (String.IsNullOrWhiteSpace(Location))
+                    throw new ArgumentException();
+
+                return File.Open(Location, FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
+            });
         }
 
         /// <summary>
@@ -32,27 +47,8 @@ namespace TileShop.Core
 
         public override ProjectResourceBase Clone()
         {
-            DataFile df = new DataFile(Name);
-            df.Open(Location);
+            DataFile df = new DataFile(Name, Location);
             return df;
-        }
-
-        /// <summary>
-        /// Opens a file on disk and makes the underlying stream accessible
-        /// </summary>
-        /// <param name="filename"></param>
-        /// <returns></returns>
-        public bool Open(string filename)
-        {
-            if (filename == null)
-                throw new ArgumentNullException();
-
-            if (!File.Exists(filename))
-                throw new FileNotFoundException("Could not find " + filename);
-
-            Location = filename;
-            Stream = File.Open(filename, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-            return true;
         }
 
         public void Close()
@@ -68,7 +64,10 @@ namespace TileShop.Core
 
         public override bool Deserialize(XElement element)
         {
-            throw new NotImplementedException();
+            Name = element.Attribute("name").Value;
+            Location = element.Attribute("location").Value;
+
+            return true;
         }
     }
 }
