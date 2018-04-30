@@ -25,6 +25,7 @@ namespace TileShop.Core
 
         public SequentialArranger()
         {
+            Mode = ArrangerMode.SequentialArranger;
         }
 
         public SequentialArranger(int arrangerWidth, int arrangerHeight, string dataFileKey, GraphicsFormat format)

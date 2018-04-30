@@ -39,9 +39,12 @@ Pixel Editor
 	- Add support for palettes in pixel editor (gray out pixels that cannot be edited using the current palette)
 
 Refactoring
+	- Refactor exception throwing code to FluentAssertions
 	- Refactor ResourceManager public methods to not need .Instance
 	- Refactor ResourceManager GetResource into GetResource<T>
 	- Remove ProjectTreeForm AddDataFile method
+	- Change IsNullOrEmpty to IsNullOrWhiteSpace
+	- Replace == null with is null
 
 Beta 2 tasks:
 Allow multiple projects to be loaded into ProjectTreeForm (prefix project node name into XML, put each project into separate tab or just top-level folder)

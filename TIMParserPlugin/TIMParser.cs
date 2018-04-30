@@ -48,8 +48,7 @@ namespace TIMParserPlugin
                 int count = SearchTIMFile(fname);
                 if (count > 0) // Found at least one TIM in the file
                 {
-                    DataFile df = new DataFile(Path.GetFileName(fname));
-                    df.Open(fname); // TODO: Refactor not opening these files plugin-side; do it TileShop-side instead
+                    DataFile df = new DataFile(Path.GetFileName(fname), fname);
                     resourceMap.Add(Path.Combine(BaseFolderName, df.Name), df);
                 }
             }
@@ -177,7 +176,7 @@ namespace TIMParserPlugin
                 string palKey = Path.Combine(BaseFolderName, palName);
 
                 Palette pal = new Palette(palName);
-                pal.LoadPalette(fs, DataFileKey, new FileBitAddress(td.ClutOffsets[i], 0), ColorModel.BGR15, false, td.ClutColors);
+                pal.LazyLoadPalette(DataFileKey, new FileBitAddress(td.ClutOffsets[i], 0), ColorModel.BGR15, false, td.ClutColors);
                 resourceMap.Add(palKey, pal);
 
                 var arr = new ScatteredArranger(ArrangerLayout.LinearArranger, 1, 1, td.ImageWidth, td.ImageHeight);

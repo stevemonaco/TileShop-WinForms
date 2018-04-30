@@ -2,24 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
+using MoreLinq;
+using TileShop.ExtensionMethods;
 
 namespace TileShop.Core
 {
     /// <summary>
     /// Singleton class that manages file and editor resources
-    /// Files loaded here are kept open always until ClearResources is called
     /// A lease model is used for managing resources that are currently being edited
     /// A leased Resource is a resource that is intended to be edited and saved
     /// GetResource will return the edited copy of the Resource if is leased or the original copy if it is not
     /// This is so that Resources will be able to be previewed with unsaved changes in referenced Resources
     /// </summary>
-
-    // TODO - Consider future implementation of lazy instantiation for some objects, especially for projects that have many, many files
     public sealed class ResourceManager
     {
+        private Dictionary<string, ProjectResourceBase> ResourceTree;
+
         /// <summary>
         /// Maps resource keys to resources
         /// </summary>
@@ -60,7 +59,7 @@ namespace TileShop.Core
         }
         #endregion
 
-        #region IProjectResource Management
+        #region ProjectResourceBase Management
         /// <summary>
         /// Add a resource to ResourceManager by key
         /// </summary>
@@ -103,7 +102,7 @@ namespace TileShop.Core
         /// </summary>
         /// <param name="ResourceKey"></param>
         /// <returns>A leased resource if available, otherwise the original resource</returns>
-        public ProjectResourceBase GetResource(string ResourceKey)
+        /*public ProjectResourceBase GetResource(string ResourceKey)
         {
             if (ResourceKey == null)
                 throw new ArgumentException("Null name argument passed into GetResource");
@@ -114,6 +113,31 @@ namespace TileShop.Core
                 return ResourceMap[ResourceKey];
 
             throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
+        }*/
+
+        /// <summary>
+        /// Gets a resource by key
+        /// </summary>
+        /// <param name="ResourceKey"></param>
+        /// <returns>A leased resource if available, otherwise the original resource</returns>
+        public ProjectResourceBase GetResource(string ResourceKey)
+        {
+            if (ResourceKey == null)
+                throw new ArgumentException("Null name argument passed into GetResource");
+            if (LeasedResourceMap.ContainsKey(ResourceKey))
+                return LeasedResourceMap[ResourceKey];
+
+            var res = ResourceTree.FindResource(ResourceKey);
+
+            if(res == null)
+                throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
+
+            return res;
+
+            //if (ResourceMap.ContainsKey(ResourceKey))
+            //    return ResourceMap[ResourceKey];
+
+            //throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
         }
 
         /// <summary>
@@ -233,7 +257,31 @@ namespace TileShop.Core
             ResourceMap.Clear();
         }
 
-        public IEnumerable<string> ResourceKeys { get { return ResourceMap.Keys; } }
+        public IEnumerable<string> ResourceKeys { get => ResourceMap.Keys; }
+        #endregion
+
+        #region XML Management        
+        /// <summary>
+        /// Loads the project from an XML source
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <param name="baseDirectory">The base directory of the project</param>
+        /// <returns></returns>
+        public void LoadProject(Stream stream, string baseDirectory)
+        {
+            var gds = new GameDescriptorSerializer();
+            var tree = gds.DeserializeProject(stream, baseDirectory);
+
+            ResourceTree?.Clear();
+            ResourceTree = tree;
+            ResourceTree.SelfAndDescendants().ForEach((x) => ResourceAdded?.Invoke(this, new ResourceEventArgs(x.Value.ResourceKey)));
+        }
+
+        public void SaveProject(Stream stream)
+        {
+
+        }
+
         #endregion
 
         #region GraphicsFormat Management
