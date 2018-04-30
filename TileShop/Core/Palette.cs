@@ -65,12 +65,14 @@ namespace TileShop.Core
         /// <summary>
         /// Gets the internal palette containing native ARGB32 colors
         /// </summary>
-        public NativeColor[] NativePalette { get; private set; }
+        NativeColor[] NativePalette { get => _nativePalette.Value; }
+        Lazy<NativeColor[]> _nativePalette;
 
         /// <summary>
         /// Gets the internal palette containing foreign colors
         /// </summary>
-        public ForeignColor[] ForeignPalette { get; private set; }
+        ForeignColor[] ForeignPalette { get => _foreignPalette.Value; }
+        Lazy<ForeignColor[]> _foreignPalette;
         #endregion
 
         /// <summary>
@@ -102,7 +104,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public bool Reload()
         {
-            return LoadPalette(DataFileKey, FileAddress, ColorModel, ZeroIndexTransparent, Entries);
+            return LazyLoadPalette(DataFileKey, FileAddress, ColorModel, ZeroIndexTransparent, Entries);
         }
 
         /// <summary>
@@ -124,8 +126,8 @@ namespace TileShop.Core
         {
             int entrySize = 256;
 
-            NativePalette = new NativeColor[entrySize];
-            ForeignPalette = new ForeignColor[entrySize];
+            _nativePalette = new Lazy<NativeColor[]>(() => new NativeColor[entrySize]);
+            _foreignPalette = new Lazy<ForeignColor[]>(() => new ForeignColor[entrySize]);
 
             BinaryReader br = new BinaryReader(File.OpenRead(filename));
 
@@ -152,7 +154,7 @@ namespace TileShop.Core
         }
 
         /// <summary>
-        /// Load palette from a previously opened file
+        /// Lazily loads palette from a previously opened file. Actual loading will occur during color access.
         /// </summary>
         /// <param name="dataFileKey">DataFile key in FileManager</param>
         /// <param name="address">File address to the beginning of the palette</param>
@@ -160,34 +162,37 @@ namespace TileShop.Core
         /// <param name="zeroIndexTransparent">If the 0-index of the palette is automatically transparent</param>
         /// <param name="numEntries">Number of entries the palette contains</param>
         /// <returns>Success value</returns>
-        public bool LoadPalette(string dataFileKey, FileBitAddress address, ColorModel model, bool zeroIndexTransparent, int numEntries)
-        {
-            FileStream fs = ((DataFile)ResourceManager.Instance.GetResource(dataFileKey)).Stream;
-
-            return LoadPalette(fs, dataFileKey, address, model, zeroIndexTransparent, numEntries);
-        }
-
-        /// <summary>
-        /// Load palette from a FileStream
-        /// </summary>
-        /// <param name="fs"></param>
-        /// <param name="FileKey"></param>
-        /// <param name="address"></param>
-        /// <param name="model"></param>
-        /// <param name="zeroIndexTransparent"></param>
-        /// <param name="numEntries"></param>
-        /// <returns></returns>
-        public bool LoadPalette(FileStream fs, string FileKey, FileBitAddress address, ColorModel model, bool zeroIndexTransparent, int numEntries)
+        public bool LazyLoadPalette(string dataFileKey, FileBitAddress address, ColorModel model, bool zeroIndexTransparent, int numEntries)
         {
             if (numEntries > 256)
                 throw new ArgumentException("Maximum palette size must be 256 entries or less");
 
-            NativePalette = new NativeColor[numEntries];
-            ForeignPalette = new ForeignColor[numEntries];
+            DataFileKey = dataFileKey;
+            FileAddress = address;
+            ColorModel = model;
+            ZeroIndexTransparent = zeroIndexTransparent;
+            Entries = numEntries;
+            StorageSource = PaletteStorageSource.File;
 
+            _nativePalette = new Lazy<NativeColor[]>(() => LoadNativePalette());
+            _foreignPalette = new Lazy<ForeignColor[]>(() => LoadForeignPalette());
+
+            return true;
+        }
+
+        /// <summary>
+        /// Loads the NativePalette from current settings
+        /// </summary>
+        /// <exception cref="NotSupportedException">
+        /// An unsupported palette format was attempted to be read
+        /// or
+        /// Palette formats with entry sizes larger than 4 bytes are not supported
+        /// </exception>
+        private NativeColor[] LoadNativePalette()
+        {
             int readSize;
 
-            switch (model)
+            switch (ColorModel)
             {
                 case ColorModel.BGR15:
                 case ColorModel.RGB15:
@@ -210,10 +215,12 @@ namespace TileShop.Core
                     throw new NotSupportedException("An unsupported palette format was attempted to be read");
             }
 
-            byte[] tempPalette = fs.ReadUnshifted(address, readSize * 8 * numEntries, true);
-            BitStream bs = BitStream.OpenRead(tempPalette, readSize * 8 * numEntries);
+            FileStream fs = ((DataFile)ResourceManager.Instance.GetResource(DataFileKey)).Stream;
+            byte[] tempPalette = fs.ReadUnshifted(FileAddress, readSize * 8 * Entries, true);
+            BitStream bs = BitStream.OpenRead(tempPalette, readSize * 8 * Entries);
+            var nativePalette = new NativeColor[Entries];
 
-            for (int i = 0; i < numEntries; i++)
+            for (int i = 0; i < Entries; i++)
             {
                 uint readColor;
 
@@ -241,30 +248,96 @@ namespace TileShop.Core
                     throw new NotSupportedException("Palette formats with entry sizes larger than 4 bytes are not supported");
 
                 ForeignColor foreignColor = (ForeignColor)readColor;
-                NativeColor nativeColor = foreignColor.ToNativeColor(model);
-                ForeignPalette[i] = foreignColor;
-                NativePalette[i] = nativeColor;
+                NativeColor nativeColor = foreignColor.ToNativeColor(ColorModel);
+                nativePalette[i] = nativeColor;
             }
 
-            ZeroIndexTransparent = zeroIndexTransparent;
-
             if (ZeroIndexTransparent)
-                NativePalette[0].Color &= 0x00FFFFFF;
+                nativePalette[0].Color &= 0x00FFFFFF;
 
-            ColorModel = model;
-            FileAddress = address;
-            DataFileKey = FileKey;
-            Entries = numEntries;
-            StorageSource = PaletteStorageSource.File;
+            return nativePalette;
+        }
 
-            return true;
+        /// <summary>
+        /// Loads the ForeignPalette from current settings
+        /// </summary>
+        /// <exception cref="NotSupportedException">
+        /// An unsupported palette format was attempted to be read
+        /// or
+        /// Palette formats with entry sizes larger than 4 bytes are not supported
+        /// </exception>
+        private ForeignColor[] LoadForeignPalette()
+        {
+            int readSize;
+
+            switch (ColorModel)
+            {
+                case ColorModel.BGR15:
+                case ColorModel.RGB15:
+                    readSize = 2;
+                    HasAlpha = false;
+                    break;
+                case ColorModel.ABGR16:
+                    readSize = 2;
+                    HasAlpha = true;
+                    break;
+                case ColorModel.RGB24:
+                    readSize = 3;
+                    HasAlpha = false;
+                    break;
+                case ColorModel.ARGB32:
+                    readSize = 4;
+                    HasAlpha = true;
+                    break;
+                default:
+                    throw new NotSupportedException("An unsupported palette format was attempted to be read");
+            }
+
+            FileStream fs = ((DataFile)ResourceManager.Instance.GetResource(DataFileKey)).Stream;
+            byte[] tempPalette = fs.ReadUnshifted(FileAddress, readSize * 8 * Entries, true);
+            BitStream bs = BitStream.OpenRead(tempPalette, readSize * 8 * Entries);
+            var foreignPalette = new ForeignColor[Entries];
+
+            for (int i = 0; i < Entries; i++)
+            {
+                uint readColor;
+
+                if (readSize == 1)
+                    readColor = bs.ReadByte();
+                else if (readSize == 2)
+                {
+                    readColor = bs.ReadByte();
+                    readColor |= ((uint)bs.ReadByte()) << 8;
+                }
+                else if (readSize == 3)
+                {
+                    readColor = bs.ReadByte();
+                    readColor |= ((uint)bs.ReadByte()) << 8;
+                    readColor |= ((uint)bs.ReadByte()) << 16;
+                }
+                else if (readSize == 4)
+                {
+                    readColor = bs.ReadByte();
+                    readColor |= ((uint)bs.ReadByte()) << 8;
+                    readColor |= ((uint)bs.ReadByte()) << 16;
+                    readColor |= ((uint)bs.ReadByte()) << 24;
+                }
+                else
+                    throw new NotSupportedException("Palette formats with entry sizes larger than 4 bytes are not supported");
+
+                ForeignColor foreignColor = (ForeignColor)readColor;
+                foreignPalette[i] = foreignColor;
+            }
+
+            return foreignPalette;
         }
 
         /// <summary>
         /// Returns the native color at the specified index
         /// </summary>
         /// <param name="index">Zero-based palette index</param>
-        /// <returns>Native ARGB32 color</returns>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public NativeColor this[int index]
         {
             get
@@ -277,11 +350,33 @@ namespace TileShop.Core
         }
 
         /// <summary>
-        /// Returns the local color at the specified index
+        /// Gets the color of the native.
         /// </summary>
         /// <param name="index">Zero-based palette index</param>
-        /// <returns>Local Color</returns>
-        public Color GetLocalColor(int index)
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public NativeColor GetNativeColor(int index)
+        {
+            if (NativePalette == null)
+                throw new ArgumentNullException();
+
+            return NativePalette[index];
+        }
+
+        public ForeignColor GetForeignColor(int index)
+        {
+            if (ForeignPalette == null)
+                throw new ArgumentNullException();
+
+            return ForeignPalette[index];
+        }
+
+        /// <summary>
+        /// Returns the color at the specified index
+        /// </summary>
+        /// <param name="index">Zero-based palette index</param>
+        /// <returns>Color</returns>
+        public Color GetColor(int index)
         {
             if (NativePalette == null)
                 throw new ArgumentNullException();
@@ -491,8 +586,8 @@ namespace TileShop.Core
                 HasAlpha = this.HasAlpha,
                 ZeroIndexTransparent = this.ZeroIndexTransparent,
                 StorageSource = this.StorageSource,
-                NativePalette = new NativeColor[this.Entries],
-                ForeignPalette = new ForeignColor[this.Entries]
+                _nativePalette = new Lazy<NativeColor[]>(() => NativePalette),
+                _foreignPalette = new Lazy<ForeignColor[]>(() => ForeignPalette),
             };
 
             NativePalette.CopyTo(pal.NativePalette, 0);
@@ -508,7 +603,24 @@ namespace TileShop.Core
 
         public override bool Deserialize(XElement element)
         {
-            throw new NotImplementedException();
+            string Name = element.Attribute("name").Value;
+            long fileOffset = long.Parse(element.Attribute("fileoffset").Value, System.Globalization.NumberStyles.HexNumber);
+            string dataFileKey = element.Attribute("datafile").Value;
+            int entries = int.Parse(element.Attribute("entries").Value);
+            string formatName = element.Attribute("format").Value;
+            bool zeroIndexTransparent = bool.Parse(element.Attribute("zeroindextransparent").Value);
+
+            FileBitAddress address;
+            if (element.Attribute("bitoffset") == null)
+                address = new FileBitAddress(fileOffset, 0);
+            else
+                address = new FileBitAddress(fileOffset, int.Parse(element.Attribute("bitoffset").Value));
+
+            ColorModel format = Palette.StringToColorModel(formatName);
+
+            LazyLoadPalette(dataFileKey, address, format, zeroIndexTransparent, entries);
+
+            return true;
         }
     }
 
