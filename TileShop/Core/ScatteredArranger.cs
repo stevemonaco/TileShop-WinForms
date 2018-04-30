@@ -14,6 +14,7 @@ namespace TileShop.Core
     {
         public ScatteredArranger()
         {
+            Mode = ArrangerMode.ScatteredArranger;
         }
 
         /// <summary>
@@ -27,6 +28,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public ScatteredArranger(ArrangerLayout layout, int arrangerWidth, int arrangerHeight, int elementWidth, int elementHeight)
         {
+            Mode = ArrangerMode.ScatteredArranger;
             Layout = layout;
             ElementGrid = new ArrangerElement[arrangerWidth, arrangerHeight];
 

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Xml.Linq;
 
 namespace TileShop.Core
@@ -25,7 +22,7 @@ namespace TileShop.Core
         /// <summary>
         /// The child resources
         /// </summary>
-        internal ICollection<KeyValuePair<string, ProjectResourceBase>> ChildResources;
+        internal Dictionary<string, ProjectResourceBase> ChildResources = new Dictionary<string, ProjectResourceBase>();
 
         /// <summary>
         /// Determines if the ProjectResource can contain child resources
@@ -78,5 +75,26 @@ namespace TileShop.Core
         /// <param name="element"></param>
         /// <returns></returns>
         public abstract bool Deserialize(XElement element);
+
+        /// <summary>
+        /// Returns the key of the ProjectResourceBase
+        /// </summary>
+        /// <returns></returns>
+        public string ResourceKey
+        {
+            get
+            {
+                string key = Name;
+                ProjectResourceBase parentVisitor = Parent;
+
+                while (parentVisitor != null)
+                {
+                    key = Path.Combine(parentVisitor.Name, key);
+                    parentVisitor = parentVisitor.Parent;
+                }
+
+                return key;
+            }
+        }
     }
 }

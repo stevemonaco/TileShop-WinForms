@@ -154,10 +154,10 @@ namespace TileShop
             pal.Reload();
             SwatchControl.SelectedIndex = 0;
             SwatchControl.Invalidate();
-            ActiveColor = pal.GetLocalColor(0);
+            ActiveColor = pal.GetColor(0);
 
             //(byte A, byte R, byte G, byte B) = pal.SplitForeignColor(SwatchControl.SelectedIndex);
-            (byte A, byte R, byte G, byte B) = pal.ForeignPalette[SwatchControl.SelectedIndex].Split(pal.ColorModel);
+            (byte A, byte R, byte G, byte B) = pal.GetForeignColor(SwatchControl.SelectedIndex).Split(pal.ColorModel);
 
             ForeignAlpha = A;
             ForeignRed = R;
@@ -306,7 +306,7 @@ namespace TileShop
 
             SetPaletteNumericBounds(model);
 
-            pal.LoadPalette(pal.DataFileKey, pal.FileAddress, model, pal.ZeroIndexTransparent, pal.Entries);
+            pal.LazyLoadPalette(pal.DataFileKey, pal.FileAddress, model, pal.ZeroIndexTransparent, pal.Entries);
             SwatchControl.Invalidate();
         }
 
@@ -329,8 +329,8 @@ namespace TileShop
 
         private void SwatchControl_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ActiveColor = pal.GetLocalColor(SwatchControl.SelectedIndex);
-            (byte A, byte R, byte G, byte B) = pal.ForeignPalette[SwatchControl.SelectedIndex].Split(pal.ColorModel);
+            ActiveColor = pal.GetColor(SwatchControl.SelectedIndex);
+            (byte A, byte R, byte G, byte B) = pal.GetForeignColor(SwatchControl.SelectedIndex).Split(pal.ColorModel);
 
             ForeignAlpha = A;
             ForeignRed = R;

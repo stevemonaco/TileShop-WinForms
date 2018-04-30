@@ -44,21 +44,21 @@ namespace TileShop.Core
                     var folder = new ResourceFolder();
                     folder.Deserialize(node);
                     folder.Parent = this;
-                    ChildResources.Add(new KeyValuePair<string, ProjectResourceBase>(node.Attribute("name").Value, folder));
+                    ChildResources.Add(node.Attribute("name").Value, folder);
                 }
                 else if (node.Name == "datafile")
                 {
                     var df = new DataFile(node.Attribute("name").Value);
                     df.Deserialize(node);
                     df.Parent = this;
-                    ChildResources.Add(new KeyValuePair<string, ProjectResourceBase>(df.Name, df));
+                    ChildResources.Add(df.Name, df);
                 }
                 else if (node.Name == "palette")
                 {
                     var pal = new Palette(node.Attribute("name").Value);
                     pal.Deserialize(node);
                     pal.Parent = this;
-                    ChildResources.Add(new KeyValuePair<string, ProjectResourceBase>(pal.Name, pal));
+                    ChildResources.Add(pal.Name, pal);
                 }
                 else if (node.Name == "arranger")
                 {
@@ -66,7 +66,7 @@ namespace TileShop.Core
                     arr.Rename(node.Attribute("name").Value);
                     arr.Deserialize(node);
                     arr.Parent = this;
-                    ChildResources.Add(new KeyValuePair<string, ProjectResourceBase>(arr.Name, arr));
+                    ChildResources.Add(arr.Name, arr);
                 }
             }
 

@@ -219,7 +219,8 @@ namespace TileShop
             ProjectFileName = "D:\\Projects\\ff2newxml.xml";
             GameDescriptorSerializer gds = new GameDescriptorSerializer();
             //gds.LoadProject(ProjectFileName);
-            var resourceTree = gds.LoadProject(File.OpenRead(ProjectFileName), ProjectFileName);
+            //var resourceTree = gds.DeserializeProject(File.OpenRead(ProjectFileName), Path.GetDirectoryName(ProjectFileName));
+            ResourceManager.Instance.LoadProject(File.OpenRead(ProjectFileName), Path.GetDirectoryName(ProjectFileName));
         }
 
         private void SaveProjectToolStripMenuItem_Click(object sender, EventArgs e)
@@ -249,13 +250,13 @@ namespace TileShop
                 {
                     ProjectFileName = sfd.FileName;
                     GameDescriptorSerializer gds = new GameDescriptorSerializer();
-                    gds.SaveProject(ProjectFileName);
+                    gds.SerializeProject(ProjectFileName);
                 }
             }
             else
             {
                 GameDescriptorSerializer gds = new GameDescriptorSerializer();
-                gds.SaveProject(ProjectFileName);
+                gds.SerializeProject(ProjectFileName);
             }
         }
 
@@ -284,7 +285,7 @@ namespace TileShop
             {
                 ProjectFileName = sfd.FileName;
                 GameDescriptorSerializer gds = new GameDescriptorSerializer();
-                gds.SaveProject(ProjectFileName);
+                gds.SerializeProject(ProjectFileName);
             }
         }
 
@@ -296,7 +297,7 @@ namespace TileShop
             if(DialogResult.OK == npf.ShowDialog())
             {
                 Palette pal = new Palette(npf.PaletteName);
-                pal.LoadPalette(npf.FileName, new FileBitAddress(npf.FileOffset, 0), npf.ColorModel, true, npf.Entries); // TODO: Refactor for new FileBitAddress
+                pal.LazyLoadPalette(npf.FileName, new FileBitAddress(npf.FileOffset, 0), npf.ColorModel, true, npf.Entries); // TODO: Refactor for new FileBitAddress
                 ResourceManager.Instance.AddResource(pal.Name, pal); ;
             }
         }
@@ -354,8 +355,7 @@ namespace TileShop
 
                     // Load new XML project file
                     ProjectFileName = ofd.FileName;
-                    GameDescriptorSerializer gds = new GameDescriptorSerializer();
-                    gds.LoadProject(ofd.FileName);
+                    ResourceManager.Instance.LoadProject(File.OpenRead(ofd.FileName), Path.GetDirectoryName(ofd.FileName));
                 }
                 else
                 {

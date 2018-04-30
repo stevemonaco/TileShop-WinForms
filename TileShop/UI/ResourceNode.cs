@@ -18,22 +18,7 @@ namespace TileShop
             return this.FullPath;
         }
 
-        /// <summary>
-        /// Path to folder where the node is contained
-        /// </summary>
-        /*protected string folderPath;
-
-        public string FolderPath
-        {
-            get { return folderPath; }
-            set
-            {
-                folderPath = value;
-                MoveNodeToPath();
-            }
-        }
-
-        private void MoveNodeToPath()
+        /*private void MoveNodeToPath()
         {
             TreeView parentTree = this.TreeView;
         }*/
