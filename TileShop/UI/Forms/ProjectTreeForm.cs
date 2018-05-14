@@ -53,7 +53,7 @@ namespace TileShop
             };
 
             string fileKey = Path.Combine(NodePath, df.Name);
-            if (!ResourceManager.Instance.AddResource(fileKey, df))
+            if (!ResourceManager.AddResource(fileKey, df))
                 return false;
 
             // TODO: Refactor
@@ -69,7 +69,7 @@ namespace TileShop
             if (Show)
             {
                 ProjectTreeView.SelectedNode = fileNode;
-                return ShowSequentialArranger(fileKey);
+                return ShowArranger(fileKey);
             }
 
             return true;
@@ -77,7 +77,7 @@ namespace TileShop
 
         internal void OnResourceAdded(object sender, ResourceEventArgs e)
         {
-            ProjectResourceBase res = ResourceManager.Instance.GetResource(e.ResourceKey);
+            ProjectResourceBase res = ResourceManager.GetResource<ProjectResourceBase>(e.ResourceKey);
             AddResourceAsNode(e.ResourceKey, res);
 
             if(res is DataFile df) // Add sequential arranger below
@@ -87,7 +87,7 @@ namespace TileShop
                 string arrangerName = res.Name + ".SequentialArranger";
                 arr.Rename(arrangerName);
                 arr.Parent = res;
-                ResourceManager.Instance.AddResource(Path.Combine(e.ResourceKey, arrangerName), arr);
+                ResourceManager.AddResource(Path.Combine(e.ResourceKey, arrangerName), arr);
             }
         }
 
@@ -130,7 +130,7 @@ namespace TileShop
             if (!(tn is DataFileNode))
                 throw new InvalidOperationException("Attempted to RenameFile on a TreeView node that is not a FileNode");
 
-            if (!ResourceManager.Instance.RenameFile(Filename, NewFilename))
+            if (!ResourceManager.RenameFile(Filename, NewFilename))
                 return false;
 
             tn.Text = NewFilename;
@@ -155,7 +155,7 @@ namespace TileShop
             if (!(tn is PaletteNode))
                 throw new InvalidOperationException("Attempted to RenamePalette on a TreeView node that is not a PaletteNode");
 
-            if (!ResourceManager.Instance.RenamePalette(PaletteName, NewPaletteName))
+            if (!ResourceManager.RenamePalette(PaletteName, NewPaletteName))
                 return false;
 
             tn.Text = NewPaletteName;
@@ -202,60 +202,24 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Shows a Sequential Arranger as a docked document tab if not already opened
-        /// </summary>
-        /// <param name="DataFileKey">Filename of a datafile previously added to FileManager</param>
-        /// <returns></returns>
-        public bool ShowSequentialArranger(string DataFileKey)
-        {
-            List<EditorDockContent> activeEditors = tsf.GetActiveEditors();
-
-            foreach (EditorDockContent dc in activeEditors) // Return if an editor is already opened
-            {
-                if (dc.ContentSourceName == DataFileKey && dc is ArrangerViewerForm)
-                    return false;
-            }
-
-            // Workaround to lease a data file without explicitly adding a sequential arranger to the project
-            string LeasedFileKey = DataFileKey + ".SeqArranger";
-
-            if (ResourceManager.Instance.LeaseDataFileAsArranger(DataFileKey, LeasedFileKey, DefaultArrangerWidth, DefaultArrangerHeight))
-            {
-                ArrangerViewerForm avf = new ArrangerViewerForm(LeasedFileKey);
-                avf.WindowState = FormWindowState.Maximized;
-                avf.SetZoom(6);
-                avf.Show(tsf.DockPanel, DockState.Document);
-
-                avf.ContentModified += tsf.ViewerContentModified;
-                avf.ContentSaved += tsf.ContentSaved;
-                avf.EditArrangerChanged += tsf.EditArrangerChanged;
-                avf.ClearEditArranger();
-
-                return true;
-            }
-            else
-                return false;
-        }
-
-        /// <summary>
         /// Shows an Arranger
         /// </summary>
-        /// <param name="ArrangerKey">Key of Arranger in FileManager to show</param>
+        /// <param name="arrangerKey">Key of Arranger in FileManager to show</param>
         /// <returns></returns>
-        public bool ShowArranger(string ArrangerKey)
+        public bool ShowArranger(string arrangerKey)
         {
-            List<EditorDockContent> activeEditors = tsf.GetActiveEditors();
+            IEnumerable<EditorDockContent> activeEditors = tsf.GetActiveEditors();
 
-            foreach (EditorDockContent dc in activeEditors) // Return if an editor is already opened
+            // If the Arranger has an active viewer, switch to it. Do not create a new one.
+            var openedEditor = activeEditors.OfType<ArrangerViewerForm>().FirstOrDefault(x => x.ContentSourceKey == arrangerKey);
+            if(openedEditor != null)
             {
-                if (dc.ContentSourceKey == ArrangerKey && dc is ArrangerViewerForm)
-                {
-                    dc.Show();
-                    return false;
-                }
+                openedEditor.Show();
+                return false;
             }
 
-            ArrangerViewerForm gv = new ArrangerViewerForm(ArrangerKey);
+            // Create a new viewer
+            ArrangerViewerForm gv = new ArrangerViewerForm(arrangerKey);
             gv.WindowState = FormWindowState.Maximized;
             gv.SetZoom(6);
             gv.Show(tsf.DockPanel, DockState.Document);
@@ -271,22 +235,24 @@ namespace TileShop
         /// <summary>
         /// Shows a Palette editor
         /// </summary>
-        /// <param name="PaletteKey">Key of Palette in FileManager to show</param>
-        /// <returns></returns>
-        public bool ShowPaletteEditor(string PaletteKey)
+        /// <param name="paletteKey">Key of Palette in FileManager to show</param>
+        /// <returns>False if the Palette cannot be shown</returns>
+        public bool ShowPaletteEditor(string paletteKey)
         {
-            if (!ResourceManager.Instance.HasResource(PaletteKey))
+            if (!ResourceManager.HasResource(paletteKey))
                 return false;
 
-            List<EditorDockContent> activeEditors = tsf.GetActiveEditors();
+            IEnumerable<EditorDockContent> activeEditors = tsf.GetActiveEditors();
 
-            foreach (EditorDockContent dc in activeEditors) // Return if an editor is already opened
+            // If the Palette has an active editor, switch to it. Do not create a new one.
+            var openedEditor = activeEditors.OfType<PaletteEditorForm>().FirstOrDefault(x => x.ContentSourceKey == paletteKey);
+            if (openedEditor != null)
             {
-                if (dc.ContentSourceKey == PaletteKey && dc is PaletteEditorForm)
-                    return false;
+                openedEditor.Show();
+                return true;
             }
 
-            PaletteEditorForm pef = new PaletteEditorForm(PaletteKey);
+            PaletteEditorForm pef = new PaletteEditorForm(paletteKey);
             pef.ContentModified += tsf.PaletteContentModified;
             pef.ContentSaved += tsf.ContentSaved;
             pef.Show(tsf.DockPanel, DockState.Document);
@@ -302,7 +268,7 @@ namespace TileShop
         public bool CloseProject()
         {
             ProjectTreeView.Nodes.Clear();
-            ResourceManager.Instance.ClearResources();
+            ResourceManager.ClearResources();
 
             return true;
         }
@@ -337,144 +303,10 @@ namespace TileShop
         }
 
         /// <summary>
-        /// Iterates over tree nodes and saves project settings to XML
-        /// </summary>
-        /// <param name="XmlFileName"></param>
-        /// <returns></returns>
-        public bool SaveProject(string XmlFileName)
-        {
-            var root = new XElement("gdf");
-
-            // Save settings
-            var settings = new XElement("settings");
-            //XElement numberformat = new XElement("filelocationnumberformat");
-            //numberformat.SetValue("hexadecimal");
-            //settings.Add(numberformat);
-
-            root.Add(settings);
-
-            // Save each data file
-            var datafiles = new XElement("datafiles");
-            var palettes = new XElement("palettes");
-            var arrangers = new XElement("arrangers");
-
-            foreach (TreeNode tn in ProjectTreeView.GetAllNodes())
-            {
-                if (tn is DataFileNode fn)
-                {
-                    var xmlfile = new XElement("file");
-                    xmlfile.SetAttributeValue("location", fn.Text);
-                    xmlfile.SetAttributeValue("folder", fn.GetNodePath());
-                    datafiles.Add(xmlfile);
-                }
-                else if (tn is PaletteNode pn)
-                {
-                    Palette pal = ResourceManager.Instance.GetResource(pn.Text) as Palette;
-                    var xmlpal = new XElement("palette");
-                    xmlpal.SetAttributeValue("name", pal.Name);
-                    xmlpal.SetAttributeValue("folder", pn.GetNodePath());
-                    xmlpal.SetAttributeValue("fileoffset", String.Format("{0:X}", pal.FileAddress.FileOffset));
-                    xmlpal.SetAttributeValue("bitoffset", String.Format("{0:X}", pal.FileAddress.BitOffset));
-                    xmlpal.SetAttributeValue("datafile", pal.DataFileKey);
-                    xmlpal.SetAttributeValue("format", Palette.ColorModelToString(pal.ColorModel));
-                    xmlpal.SetAttributeValue("entries", pal.Entries);
-                    xmlpal.SetAttributeValue("zeroindextransparent", pal.ZeroIndexTransparent);
-                    palettes.Add(xmlpal);
-                }
-                else if (tn is ArrangerNode an)
-                {
-                    Arranger arr = ResourceManager.Instance.GetResource(an.Text) as Arranger;
-                    var xmlarr = new XElement("arranger");
-                    xmlarr.SetAttributeValue("name", arr.Name);
-                    xmlarr.SetAttributeValue("folder", an.GetNodePath());
-                    xmlarr.SetAttributeValue("elementsx", arr.ArrangerElementSize.Width);
-                    xmlarr.SetAttributeValue("elementsy", arr.ArrangerElementSize.Height);
-                    xmlarr.SetAttributeValue("width", arr.ElementPixelSize.Width);
-                    xmlarr.SetAttributeValue("height", arr.ElementPixelSize.Height);
-
-                    if (arr.Layout == ArrangerLayout.TiledArranger)
-                        xmlarr.SetAttributeValue("layout", "tiled");
-                    else if (arr.Layout == ArrangerLayout.LinearArranger)
-                        xmlarr.SetAttributeValue("layout", "linear");
-
-                    string DefaultPalette = FindMostFrequentValue(arr, "PaletteName");
-                    string DefaultFile = FindMostFrequentValue(arr, "FileName");
-                    string DefaultFormat = FindMostFrequentValue(arr, "FormatName");
-
-                    xmlarr.SetAttributeValue("defaultformat", DefaultFormat);
-                    xmlarr.SetAttributeValue("defaultfile", DefaultFile);
-                    xmlarr.SetAttributeValue("defaultpalette", DefaultPalette);
-
-                    for (int y = 0; y < arr.ArrangerElementSize.Height; y++)
-                    {
-                        for (int x = 0; x < arr.ArrangerElementSize.Width; x++)
-                        {
-                            var graphic = new XElement("graphic");
-                            ArrangerElement el = arr.GetElement(x, y);
-
-                            graphic.SetAttributeValue("fileoffset", String.Format("{0:X}", el.FileAddress.FileOffset));
-                            graphic.SetAttributeValue("bitoffset", String.Format("{0:X}", el.FileAddress.BitOffset));
-                            graphic.SetAttributeValue("posx", x);
-                            graphic.SetAttributeValue("posy", y);
-                            if (el.FormatName != DefaultFormat)
-                                graphic.SetAttributeValue("format", el.FormatName);
-                            if (el.DataFileKey != DefaultFile)
-                                graphic.SetAttributeValue("file", el.DataFileKey);
-                            if (el.PaletteKey != DefaultPalette)
-                                graphic.SetAttributeValue("palette", el.PaletteKey);
-
-                            xmlarr.Add(graphic);
-                        }
-                    }
-
-                    arrangers.Add(xmlarr);
-                }
-            }
-
-            root.Add(datafiles);
-            root.Add(palettes);
-            root.Add(arrangers);
-
-            root.Save(XmlFileName);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Find most frequent of an attribute within an arranger's elements
-        /// </summary>
-        /// <param name="arr">Arranger to search</param>
-        /// <param name="attributeName">Name of the attribute to find most frequent value of</param>
-        /// <returns></returns>
-        private string FindMostFrequentValue(Arranger arr, string attributeName)
-        {
-            Dictionary<string, int> freq = new Dictionary<string, int>();
-            Type T = typeof(ArrangerElement);
-            PropertyInfo P = T.GetProperty(attributeName);
-
-            foreach (ArrangerElement el in arr.ElementGrid)
-            {
-                string s = (string)P.GetValue(el);
-
-                if (s == "")
-                    continue;
-
-                if (freq.ContainsKey(s))
-                    freq[s]++;
-                else
-                    freq.Add(s, 1);
-            }
-
-            var max = freq.FirstOrDefault(x => x.Value == freq.Values.Max()).Key;
-
-            return max;
-        }
-
-        /// <summary>
         /// Gets a list of all filenames loaded into the FileManager
         /// </summary>
         /// <returns></returns>
-        public List<string> GetFileNameList()
+        public IEnumerable<string> GetFileNameList()
         {
             List<string> list = new List<string>();
 
@@ -537,7 +369,7 @@ namespace TileShop
         {
             if (e.Button == MouseButtons.Right) // Show context menu
             {
-                ResourceNode ptn = (ResourceNode)e.Node;
+                ResourceNode ptn = e.Node as ResourceNode;
                 ptn.BuildContextMenu(contextMenu);
                 contextMenu.Show(ProjectTreeView, e.Location);
             }
@@ -546,14 +378,14 @@ namespace TileShop
         /// <summary>
         /// Finds or creates folder nodes leading to the specifed NodePath
         /// </summary>
-        /// <param name="NodePath">Fully qualified path</param>
+        /// <param name="nodePath">Fully qualified path</param>
         /// <returns>A folder node at the specified path or null if </returns>
-        public ResourceNode FindOrAddParentNode(string NodePath)
+        public ResourceNode FindOrAddParentNode(string nodePath)
         {
-            if (NodePath is null)
+            if (nodePath is null)
                 throw new ArgumentNullException();
 
-            string[] nodepaths = NodePath.Split(new char[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+            string[] nodepaths = nodePath.Split(new char[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
 
             if (nodepaths.Length == 0) // No separators implies a root level path was specified
                 return null;
@@ -582,17 +414,17 @@ namespace TileShop
         /// <summary>
         /// Adds a folder node (and any necessary parent folder nodes) to the TreeView
         /// </summary>
-        /// <param name="FolderNodePath">Full path of the folder node to add</param>
+        /// <param name="folderNodePath">Full path of the folder node to add</param>
         /// <returns>The FolderNode that was added or found on success. Null on failure.</returns>
-        public FolderNode AddFolderNode(string FolderNodePath)
+        public FolderNode AddFolderNode(string folderNodePath)
         {
-            if (FolderNodePath is null)
+            if (folderNodePath is null)
                 throw new ArgumentNullException();
 
-            if (FolderNodePath == "")
+            if (folderNodePath == "")
                 throw new ArgumentNullException();
 
-            string[] nodepaths = FolderNodePath.Split(new char[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+            string[] nodepaths = folderNodePath.Split(new char[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
 
             // Find deepest node collection that matches as much of the path as possible
             TreeNodeCollection deepestCollection = ProjectTreeView.Nodes;
@@ -639,17 +471,17 @@ namespace TileShop
         /// <summary>
         /// Finds a folder node associated with a path
         /// </summary>
-        /// <param name="NodePath">Path to folder node</param>
+        /// <param name="nodePath">Path to folder node</param>
         /// <returns>A FolderNode on success, null on failure</returns>
-        private FolderNode FindFolderNode(string NodePath)
+        private FolderNode FindFolderNode(string nodePath)
         {
-            if (NodePath is null)
+            if (nodePath is null)
                 throw new ArgumentNullException();
 
-            if (NodePath == "")
+            if (nodePath == "")
                 return null;
 
-            string[] nodePaths = NodePath.Split('\\');
+            string[] nodePaths = nodePath.Split('\\');
 
             TreeNodeCollection nodeLevel = ProjectTreeView.Nodes;
             FolderNode matchedNode = null;
@@ -678,19 +510,19 @@ namespace TileShop
         /// <summary>
         /// Finds a node within the ProjectTreeView
         /// </summary>
-        /// <param name="NodeName">Name of the node</param>
-        /// <param name="NodePath">Path to the node</param>
+        /// <param name="nodeName">Name of the node</param>
+        /// <param name="nodePath">Path to the node</param>
         /// <returns>The found TreeNode on success, null on failure</returns>
-        private TreeNode FindNode(string NodeName, string NodePath)
+        private TreeNode FindNode(string nodeName, string nodePath)
         {
-            FolderNode fn = FindFolderNode(NodePath);
+            FolderNode fn = FindFolderNode(nodePath);
 
             if (fn is null)
                 return null;
 
             foreach (TreeNode tn in fn.Nodes)
             {
-                if (tn.Text == NodeName)
+                if (tn.Text == nodeName)
                     return tn;
             }
 
@@ -727,7 +559,7 @@ namespace TileShop
                 return;
 
             Point p = ((TreeView)sender).PointToClient(new Point(e.X, e.Y));
-            ResourceNode dropNode = (ResourceNode)((TreeView)sender).GetNodeAt(p);
+            ResourceNode dropNode = ((TreeView)sender).GetNodeAt(p) as ResourceNode;
 
             if (moveChildren) // FolderNode dragdrop
             {
@@ -735,7 +567,7 @@ namespace TileShop
                     return;
 
                 dragNode.Remove();
-                dropNode.Nodes.Add((TreeNode)dragNode);
+                dropNode.Nodes.Add(dragNode);
             }
             else // ArrangerNode, FileNode, PaletteNode all must be moved into a folder node (or root)
             {
@@ -743,7 +575,7 @@ namespace TileShop
                     return;
 
                 dragNode.Remove();
-                dropNode.Nodes.Add((TreeNode)dragNode);
+                dropNode.Nodes.Add(dragNode);
             }
         }
 

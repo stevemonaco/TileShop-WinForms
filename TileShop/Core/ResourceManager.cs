@@ -63,37 +63,37 @@ namespace TileShop.Core
         /// <summary>
         /// Add a resource to ResourceManager by key
         /// </summary>
-        /// <param name="Resource"></param>
+        /// <param name="resource"></param>
         /// <returns></returns>
-        public bool AddResource(string ResourceKey, ProjectResourceBase Resource)
+        public static bool AddResource(string resourceKey, ProjectResourceBase resource)
         {
-            if (Resource is null)
+            if (resource is null)
                 throw new ArgumentNullException("Null argument passed into AddResource");
-            if (Resource.Name is null)
+            if (resource.Name is null)
                 throw new ArgumentException("Argument with null Name property passed into AddResource");
 
-            if (ResourceTree.ContainsResource(ResourceKey))
+            if (Instance.ResourceTree.ContainsResource(resourceKey))
                 return false;
 
-            ResourceTree.AddResource(ResourceKey, Resource);
-            ResourceAdded?.Invoke(this, new ResourceEventArgs(ResourceKey));
+            Instance.ResourceTree.AddResource(resourceKey, resource);
+            Instance.ResourceAdded?.Invoke(Instance, new ResourceEventArgs(resourceKey));
             return true;
         }
 
         /// <summary>
         /// Remove a resource from ResourceManager by key
         /// </summary>
-        /// <param name="ResourceKey">Name of the resource to be removed</param>
+        /// <param name="resourceKey">Name of the resource to be removed</param>
         /// <returns>True if removed or no key exists, false if the resource is leased</returns>
-        public bool RemoveResource(string ResourceKey)
+        public static bool RemoveResource(string resourceKey)
         {
-            if (ResourceKey is null)
+            if (resourceKey is null)
                 throw new ArgumentException("Null name argument passed into RemoveResource");
-            if (LeasedResourceMap.ContainsKey(ResourceKey)) // Resource still in use
+            if (Instance.LeasedResourceMap.ContainsKey(resourceKey)) // Resource still in use
                 return false;
 
-            if (ResourceTree.ContainsResource(ResourceKey))
-                ResourceTree.Remove(ResourceKey);
+            if (Instance.ResourceTree.ContainsResource(resourceKey))
+                Instance.ResourceTree.Remove(resourceKey);
 
             return true;
         }
@@ -103,7 +103,7 @@ namespace TileShop.Core
         /// </summary>
         /// <param name="resourceKey"></param>
         /// <returns>A leased resource if available, otherwise the original resource</returns>
-        public ProjectResourceBase GetResource(string resourceKey)
+        /*public ProjectResourceBase GetResource(string resourceKey)
         {
             if (resourceKey is null)
                 throw new ArgumentException("Null name argument passed into GetResource");
@@ -121,6 +121,32 @@ namespace TileShop.Core
             //    return ResourceMap[ResourceKey];
 
             //throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
+        }*/
+
+        /// <summary>
+        /// Gets a resource by key
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="resourceKey">The resource key.</param>
+        /// <returns>A leased resource if available, otherwise the original resource</returns>
+        /// <exception cref="KeyNotFoundException"></exception>
+        public static T GetResource<T>(string resourceKey) where T : ProjectResourceBase
+        {
+            ProjectResourceBase res;
+
+            if (resourceKey is null)
+                throw new ArgumentException($"Null name argument passed into {nameof(GetResource)}");
+
+            if (Instance.LeasedResourceMap.ContainsKey(resourceKey))
+                res = Instance.LeasedResourceMap[resourceKey];
+            else
+                Instance.ResourceTree.TryGetResource(resourceKey, out res);
+                //res = Instance.GetResource(resourceKey);
+
+            if (res is T tRes)
+                return tRes;
+
+            throw new KeyNotFoundException($"Key '{resourceKey}' of requested type not found in ResourceManager");
         }
 
         /// <summary>
@@ -128,12 +154,12 @@ namespace TileShop.Core
         /// </summary>
         /// <param name="resourceKey"></param>
         /// <returns>True if the key is in use</returns>
-        public bool HasResource(string resourceKey)
+        public static bool HasResource(string resourceKey)
         {
             if (resourceKey is null)
                 throw new ArgumentException("Null name argument passed into HasResource");
 
-            return ResourceTree.ContainsResource(resourceKey);
+            return Instance.ResourceTree.ContainsResource(resourceKey);
         }
 
         /// <summary>
@@ -141,20 +167,20 @@ namespace TileShop.Core
         /// </summary>
         /// <param name="resourceKey"></param>
         /// <returns>A leased resource</returns>
-        public ProjectResourceBase LeaseResource(string resourceKey)
+        public static ProjectResourceBase LeaseResource(string resourceKey)
         {
             if (resourceKey is null)
                 throw new ArgumentException("Null name argument passed into LeaseResource");
 
-            if (LeasedResourceMap.ContainsKey(resourceKey))
+            if (Instance.LeasedResourceMap.ContainsKey(resourceKey))
                 throw new InvalidOperationException($"Key {resourceKey} is already being leased");
 
             ProjectResourceBase resource;
 
-            if(ResourceTree.TryGetResource(resourceKey, out resource))
+            if(Instance.ResourceTree.TryGetResource(resourceKey, out resource))
             {
                 ProjectResourceBase clonedResource = resource.Clone();
-                LeasedResourceMap.Add(resourceKey, clonedResource);
+                Instance.LeasedResourceMap.Add(resourceKey, clonedResource);
                 return clonedResource;
             }
 
@@ -164,55 +190,55 @@ namespace TileShop.Core
         /// <summary>
         /// Returns the lease status of a resource key
         /// </summary>
-        /// <param name="ResourceKey"></param>
+        /// <param name="resourceKey"></param>
         /// <returns>True if the resource is leased</returns>
-        public bool IsResourceLeased(string ResourceKey)
+        public static bool IsResourceLeased(string resourceKey)
         {
-            if (ResourceKey is null)
+            if (resourceKey is null)
                 throw new ArgumentNullException("Null name argument passed into IsResourceLeased");
-            if (!ResourceTree.ContainsResource(ResourceKey))
-                throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
+            if (!Instance.ResourceTree.ContainsResource(resourceKey))
+                throw new KeyNotFoundException($"Key '{resourceKey}' not found in ResourceManager");
 
-            if (LeasedResourceMap.ContainsKey(ResourceKey))
+            if (Instance.LeasedResourceMap.ContainsKey(resourceKey))
                 return true;
             return false;
         }
 
         // TODO: Attempt DataFile -> HasA relationship instead
-        public void ReturnLease(string ResourceKey, bool Save)
+        public static void ReturnLease(string resourceKey, bool save)
         {
-            if (!LeasedResourceMap.ContainsKey(ResourceKey))
-                throw new KeyNotFoundException($"Key '{ResourceKey}' attempted to return its lease but one is not active");
+            if (!Instance.LeasedResourceMap.ContainsKey(resourceKey))
+                throw new KeyNotFoundException($"Key '{resourceKey}' attempted to return its lease but one is not active");
 
-            if (!ResourceTree.ContainsResource(ResourceKey))
-                throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
+            if (!Instance.ResourceTree.ContainsResource(resourceKey))
+                throw new KeyNotFoundException($"Key '{resourceKey}' not found in ResourceManager");
 
             // TODO: Save leased object
 
             //ResourceMap[ResourceKey] = LeasedResourceMap[ResourceKey];
-            LeasedResourceMap.Remove(ResourceKey);
+            Instance.LeasedResourceMap.Remove(resourceKey);
         }
 
         /// <summary>
         /// Creates a SequentialArranger created from a DataFile
         /// </summary>
-        /// <param name="DataFileKey">Key of a loaded DataFile</param>
-        /// <param name="ResourceKey">Key of the SequentialArranger Resource to create as a leased resource</param>
+        /// <param name="dataFileKey">Key of a loaded DataFile</param>
+        /// <param name="resourceKey">Key of the SequentialArranger Resource to create as a leased resource</param>
         /// <returns></returns>
-        public bool LeaseDataFileAsArranger(string DataFileKey, string ResourceKey, int ArrangerWidth, int ArrangerHeight)
+        public bool LeaseDataFileAsArranger(string dataFileKey, string resourceKey, int arrangerWidth, int arrangerHeight)
         {
-            if (!HasResource(DataFileKey) || HasResource(ResourceKey) || LeasedResourceMap.ContainsKey(ResourceKey))
+            if (!HasResource(dataFileKey) || HasResource(resourceKey) || LeasedResourceMap.ContainsKey(resourceKey))
                 return false;
 
-            string formatname = Loader.GetDefaultFormatName(DataFileKey);
-            var arranger = new SequentialArranger(ArrangerWidth, ArrangerHeight, DataFileKey, GetGraphicsFormat(formatname));
+            string formatname = Loader.GetDefaultFormatName(dataFileKey);
+            var arranger = new SequentialArranger(arrangerWidth, arrangerHeight, dataFileKey, GetGraphicsFormat(formatname));
 
-            LeasedResourceMap.Add(ResourceKey, arranger);
+            LeasedResourceMap.Add(resourceKey, arranger);
 
             return true;
         }
 
-        public bool MoveResource(string OldResourceKey, string NewResourceKey)
+        public static bool MoveResource(string oldResourceKey, string newResourceKey)
         {
             throw new NotImplementedException();
         }
@@ -222,19 +248,19 @@ namespace TileShop.Core
         /// Does not remove graphic formats, cursors, or file loaders
         /// </summary>
         /// <returns></returns>
-        public void ClearResources()
+        public static void ClearResources()
         {
-            ResourceTree.SelfAndDescendants().ForEach((x) =>
+            Instance.ResourceTree.SelfAndDescendants().ForEach((x) =>
             {
                 if (x is DataFile df)
                     df.Close();
             });
 
-            LeasedResourceMap.Clear();
-            ResourceTree.Clear();
+            Instance.LeasedResourceMap.Clear();
+            Instance.ResourceTree.Clear();
         }
 
-        public IEnumerable<string> ResourceKeys { get => ResourceTree.SelfAndDescendants().Select(x => x.ResourceKey); }
+        public static IEnumerable<string> ResourceKeys { get => Instance.ResourceTree.SelfAndDescendants().Select(x => x.ResourceKey); }
         #endregion
 
         #region XML Management        
@@ -244,56 +270,55 @@ namespace TileShop.Core
         /// <param name="stream">The stream.</param>
         /// <param name="baseDirectory">The base directory of the project</param>
         /// <returns></returns>
-        public void LoadProject(Stream stream, string baseDirectory)
+        public static void LoadProject(Stream stream, string baseDirectory)
         {
             var tree = GameDescriptorSerializer.DeserializeProject(stream, baseDirectory);
 
             // Add root-level nodes to the ResourceTree
             foreach (var item in tree)
-                ResourceTree.AddResource(item.Key, item.Value);
+                Instance.ResourceTree.AddResource(item.Key, item.Value);
 
             // Invoke ResourceAdded event for every deserialized node
             foreach (var item in tree.SelfAndDescendants())
-                ResourceAdded?.Invoke(this, new ResourceEventArgs(item.ResourceKey));
+                Instance.ResourceAdded?.Invoke(Instance, new ResourceEventArgs(item.ResourceKey));
 
             return;
         }
 
-        public void SaveProject(Stream stream)
+        public static void SaveProject(Stream stream)
         {
-            GameDescriptorSerializer.SerializeProject(ResourceTree, stream);
+            GameDescriptorSerializer.SerializeProject(Instance.ResourceTree, stream);
         }
 
         #endregion
 
         #region GraphicsFormat Management
-        public void AddGraphicsFormat(GraphicsFormat format)
+        public static void AddGraphicsFormat(GraphicsFormat format)
         {
-            FormatList.Add(format.Name, format);
+            Instance.FormatList.Add(format.Name, format);
         }
 
-        public bool LoadFormat(string Filename)
+        public static bool LoadFormat(string filename)
         {
             GraphicsFormat fmt = new GraphicsFormat();
-            if (!fmt.LoadFromXml(Filename))
+            if (!fmt.LoadFromXml(filename))
                 return false;
 
             AddGraphicsFormat(fmt);
             return true;
         }
 
-        public GraphicsFormat GetGraphicsFormat(string FormatName)
+        public static GraphicsFormat GetGraphicsFormat(string formatName)
         {
-            if (FormatList.ContainsKey(FormatName))
-                return FormatList[FormatName];
+            if (Instance.FormatList.ContainsKey(formatName))
+                return Instance.FormatList[formatName];
             else
                 throw new KeyNotFoundException();
         }
 
-        public List<string> GetGraphicsFormatsNameList()
+        public static List<string> GetGraphicsFormatsNameList()
         {
-            Dictionary<string, GraphicsFormat>.KeyCollection keys = ResourceManager.Instance.FormatList.Keys;
-            List<string> keyList = keys.ToList<string>();
+            var keyList = Instance.FormatList.Keys.ToList();
             keyList.Sort();
 
             return keyList;
@@ -305,10 +330,10 @@ namespace TileShop.Core
         /// <summary>
         /// Renames a file that is currently loaded into the FileManager, renames it on disk, and remaps all references to it in the project
         /// </summary>
-        /// <param name="FileName">FileManager file to be renamed</param>
-        /// <param name="NewFileName">Name that the file will be renamed to</param>
+        /// <param name="fileName">FileManager file to be renamed</param>
+        /// <param name="newFileName">Name that the file will be renamed to</param>
         /// <returns>Success state</returns>
-        public bool RenameFile(string FileName, string NewFileName)
+        public static bool RenameFile(string fileName, string newFileName)
         {
             /*if (String.IsNullOrWhiteSpace(FileName) || String.IsNullOrWhiteSpace(NewFileName))
                 throw new ArgumentException("");
@@ -365,16 +390,16 @@ namespace TileShop.Core
         /// <summary>
         /// Loads and associates a palette within FileManager
         /// </summary>
-        /// <param name="Filename">Filename to palette to be loaded</param>
-        /// <param name="PaletteName">Name associated to the palette within FileManager </param>
+        /// <param name="filename">Filename to palette to be loaded</param>
+        /// <param name="paletteName">Name associated to the palette within FileManager </param>
         /// <returns></returns>
-        public bool LoadPalette(string Filename, string PaletteName)
+        public static bool LoadPalette(string filename, string paletteName)
         {
-            if (Filename is null || PaletteName is null)
+            if (filename is null || paletteName is null)
                 throw new ArgumentNullException();
 
-            Palette pal = new Palette(PaletteName);
-            if (!pal.LoadPalette(Filename))
+            Palette pal = new Palette(paletteName);
+            if (!pal.LoadPalette(filename))
                 return false;
 
             pal.ShouldBeSerialized = false;
@@ -387,10 +412,10 @@ namespace TileShop.Core
         /// <summary>
         /// Renames an palette that is currently loaded into the FileManager and remaps all references to it in the project
         /// </summary>
-        /// <param name="PaletteName">Palette to be renamed</param>
-        /// <param name="NewPaletteName">Name that the palette will be renamed to</param>
+        /// <param name="paletteName">Palette to be renamed</param>
+        /// <param name="newPaletteName">Name that the palette will be renamed to</param>
         /// <returns></returns>
-        public bool RenamePalette(string PaletteName, string NewPaletteName)
+        public static bool RenamePalette(string paletteName, string newPaletteName)
         {
             /*if (!HasPalette(PaletteName) || HasPalette(NewPaletteName))
                 return false;
@@ -415,20 +440,20 @@ namespace TileShop.Core
         #endregion
 
         #region Cursor Management
-        public bool AddCursor(string CursorName, Cursor cursor)
+        public static bool AddCursor(string cursorName, Cursor cursor)
         {
-            if (!CursorList.ContainsKey(CursorName))
+            if (!Instance.CursorList.ContainsKey(cursorName))
             {
-                CursorList.Add(CursorName, cursor);
+                Instance.CursorList.Add(cursorName, cursor);
                 return true;
             }
             return false;
         }
 
-        public Cursor GetCursor(string CursorName)
+        public static Cursor GetCursor(string cursorName)
         {
-            if (CursorList.ContainsKey(CursorName))
-                return CursorList[CursorName];
+            if (Instance.CursorList.ContainsKey(cursorName))
+                return Instance.CursorList[cursorName];
             else
                 throw new KeyNotFoundException();
         }

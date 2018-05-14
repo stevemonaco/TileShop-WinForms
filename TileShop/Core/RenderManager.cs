@@ -47,7 +47,7 @@ namespace TileShop.Core
 
             if(IsSequential) // Sequential requires only one seek per render
             {
-                fs = ((DataFile)ResourceManager.Instance.GetResource(arranger.ElementGrid[0, 0].DataFileKey)).Stream;
+                fs = ResourceManager.GetResource<DataFile>(arranger.ElementGrid[0, 0].DataFileKey).Stream;
                 fs.Seek(arranger.ElementGrid[0, 0].FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise
             }
 
@@ -66,7 +66,7 @@ namespace TileShop.Core
                             continue;
                         }
                         if(PrevFileKey != el.DataFileKey) // Only create a new binary reader when necessary
-                            fs = fs = ((DataFile)ResourceManager.Instance.GetResource(el.DataFileKey)).Stream;
+                            fs = ResourceManager.GetResource<DataFile>(el.DataFileKey).Stream;
 
                         fs.Seek(el.FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise seeking
                         PrevFileKey = el.DataFileKey;
@@ -108,7 +108,7 @@ namespace TileShop.Core
             if (arranger is SequentialArranger seqArranger) // Seek to the first element
             {
                 IsSequential = true;
-                fs = ((DataFile)ResourceManager.Instance.GetResource(arranger.ElementGrid[0, 0].DataFileKey)).Stream;
+                fs = ResourceManager.GetResource<DataFile>(arranger.ElementGrid[0, 0].DataFileKey).Stream;
                 fs.Seek(seqArranger.GetInitialSequentialFileAddress().FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise seeking
             }
 
@@ -123,7 +123,7 @@ namespace TileShop.Core
                             continue;
 
                         if (PrevFileKey != el.DataFileKey) // Only get a new FileStream when necessary
-                            fs = ((DataFile)ResourceManager.Instance.GetResource(el.DataFileKey)).Stream;
+                            fs = ResourceManager.GetResource<DataFile>(el.DataFileKey).Stream;
 
                         fs.Seek(el.FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise seeks
                         PrevFileKey = el.DataFileKey;

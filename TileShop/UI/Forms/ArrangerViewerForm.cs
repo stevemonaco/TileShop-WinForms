@@ -84,14 +84,14 @@ namespace TileShop
 
             // Setup arranger variables
             ContentSourceKey = ArrangerKey;
-            DisplayArranger = ResourceManager.Instance.GetResource(ArrangerKey) as Arranger;
+            DisplayArranger = ResourceManager.GetResource<Arranger>(ArrangerKey);
             ReloadArranger();
             selectionData = new ArrangerSelectionData(ContentSourceKey);
             selectionData.Zoom = 1;
 
             if (DisplayArranger is SequentialArranger seqArranger)
             {
-                GraphicsFormat graphicsFormat = ResourceManager.Instance.GetGraphicsFormat(seqArranger.GetSequentialGraphicsFormat());
+                GraphicsFormat graphicsFormat = ResourceManager.GetGraphicsFormat(seqArranger.GetSequentialGraphicsFormat());
 
                 SaveButton.Visible = false;
                 ReloadButton.Visible = false;
@@ -100,7 +100,7 @@ namespace TileShop
                 PaletteDropDownButton.Visible = false;
 
                 // Initialize the codec select box
-                List<string> formatList = ResourceManager.Instance.GetGraphicsFormatsNameList();
+                List<string> formatList = ResourceManager.GetGraphicsFormatsNameList();
                 foreach (string s in formatList)
                     FormatSelectBox.Items.Add(s);
 
@@ -605,8 +605,8 @@ namespace TileShop
         {
             if (DisplayArranger is SequentialArranger seqArranger)
             {
-                GraphicsFormat format = ResourceManager.Instance.GetGraphicsFormat((string)FormatSelectBox.SelectedItem);
-                seqArranger.SetGraphicsFormat((string)FormatSelectBox.SelectedItem, new Size(format.DefaultWidth, format.DefaultHeight));
+                GraphicsFormat format = ResourceManager.GetGraphicsFormat(FormatSelectBox.SelectedItem as string);
+                seqArranger.SetGraphicsFormat(FormatSelectBox.SelectedItem as string, new Size(format.DefaultWidth, format.DefaultHeight));
                 ElementSize = DisplayArranger.ElementPixelSize;
 
                 UpdateAddressLabel();
@@ -830,8 +830,8 @@ namespace TileShop
 
         private void ArrangerViewerForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (DisplayArranger is SequentialArranger && ResourceManager.Instance.IsResourceLeased(ContentSourceKey))
-                ResourceManager.Instance.ReturnLease(ContentSourceKey, false);
+            if (DisplayArranger is SequentialArranger && ResourceManager.IsResourceLeased(ContentSourceKey))
+                ResourceManager.ReturnLease(ContentSourceKey, false);
         }
     }
 }

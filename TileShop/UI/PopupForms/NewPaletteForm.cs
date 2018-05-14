@@ -36,7 +36,7 @@ namespace TileShop
                 MessageBox.Show("All fields must be completed before adding a palette to the project");
                 return;
             }
-            if(ResourceManager.Instance.HasResource(paletteNameBox.Text))
+            if(ResourceManager.HasResource(paletteNameBox.Text))
             {
                 MessageBox.Show("Palette " + paletteNameBox.Text + " already exists. Please choose an alternate name.");
                 return;
@@ -52,11 +52,11 @@ namespace TileShop
             this.Close();
         }
 
-        public void AddFileNames(List<string> Filenames)
+        public void AddFileNames(IEnumerable<string> filenames)
         {
             projectFileBox.Items.Clear();
 
-            foreach (string s in Filenames)
+            foreach (string s in filenames)
                 projectFileBox.Items.Add(s);
 
             projectFileBox.SelectedIndex = 0;
