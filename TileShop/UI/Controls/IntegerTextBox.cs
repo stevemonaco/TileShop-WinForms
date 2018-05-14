@@ -84,7 +84,7 @@ namespace TileShop
             if (m.Msg == WM_PASTE)
             {
                 string text = Clipboard.GetText();
-                if (string.IsNullOrEmpty(text))
+                if (string.IsNullOrWhiteSpace(text))
                     return;
 
                 if (TestInput(text))
@@ -134,7 +134,7 @@ namespace TileShop
             string teststr = Text;
             int testval;
 
-            if (string.IsNullOrEmpty(s))
+            if (string.IsNullOrWhiteSpace(s))
                 return false;
 
             if (s == "\b")

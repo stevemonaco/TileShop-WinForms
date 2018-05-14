@@ -67,9 +67,9 @@ namespace TileShop.Core
         /// <returns></returns>
         public bool AddResource(string ResourceKey, ProjectResourceBase Resource)
         {
-            if (Resource == null)
+            if (Resource is null)
                 throw new ArgumentNullException("Null argument passed into AddResource");
-            if (Resource.Name == null)
+            if (Resource.Name is null)
                 throw new ArgumentException("Argument with null Name property passed into AddResource");
 
             if (ResourceTree.ContainsResource(ResourceKey))
@@ -87,7 +87,7 @@ namespace TileShop.Core
         /// <returns>True if removed or no key exists, false if the resource is leased</returns>
         public bool RemoveResource(string ResourceKey)
         {
-            if (ResourceKey == null)
+            if (ResourceKey is null)
                 throw new ArgumentException("Null name argument passed into RemoveResource");
             if (LeasedResourceMap.ContainsKey(ResourceKey)) // Resource still in use
                 return false;
@@ -105,14 +105,14 @@ namespace TileShop.Core
         /// <returns>A leased resource if available, otherwise the original resource</returns>
         public ProjectResourceBase GetResource(string ResourceKey)
         {
-            if (ResourceKey == null)
+            if (ResourceKey is null)
                 throw new ArgumentException("Null name argument passed into GetResource");
             if (LeasedResourceMap.ContainsKey(ResourceKey))
                 return LeasedResourceMap[ResourceKey];
 
             var res = ResourceTree.FindResource(ResourceKey);
 
-            if(res == null)
+            if(res is null)
                 throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
 
             return res;
@@ -130,7 +130,7 @@ namespace TileShop.Core
         /// <returns>True if the key is in use</returns>
         public bool HasResource(string resourceKey)
         {
-            if (resourceKey == null)
+            if (resourceKey is null)
                 throw new ArgumentException("Null name argument passed into HasResource");
 
             return ResourceTree.ContainsResource(resourceKey);
@@ -143,7 +143,7 @@ namespace TileShop.Core
         /// <returns>A leased resource</returns>
         public ProjectResourceBase LeaseResource(string resourceKey)
         {
-            if (resourceKey == null)
+            if (resourceKey is null)
                 throw new ArgumentException("Null name argument passed into LeaseResource");
 
             if (LeasedResourceMap.ContainsKey(resourceKey))
@@ -168,7 +168,7 @@ namespace TileShop.Core
         /// <returns>True if the resource is leased</returns>
         public bool IsResourceLeased(string ResourceKey)
         {
-            if (ResourceKey == null)
+            if (ResourceKey is null)
                 throw new ArgumentNullException("Null name argument passed into IsResourceLeased");
             if (!ResourceTree.ContainsResource(ResourceKey))
                 throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
@@ -310,7 +310,7 @@ namespace TileShop.Core
         /// <returns>Success state</returns>
         public bool RenameFile(string FileName, string NewFileName)
         {
-            /*if (String.IsNullOrEmpty(FileName) || String.IsNullOrEmpty(NewFileName))
+            /*if (String.IsNullOrWhiteSpace(FileName) || String.IsNullOrWhiteSpace(NewFileName))
                 throw new ArgumentException("");
 
             // Must contain FileName and must not contain NewFileName
@@ -370,7 +370,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public bool LoadPalette(string Filename, string PaletteName)
         {
-            if (Filename == null || PaletteName == null)
+            if (Filename is null || PaletteName is null)
                 throw new ArgumentNullException();
 
             Palette pal = new Palette(PaletteName);

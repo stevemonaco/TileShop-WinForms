@@ -12,7 +12,7 @@ namespace TileShop.Core
     /// </summary>
     static class GameDescriptorSerializer
     {
-        #region XML Deserialization methods        
+        #region XML Deserialization methods
         /// <summary>
         /// Deserializes a Stream of XML data
         /// </summary>
@@ -23,10 +23,10 @@ namespace TileShop.Core
         /// <exception cref="ArgumentException">LoadProject was called with a null or empty baseDirectory</exception>
         public static Dictionary<string, ProjectResourceBase> DeserializeProject(Stream stream, string baseDirectory)
         {
-            if (stream == null)
+            if (stream is null)
                 throw new ArgumentNullException("LoadProject was called with a null stream");
-            if (String.IsNullOrEmpty(baseDirectory))
-                throw new ArgumentException("LoadProject was called with a null or empty baseDirectory");
+            if (String.IsNullOrWhiteSpace(baseDirectory))
+                throw new ArgumentException($"LoadProject was called with a null or empty {nameof(baseDirectory)}");
 
             XElement doc = XElement.Load(stream);
             XElement projectNode = doc.Element("project");
@@ -77,9 +77,9 @@ namespace TileShop.Core
         #region XML Serialization methods
         public static void SerializeProject(Dictionary<string, ProjectResourceBase> projectTree, Stream stream)
         {
-            if (projectTree == null)
+            if (projectTree is null)
                 throw new ArgumentNullException($"SerializeProject was called with a null {nameof(projectTree)}");
-            if (stream == null)
+            if (stream is null)
                 throw new ArgumentNullException("SerializeProject was called with a null stream");
             if (!stream.CanWrite)
                 throw new ArgumentException("SerializeProject was called with a stream without write access");

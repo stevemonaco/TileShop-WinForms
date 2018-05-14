@@ -26,15 +26,15 @@ namespace TileShop.Core
         /// <returns></returns>
         public bool Render(Arranger arranger)
         {
-            if (arranger == null)
+            if (arranger is null)
                 throw new ArgumentNullException();
             if (arranger.ArrangerPixelSize.Width <= 0 || arranger.ArrangerPixelSize.Height <= 0)
                 throw new ArgumentException();
 
-            if (Image == null || arranger.ArrangerPixelSize.Width != Image.Width || arranger.ArrangerPixelSize.Height != Image.Height)
+            if (Image is null || arranger.ArrangerPixelSize.Width != Image.Width || arranger.ArrangerPixelSize.Height != Image.Height)
                 Image = new Bitmap(arranger.ArrangerPixelSize.Width, arranger.ArrangerPixelSize.Height, PixelFormat.Format32bppArgb);
 
-            if(Image == null)
+            if(Image is null)
                 throw new NullReferenceException();
 
             if (!NeedsRedraw)
@@ -88,16 +88,16 @@ namespace TileShop.Core
         /// <returns></returns>
         public bool SaveImage(Arranger arranger)
         {
-            if (arranger == null)
+            if (arranger is null)
                 throw new ArgumentNullException();
 
             if (arranger.ArrangerPixelSize.Width <= 0 || arranger.ArrangerPixelSize.Height <= 0 || arranger.Mode == ArrangerMode.SequentialArranger)
                 throw new ArgumentException();
 
-            if (Image == null || arranger.ArrangerPixelSize.Width != Image.Width || arranger.ArrangerPixelSize.Height != Image.Height)
+            if (Image is null || arranger.ArrangerPixelSize.Width != Image.Width || arranger.ArrangerPixelSize.Height != Image.Height)
                 throw new InvalidOperationException();
 
-            if (Image == null)
+            if (Image is null)
                 throw new NullReferenceException();
 
             string PrevFileKey = "";
@@ -152,7 +152,7 @@ namespace TileShop.Core
         /// <returns>Local color</returns>
         public Color GetPixel(int x, int y)
         {
-            if (Image == null)
+            if (Image is null)
                 throw new NullReferenceException();
 
             return Image.GetPixel(x, y);

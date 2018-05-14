@@ -182,7 +182,7 @@ namespace TileShop
         #region Rendering Functions
         private void RenderPanel_Paint(object sender, PaintEventArgs e)
         {
-            if (DisplayArranger == null)
+            if (DisplayArranger is null)
                 return;
 
             rm.Render(DisplayArranger);

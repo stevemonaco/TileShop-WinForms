@@ -72,7 +72,7 @@ namespace TileShop
 
         public override bool ReloadContent()
         {
-            if (EditArranger == null)
+            if (EditArranger is null)
                 return false;
 
             DisplayRect.Size = new Size(EditArranger.ArrangerPixelSize.Width * Zoom, EditArranger.ArrangerPixelSize.Height * Zoom);
@@ -104,7 +104,7 @@ namespace TileShop
 
         public override bool SaveContent()
         {
-            if (EditArranger == null)
+            if (EditArranger is null)
                 return false;
 
             rm.SaveImage(EditArranger);
@@ -122,7 +122,7 @@ namespace TileShop
             EditArranger = arr;
             rm = new RenderManager();
 
-            if(EditArranger == null)
+            if(EditArranger is null)
             {
                 ClearArranger();
                 PixelPanel.Invalidate();
@@ -148,7 +148,7 @@ namespace TileShop
 
         private void PixelPanel_Paint(object sender, PaintEventArgs e)
         {
-            if (EditArranger == null)
+            if (EditArranger is null)
             {
                 base.OnPaint(e);
                 return;
@@ -227,7 +227,7 @@ namespace TileShop
 
         private void PixelPanel_MouseDown(object sender, MouseEventArgs e)
         {
-            if (!DisplayRect.Contains(e.Location) || EditArranger == null)
+            if (!DisplayRect.Contains(e.Location) || EditArranger is null)
                 return;
 
             Point unscaledLoc = new Point(); // Location in pixels

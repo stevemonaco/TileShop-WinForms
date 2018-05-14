@@ -161,7 +161,7 @@ namespace TileShop.Core
         /// <param name="arrangerPosY">0-based y-coordinate of Element</param>
         public void SetElement(ArrangerElement element, int arrangerPosX, int arrangerPosY)
         {
-            if (ElementGrid == null)
+            if (ElementGrid is null)
                 throw new ArgumentNullException();
 
             if (arrangerPosX > ArrangerElementSize.Width || arrangerPosY > ArrangerElementSize.Height)
@@ -178,7 +178,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public ArrangerElement GetElement(int arrangerPosX, int arrangerPosY)
         {
-            if (ElementGrid == null)
+            if (ElementGrid is null)
                 throw new ArgumentNullException();
 
             return ElementGrid[arrangerPosX, arrangerPosY];

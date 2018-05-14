@@ -68,7 +68,7 @@ namespace TileShop.Core
 
             FileBitAddress address;
 
-            if (ElementGrid == null) // New Arranger being resized
+            if (ElementGrid is null) // New Arranger being resized
                 address = 0;
             else
                 address = GetInitialSequentialFileAddress();
@@ -95,7 +95,7 @@ namespace TileShop.Core
                         DataFileKey = dataFileKey,
                         FormatName = format.Name,
                     };
-                    if (el.ElementData.Count == 0 || el.MergedData == null)
+                    if (el.ElementData.Count == 0 || el.MergedData is null)
                         el.AllocateBuffers();
 
                     ElementGrid[j, i] = el;
@@ -129,7 +129,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public FileBitAddress GetInitialSequentialFileAddress()
         {
-            if (ElementGrid == null)
+            if (ElementGrid is null)
                 throw new NullReferenceException();
 
             if (Mode != ArrangerMode.SequentialArranger)
@@ -144,7 +144,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public string GetSequentialGraphicsFormat()
         {
-            if (ElementGrid == null)
+            if (ElementGrid is null)
                 throw new NullReferenceException();
 
             return ElementGrid[0, 0].FormatName;
@@ -158,7 +158,7 @@ namespace TileShop.Core
         /// <returns></returns>
         public bool SetGraphicsFormat(string Format, Size ElementSize)
         {
-            if (ElementGrid == null)
+            if (ElementGrid is null)
                 throw new NullReferenceException();
 
             if (Mode != ArrangerMode.SequentialArranger)
