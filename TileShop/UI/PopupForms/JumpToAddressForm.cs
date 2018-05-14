@@ -6,20 +6,19 @@ namespace TileShop.PopupForms
 {
     public partial class JumpToAddressForm : Form
     {
-        private long address = 0;
-
         public long Address
         {
-            get { return address; }
+            get => _address;
             set
             {
-                address = value;
+                _address = value;
                 if (HexButton.Checked)
-                    NumberBox.Text = String.Format("{0:X}", address);
+                    NumberBox.Text = String.Format("{0:X}", _address);
                 else if (DecimalButton.Checked)
-                    NumberBox.Text = String.Format("{0}", address);
+                    NumberBox.Text = String.Format("{0}", _address);
             }
         }
+        private long _address = 0;
 
         public JumpToAddressForm()
         {
@@ -50,7 +49,7 @@ namespace TileShop.PopupForms
 
             Address = tempAddress;
             DialogResult = DialogResult.OK;
-            this.Close();
+            Close();
         }
     }
 }

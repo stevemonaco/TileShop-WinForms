@@ -99,9 +99,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\PathTree.cs" />
     <Compile Include="Core\ProjectResourceBase.cs" />
     <Compile Include="Core\ResourceEventArgs.cs" />
     <Compile Include="Core\ResourceFolder.cs" />
+    <Compile Include="Core\ProjectResourceBaseComparer.cs" />
     <Compile Include="Core\ScatteredArranger.cs" />
     <Compile Include="Core\SequentialArranger.cs" />
     <Compile Include="ExtensionMethods\ColorExtensions.cs" />

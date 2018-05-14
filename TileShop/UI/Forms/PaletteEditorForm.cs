@@ -13,29 +13,29 @@ namespace TileShop
 
         public Color ActiveColor
         {
-            get { return activeColor; }
+            get => _activeColor;
             set
             {
-                activeColor = value;
+                _activeColor = value;
                 activeColorPanel.Invalidate();
             }
         }
-        private Color activeColor = Color.FromArgb(0);
+        private Color _activeColor = Color.FromArgb(0);
 
         public byte ForeignRed
         {
-            get { return foreignRed; }
+            get => _foreignRed;
             set
             {
-                if (foreignRed == value)
+                if (_foreignRed == value)
                     return;
 
-                foreignRed = value;
+                _foreignRed = value;
 
-                if (SliderRed.Value != foreignRed) // Test so the controls don't eventlock
-                    SliderRed.Value = foreignRed;
-                if (NudRed.Value != foreignRed)
-                    NudRed.Value = foreignRed;
+                if (SliderRed.Value != _foreignRed) // Test so the controls don't eventlock
+                    SliderRed.Value = _foreignRed;
+                if (NudRed.Value != _foreignRed)
+                    NudRed.Value = _foreignRed;
 
                 //ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
                 ForeignColor fc = new ForeignColor(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel);
@@ -43,21 +43,21 @@ namespace TileShop
                 SavePaletteColors();
             }
         }
-        private byte foreignRed;
+        private byte _foreignRed;
 
         public byte ForeignGreen
         {
-            get { return foreignGreen; }
+            get => _foreignGreen;
             set
             {
-                if (foreignGreen == value)
+                if (_foreignGreen == value)
                     return;
 
-                foreignGreen = value;
-                if (SliderGreen.Value != foreignGreen) // Test so the controls don't eventlock
-                    SliderGreen.Value = foreignGreen;
-                if (NudGreen.Value != foreignGreen)
-                    NudGreen.Value = foreignGreen;
+                _foreignGreen = value;
+                if (SliderGreen.Value != _foreignGreen) // Test so the controls don't eventlock
+                    SliderGreen.Value = _foreignGreen;
+                if (NudGreen.Value != _foreignGreen)
+                    NudGreen.Value = _foreignGreen;
 
                 //ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
                 ForeignColor fc = new ForeignColor(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel);
@@ -65,21 +65,21 @@ namespace TileShop
                 SavePaletteColors();
             }
         }
-        private byte foreignGreen;
+        private byte _foreignGreen;
 
         public byte ForeignBlue
         {
-            get { return foreignBlue; }
+            get => _foreignBlue;
             set
             {
-                if (foreignBlue == value)
+                if (_foreignBlue == value)
                     return;
 
-                foreignBlue = value;
-                if (SliderBlue.Value != foreignBlue) // Test so the controls don't eventlock
-                    SliderBlue.Value = foreignBlue;
-                if (NudBlue.Value != foreignBlue)
-                    NudBlue.Value = foreignBlue;
+                _foreignBlue = value;
+                if (SliderBlue.Value != _foreignBlue) // Test so the controls don't eventlock
+                    SliderBlue.Value = _foreignBlue;
+                if (NudBlue.Value != _foreignBlue)
+                    NudBlue.Value = _foreignBlue;
 
                 //ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
                 ForeignColor fc = new ForeignColor(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel);
@@ -87,21 +87,21 @@ namespace TileShop
                 SavePaletteColors();
             }
         }
-        private byte foreignBlue;
+        private byte _foreignBlue;
 
         public byte ForeignAlpha
         {
-            get { return foreignAlpha; }
+            get => _foreignAlpha;
             set
             {
-                if (foreignAlpha == value)
+                if (_foreignAlpha == value)
                     return;
 
-                foreignAlpha = value;
-                if (SliderAlpha.Value != foreignAlpha) // Test so the controls don't eventlock
-                    SliderAlpha.Value = foreignAlpha;
-                if (NudAlpha.Value != foreignAlpha)
-                    NudAlpha.Value = foreignAlpha;
+                _foreignAlpha = value;
+                if (SliderAlpha.Value != _foreignAlpha) // Test so the controls don't eventlock
+                    SliderAlpha.Value = _foreignAlpha;
+                if (NudAlpha.Value != _foreignAlpha)
+                    NudAlpha.Value = _foreignAlpha;
 
                 //ActiveColor = Color.FromArgb((int)Palette.ForeignToLocalArgb(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel));
                 ForeignColor fc = new ForeignColor(ForeignAlpha, ForeignRed, ForeignGreen, ForeignBlue, pal.ColorModel);
@@ -109,7 +109,7 @@ namespace TileShop
                 SavePaletteColors();
             }
         }
-        private byte foreignAlpha;
+        private byte _foreignAlpha;
 
         public PaletteEditorForm(string paletteKey)
         {

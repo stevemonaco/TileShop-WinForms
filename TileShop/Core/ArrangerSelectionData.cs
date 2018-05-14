@@ -51,15 +51,15 @@ namespace TileShop.Core
         /// </summary>
         public int Zoom
         {
-            get => zoom;
+            get => _zoom;
             set
             {
                 if (value < 1)
                     throw new ArgumentOutOfRangeException();
-                zoom = value;
+                _zoom = value;
             }
         }
-        private int zoom;
+        private int _zoom;
 
         /// <summary>
         /// Beginning selection point in zoomed coordinates

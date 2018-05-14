@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using MoreLinq;
 
 namespace TileShop.Core
 {
@@ -12,7 +13,6 @@ namespace TileShop.Core
         public ResourceFolder()
         {
             CanContainChildResources = true;
-            ChildResources = new Dictionary<string, ProjectResourceBase>();
         }
 
         public override void Rename(string name)
@@ -30,7 +30,13 @@ namespace TileShop.Core
 
         public override XElement Serialize()
         {
-            throw new NotImplementedException();
+            XElement xeFolder = new XElement("folder");
+            xeFolder.SetAttributeValue("name", Name);
+
+            var orderedNodes = ChildResources.Values.OrderBy(x => x, new ProjectResourceBaseComparer()).Where(x => x.ShouldBeSerialized);
+            orderedNodes.ForEach(x => xeFolder.Add(x.Serialize()));
+
+            return xeFolder;
         }
 
         public override bool Deserialize(XElement element)
@@ -44,7 +50,7 @@ namespace TileShop.Core
                     var folder = new ResourceFolder();
                     folder.Deserialize(node);
                     folder.Parent = this;
-                    ChildResources.Add(node.Attribute("name").Value, folder);
+                    ChildResources.Add(folder.Name, folder);
                 }
                 else if (node.Name == "datafile")
                 {

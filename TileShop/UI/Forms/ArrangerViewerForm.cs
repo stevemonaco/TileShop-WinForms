@@ -13,26 +13,46 @@ namespace TileShop
         enum ArrangerViewerCursorMode { ArrangeElements = 0, EditElements = 1, ApplyPalette = 2 }
         ArrangerViewerCursorMode CursorMode;
 
+        /// <summary>
+        /// Gets the zoom level for the arranger
+        /// </summary>
+        /// <value>
+        /// The zoom.
+        /// </value>
         public int Zoom
         {
-            get { return zoom; }
+            get => _zoom;
             private set
             {
-                zoom = value;
+                _zoom = value;
                 selectionData.Zoom = Zoom;
                 DisplayRect = new Rectangle(0, 0, DisplayArranger.ArrangerPixelSize.Width * Zoom, DisplayArranger.ArrangerPixelSize.Height * Zoom);
                 CancelSelection();
                 RenderPanel.Invalidate();
             }
         }
-        int zoom;
+        int _zoom;
+
+        /// <summary>
+        /// Gets the Arranger associated with the viewer
+        /// </summary>
+        /// <value>
+        /// The display arranger.
+        /// </value>
+        public Arranger DisplayArranger { get; private set; }
+
+        /// <summary>
+        /// Gets the Arranger associated with the pixel editor
+        /// </summary>
+        /// <value>
+        /// The edit arranger.
+        /// </value>
+        public Arranger EditArranger { get; private set; }
 
         Size DisplayElements; // The number of elements in the entire display
         Size ElementSize; // The size of each element in unzoomed pixels
         Rectangle DisplayRect; // The zoomed pixel size of the entire display
         RenderManager rm = new RenderManager();
-        public Arranger DisplayArranger { get; private set; }
-        public Arranger EditArranger { get; private set; } // The subarranger associated with the pixel editor
         ArrangerSelectionData selectionData;
 
         // Selection in zoomed pixels

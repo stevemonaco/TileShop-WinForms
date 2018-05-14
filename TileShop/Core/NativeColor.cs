@@ -15,7 +15,7 @@ namespace TileShop.Core
         /// <summary>
         /// Gets or sets the native 32bit ARGB Color
         /// </summary>
-        public UInt32 Color;
+        public UInt32 Color { get; set; }
 
         public NativeColor(UInt32 color)
         {

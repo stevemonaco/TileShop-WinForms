@@ -13,23 +13,18 @@ namespace TileShop.Core
     /// </summary>
     public class ImageProperty
     {
-        public int ColorDepth;
-        public bool RowInterlace;
+        public int ColorDepth { get; set; }
+        public bool RowInterlace { get; set; }
 
         /// <summary>
         /// Original placement pattern of pixels as specified by the codec
         /// </summary>
-        public int[] RowPixelPattern
-        {
-            get { return rowPixelPattern; }
-            private set { rowPixelPattern = value; }
-        }
-        private int[] rowPixelPattern;
+        public int[] RowPixelPattern { get; private set; }
 
         /// <summary>
         /// Placement pattern of pixels extended to the width of the element
         /// </summary>
-        public int[] RowExtendedPixelPattern;
+        public int[] RowExtendedPixelPattern { get; set; }
 
         public ImageProperty()
         {
@@ -108,19 +103,19 @@ namespace TileShop.Core
         /// <summary>
         /// The color depth of the format in bits per pixel
         /// </summary>
-        public int ColorDepth;
+        public int ColorDepth { get; set; }
 
         /// <summary>
         /// ColorType defines how pixel data is translated into color data
         /// </summary>
-        public PixelColorType ColorType;
+        public PixelColorType ColorType { get; set; }
 
         /// <summary>
         /// Specifies how individual bits of each color are merged according to priority
         ///   Ex: [3, 2, 0, 1] implies the first bit read will merge into bit 3,
         ///   second bit read into bit 2, third bit read into bit 0, fourth bit read into bit 1
         /// </summary>
-        public int[] MergePriority;
+        public int[] MergePriority { get; set; }
 
         /// <summary>
         /// Current width of the elements to encode/decode
@@ -161,9 +156,9 @@ namespace TileShop.Core
         public List<ImageProperty> ImagePropertyList { get; private set; }
 
         // Processing Operations
-        public bool HFlip;
-        public bool VFlip;
-        public bool Remap;
+        public bool HFlip { get; set; }
+        public bool VFlip { get; set; }
+        public bool Remap { get; set; }
 
         // Pixel remap operations
 

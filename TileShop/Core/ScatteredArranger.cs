@@ -129,7 +129,51 @@ namespace TileShop.Core
 
         public override XElement Serialize()
         {
-            throw new NotImplementedException();
+            XElement xe = new XElement("arranger");
+
+            xe.SetAttributeValue("name", Name);
+            xe.SetAttributeValue("elementsx", ArrangerElementSize.Width);
+            xe.SetAttributeValue("elementsy", ArrangerElementSize.Height);
+            xe.SetAttributeValue("width", ElementPixelSize.Width);
+            xe.SetAttributeValue("height", ElementPixelSize.Height);
+
+            if (Layout == ArrangerLayout.TiledArranger)
+                xe.SetAttributeValue("layout", "tiled");
+            else if (Layout == ArrangerLayout.LinearArranger)
+                xe.SetAttributeValue("layout", "linear");
+
+            string DefaultPalette = this.FindMostFrequentElementValue("PaletteKey");
+            string DefaultFile = this.FindMostFrequentElementValue("DataFileKey");
+            string DefaultFormat = this.FindMostFrequentElementValue("FormatName");
+
+            xe.SetAttributeValue("defaultformat", DefaultFormat);
+            xe.SetAttributeValue("defaultdatafile", DefaultFile);
+            xe.SetAttributeValue("defaultpalette", DefaultPalette);
+
+            for (int y = 0; y < ArrangerElementSize.Height; y++)
+            {
+                for (int x = 0; x < ArrangerElementSize.Width; x++)
+                {
+                    var graphic = new XElement("element");
+                    ArrangerElement el = GetElement(x, y);
+
+                    graphic.SetAttributeValue("fileoffset", String.Format("{0:X}", el.FileAddress.FileOffset));
+                    if (el.FileAddress.BitOffset != 0)
+                        graphic.SetAttributeValue("bitoffset", String.Format("{0:X}", el.FileAddress.BitOffset));
+                    graphic.SetAttributeValue("posx", x);
+                    graphic.SetAttributeValue("posy", y);
+                    if (el.FormatName != DefaultFormat)
+                        graphic.SetAttributeValue("format", el.FormatName);
+                    if (el.DataFileKey != DefaultFile)
+                        graphic.SetAttributeValue("file", el.DataFileKey);
+                    if (el.PaletteKey != DefaultPalette)
+                        graphic.SetAttributeValue("palette", el.PaletteKey);
+
+                    xe.Add(graphic);
+                }
+            }
+
+            return xe;
         }
 
         public override bool Deserialize(XElement element)

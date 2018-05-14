@@ -12,10 +12,10 @@ namespace TileShop
         int MaxColors = 0; // Maximum colors of pal to show
 
         // Palette swatch rendering
-        public int swatchScale = 2;
-        public Point swatchLoc = new Point(12, 4);
-        public Size swatchElementSize = new Size(12, 12);
-        public Size swatchElementPadding = new Size(2, 2);
+        public int swatchScale { get; set; } = 2;
+        public Point swatchLoc { get; set; } = new Point(12, 4);
+        public Size swatchElementSize { get; set; } = new Size(12, 12);
+        public Size swatchElementPadding { get; set; } = new Size(2, 2);
 
         public event EventHandler<EventArgs> SelectedIndexChanged;
 
