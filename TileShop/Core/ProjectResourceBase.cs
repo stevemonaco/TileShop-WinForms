@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml.Linq;
 
 namespace TileShop.Core
 {
-    public abstract class ProjectResourceBase
+    public abstract class ProjectResourceBase: IEnumerable<ProjectResourceBase>
     {
         /// <summary>
         /// Identifying name of the resource
@@ -24,6 +25,8 @@ namespace TileShop.Core
         /// </summary>
         internal Dictionary<string, ProjectResourceBase> ChildResources = new Dictionary<string, ProjectResourceBase>();
 
+        //internal SortedDictionary<string, ProjectResourceBase> ChildResources = new SortedDictionary<string, ProjectResourceBase>();
+
         /// <summary>
         /// Determines if the ProjectResource can contain child resources
         /// </summary>
@@ -38,7 +41,7 @@ namespace TileShop.Core
         /// <value>
         ///   <c>true</c> if [should be serialized]; otherwise, <c>false</c>.
         /// </value>
-        public bool ShouldBeSerialized { get; private set; } = true;
+        public bool ShouldBeSerialized { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is leased.
@@ -75,6 +78,16 @@ namespace TileShop.Core
         /// <param name="element"></param>
         /// <returns></returns>
         public abstract bool Deserialize(XElement element);
+
+        public IEnumerator<ProjectResourceBase> GetEnumerator()
+        {
+            return ChildResources.Values.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
 
         /// <summary>
         /// Returns the key of the ProjectResourceBase
