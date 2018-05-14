@@ -40,7 +40,7 @@ namespace TileShop.Core
             else
                 name = "NES 1bpp";
 
-            return ResourceManager.Instance.GetGraphicsFormat(name);
+            return ResourceManager.GetGraphicsFormat(name);
         }
     }
 }

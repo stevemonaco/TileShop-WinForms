@@ -215,7 +215,7 @@ namespace TileShop.Core
                     throw new NotSupportedException("An unsupported palette format was attempted to be read");
             }
 
-            FileStream fs = ((DataFile)ResourceManager.Instance.GetResource(DataFileKey)).Stream;
+            FileStream fs = ResourceManager.GetResource<DataFile>(DataFileKey).Stream;
             byte[] tempPalette = fs.ReadUnshifted(FileAddress, readSize * 8 * Entries, true);
             BitStream bs = BitStream.OpenRead(tempPalette, readSize * 8 * Entries);
             var nativePalette = new NativeColor[Entries];
@@ -293,7 +293,7 @@ namespace TileShop.Core
                     throw new NotSupportedException("An unsupported palette format was attempted to be read");
             }
 
-            FileStream fs = ((DataFile)ResourceManager.Instance.GetResource(DataFileKey)).Stream;
+            FileStream fs = ResourceManager.GetResource<DataFile>(DataFileKey).Stream;
             byte[] tempPalette = fs.ReadUnshifted(FileAddress, readSize * 8 * Entries, true);
             BitStream bs = BitStream.OpenRead(tempPalette, readSize * 8 * Entries);
             var foreignPalette = new ForeignColor[Entries];
@@ -495,7 +495,7 @@ namespace TileShop.Core
                         throw new NotSupportedException("An unsupported palette format was attempted to be read");
                 }
 
-                FileStream fs = ((DataFile)ResourceManager.Instance.GetResource(DataFileKey)).Stream;
+                FileStream fs = ResourceManager.GetResource<DataFile>(DataFileKey).Stream;
                 BinaryWriter bw = new BinaryWriter(fs);
 
                 fs.Seek(FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Recode this for bitwise writing

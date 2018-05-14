@@ -35,7 +35,7 @@ namespace TileShop.Core
         /// <param name="el">ArrangerElement to decode</param>
         public static void Decode(Bitmap bmp, ArrangerElement el)
         {
-            GraphicsFormat format = ResourceManager.Instance.GetGraphicsFormat(el.FormatName);
+            GraphicsFormat format = ResourceManager.GetGraphicsFormat(el.FormatName);
 
             if (format.ColorType == PixelColorType.Indexed)
                 IndexedDecode(bmp, el);
@@ -50,8 +50,8 @@ namespace TileShop.Core
         /// <param name="el">Element to decode</param>
         unsafe static void IndexedDecode(Bitmap bmp, ArrangerElement el)
         {
-            FileStream fs = ((DataFile)ResourceManager.Instance.GetResource(el.DataFileKey)).Stream;
-            GraphicsFormat format = ResourceManager.Instance.GetGraphicsFormat(el.FormatName);
+            FileStream fs = ResourceManager.GetResource<DataFile>(el.DataFileKey).Stream;
+            GraphicsFormat format = ResourceManager.GetGraphicsFormat(el.FormatName);
 
             format.Resize(el.Width, el.Height);
 
@@ -62,9 +62,6 @@ namespace TileShop.Core
             }
 
             byte[] Data = fs.ReadUnshifted(el.FileAddress, el.StorageSize, true);
-
-            //for (int i = 0; i < Data.Length; i++)
-            //    Data[i] = (byte)(((Data[i] & 0xF) << 4) | (Data[i] >> 4));
 
             BitStream bs = BitStream.OpenRead(Data, el.StorageSize); // TODO: Change to account for first bit alignment
 
@@ -109,7 +106,7 @@ namespace TileShop.Core
                 el.MergedData[pos] = foreignPixelData;
             }
 
-            // Translate foreign colors to local colors and draw to bitmap
+            // Translate foreign colors to native colors and draw to bitmap
             DrawBitmapIndexed(bmp, el);
         }
 
@@ -195,7 +192,7 @@ namespace TileShop.Core
 
                 int Height = el.Y2 - el.Y1 + 1;
                 int Width = el.X2 - el.X1 + 1;
-                Palette pal = ResourceManager.Instance.GetResource(el.PaletteKey) as Palette;
+                Palette pal = ResourceManager.GetResource<Palette>(el.PaletteKey);
 
                 for (int y = 0; y < Height; y++)
                 {
@@ -235,7 +232,7 @@ namespace TileShop.Core
         #region Graphics Encoding Functions
         public unsafe static void Encode(Bitmap bmp, ArrangerElement el)
         {
-            GraphicsFormat format = ResourceManager.Instance.GetGraphicsFormat(el.FormatName);
+            GraphicsFormat format = ResourceManager.GetGraphicsFormat(el.FormatName);
 
             if (format.ColorType == PixelColorType.Indexed)
                 IndexedEncode(bmp, el);
@@ -248,8 +245,8 @@ namespace TileShop.Core
             // ReadBitmap for local->foreign color conversion into fmt.MergedData
             ReadBitmapIndexed(bmp, el);
 
-            FileStream fs = ((DataFile)ResourceManager.Instance.GetResource(el.DataFileKey)).Stream;
-            GraphicsFormat format = ResourceManager.Instance.GetGraphicsFormat(el.FormatName);
+            FileStream fs = ResourceManager.GetResource<DataFile>(el.DataFileKey).Stream;
+            GraphicsFormat format = ResourceManager.GetGraphicsFormat(el.FormatName);
 
             // Loop over MergedData to split foreign colors into bit planes in fmt.TileData
             for (int pos = 0; pos < el.MergedData.Length; pos++)
@@ -331,7 +328,7 @@ namespace TileShop.Core
 
                 int Height = el.Y2 - el.Y1 + 1;
                 int Width = el.X2 - el.X1 + 1;
-                Palette pal = ResourceManager.Instance.GetResource(el.PaletteKey) as Palette;
+                Palette pal = ResourceManager.GetResource<Palette>(el.PaletteKey);
 
                 for (int y = 0; y < Height; y++)
                 {

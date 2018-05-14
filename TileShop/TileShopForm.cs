@@ -80,7 +80,7 @@ namespace TileShop
         private void LoadCodecs(string path)
         {
             var codecs = Directory.GetFiles(path).Where(s => Path.GetExtension(s) == ".xml");
-            codecs.ForEach((x) => ResourceManager.Instance.LoadFormat(x));
+            codecs.ForEach((x) => ResourceManager.LoadFormat(x));
         }
 
         /// <summary>
@@ -90,16 +90,16 @@ namespace TileShop
         private void LoadPalettes(string path)
         {
             var palettes = Directory.GetFiles(path).Where(s => Path.GetExtension(s) == ".pal");
-            palettes.ForEach((x) => ResourceManager.Instance.LoadPalette(x, Path.GetFileNameWithoutExtension(x)));
+            palettes.ForEach((x) => ResourceManager.LoadPalette(x, Path.GetFileNameWithoutExtension(x)));
         }
 
         private void LoadCursors()
         {
             Cursor PencilCursor = CustomCursor.LoadCursorFromBitmap(Properties.Resources.PencilCursor, new Point(0, 15));
-            ResourceManager.Instance.AddCursor("PencilCursor", PencilCursor);
+            ResourceManager.AddCursor("PencilCursor", PencilCursor);
 
             Cursor PickerCursor = CustomCursor.LoadCursorFromBitmap(Properties.Resources.PickerCursor, new Point(2, 19));
-            ResourceManager.Instance.AddCursor("PickerCursor", PickerCursor);
+            ResourceManager.AddCursor("PickerCursor", PickerCursor);
         }
 
         private void LoadPlugins()
@@ -168,9 +168,9 @@ namespace TileShop
                     // TODO: Add checks to ensure resources were added
                     ProjectResourceBase res = resources[key];
                     if (res is DataFile df)
-                        ResourceManager.Instance.AddResource(key, res);
+                        ResourceManager.AddResource(key, res);
                     else
-                        ResourceManager.Instance.AddResource(key, res.Clone());
+                        ResourceManager.AddResource(key, res.Clone());
                 }
             }
         }
@@ -199,7 +199,7 @@ namespace TileShop
             ProjectFileName = "D:\\Projects\\ff2newxml.xml";
             using (FileStream fs = File.OpenRead(ProjectFileName))
             {
-                ResourceManager.Instance.LoadProject(fs, Path.GetDirectoryName(ProjectFileName));
+                ResourceManager.LoadProject(fs, Path.GetDirectoryName(ProjectFileName));
             }
         }
 
@@ -233,7 +233,7 @@ namespace TileShop
                 {
                     using (FileStream fs = File.Open(sfd.FileName, FileMode.Create, FileAccess.Write, FileShare.None))
                     {
-                        ResourceManager.Instance.SaveProject(fs);
+                        ResourceManager.SaveProject(fs);
                         ProjectFileName = sfd.FileName;
                     }
                 }
@@ -242,7 +242,7 @@ namespace TileShop
             {
                 using (FileStream fs = File.Open(ProjectFileName, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    ResourceManager.Instance.SaveProject(fs);
+                    ResourceManager.SaveProject(fs);
                 }
             }
         }
@@ -271,7 +271,7 @@ namespace TileShop
             {
                 using (FileStream fs = File.Open(sfd.FileName, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    ResourceManager.Instance.SaveProject(fs);
+                    ResourceManager.SaveProject(fs);
                     ProjectFileName = sfd.FileName;
                 }
             }
@@ -286,7 +286,7 @@ namespace TileShop
             {
                 Palette pal = new Palette(npf.PaletteName);
                 pal.LazyLoadPalette(npf.FileName, new FileBitAddress(npf.FileOffset, 0), npf.ColorModel, true, npf.Entries); // TODO: Refactor for new FileBitAddress
-                ResourceManager.Instance.AddResource(pal.Name, pal);
+                ResourceManager.AddResource(pal.Name, pal);
             }
         }
 
@@ -307,7 +307,7 @@ namespace TileShop
 
                 var arr = new ScatteredArranger(sapf.ArrangerLayout, arrSize.Width, arrSize.Height, elementSize.Width, elementSize.Height);
                 arr.Rename(sapf.ArrangerName);
-                ResourceManager.Instance.AddResource(arr.Name, arr);
+                ResourceManager.AddResource(arr.Name, arr);
             }
         }
 
@@ -345,7 +345,7 @@ namespace TileShop
                     ProjectFileName = ofd.FileName;
                     using (FileStream fs = File.OpenRead(ofd.FileName))
                     {
-                        ResourceManager.Instance.LoadProject(File.OpenRead(ofd.FileName), Path.GetDirectoryName(ofd.FileName));
+                        ResourceManager.LoadProject(File.OpenRead(ofd.FileName), Path.GetDirectoryName(ofd.FileName));
                     }
                 }
                 else
@@ -449,7 +449,7 @@ namespace TileShop
             // Example: A floating GraphicsViewerChild window (with multiple docks?)
 
             var editorList = DockPanel.Panes.SelectMany(x => x.Contents).OfType<EditorDockContent>().Where(x => x != sender);
-            editorList.ForEach((edc) => edc.RefreshContent());
+            editorList.ForEach(x => x.RefreshContent());
         }
 
         /// <summary>
@@ -474,32 +474,19 @@ namespace TileShop
             // Example: A floating GraphicsViewerChild window (with multiple docks?)
 
             var editorList = DockPanel.Panes.SelectMany(x => x.Contents).OfType<EditorDockContent>().Where(x => x != sender);
-            editorList.ForEach((edc) => edc.RefreshContent());
+            editorList.ForEach(x => x.RefreshContent());
         }
         #endregion
 
         private void CloseEditors()
         {
-            var closeList = DockPanel.Panes.Select(x => x.Contents).OfType<EditorDockContent>();
+            var closeList = DockPanel.Panes.SelectMany(x => x.Contents).OfType<EditorDockContent>();
             closeList.ForEach(x => x.Close());
         }
 
-        public List<EditorDockContent> GetActiveEditors()
+        public IEnumerable<EditorDockContent> GetActiveEditors()
         {
-            List<EditorDockContent> editorList = new List<EditorDockContent>();
-
-            foreach (DockPane dp in DockPanel.Panes)
-            {
-                foreach (DockContent dc in dp.Contents)
-                {
-                    if (dc is EditorDockContent edc && !(dc is PixelEditorForm))
-                        editorList.Add(edc);
-                }
-            }
-
-            // Test linq equiv
-            // var edList = DockPanel.Panes.SelectMany(x => x.Contents).Where(y => y is EditorDockContent && !(y is PixelEditorForm));
-
+            var editorList = DockPanel.Panes.SelectMany(x => x.Contents).OfType<EditorDockContent>().Where(y => !(y is PixelEditorForm));
             return editorList;
         }
     }

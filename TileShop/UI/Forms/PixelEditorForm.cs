@@ -82,7 +82,7 @@ namespace TileShop
 
             string palName = EditArranger.GetElement(0, 0).PaletteKey;
             string formatName = EditArranger.GetElement(0, 0).FormatName;
-            SwatchControl.ShowPalette((Palette)ResourceManager.Instance.GetResource(palName), 1 << ResourceManager.Instance.GetGraphicsFormat(formatName).ColorDepth);
+            SwatchControl.ShowPalette(ResourceManager.GetResource<Palette>(palName), 1 << ResourceManager.GetGraphicsFormat(formatName).ColorDepth);
             SwatchControl.SelectedIndex = 0;
             SwatchControl.Show();
             SwatchControl.Invalidate();
@@ -133,7 +133,7 @@ namespace TileShop
 
             string palName = EditArranger.GetElement(0, 0).PaletteKey;
             string formatName = EditArranger.GetElement(0, 0).FormatName;
-            SwatchControl.ShowPalette((Palette)ResourceManager.Instance.GetResource(palName), 1 << ResourceManager.Instance.GetGraphicsFormat(formatName).ColorDepth);
+            SwatchControl.ShowPalette(ResourceManager.GetResource<Palette>(palName), 1 << ResourceManager.GetGraphicsFormat(formatName).ColorDepth);
             SwatchControl.SelectedIndex = 0;
             SwatchControl.Show();
         }
@@ -201,11 +201,11 @@ namespace TileShop
             {
                 case PixelDrawState.PencilState:
                     PencilButton.Checked = true;
-                    PixelPanel.Cursor = ResourceManager.Instance.GetCursor("PencilCursor");
+                    PixelPanel.Cursor = ResourceManager.GetCursor("PencilCursor");
                     break;
                 case PixelDrawState.PickerState:
                     PickerButton.Checked = true;
-                    PixelPanel.Cursor = ResourceManager.Instance.GetCursor("PickerCursor");
+                    PixelPanel.Cursor = ResourceManager.GetCursor("PickerCursor");
                     break;
             }
         }
@@ -236,7 +236,7 @@ namespace TileShop
 
             if(DrawState == PixelDrawState.PencilState)
             {
-                Palette pal = ResourceManager.Instance.GetResource(EditArranger.GetElement(0, 0).PaletteKey) as Palette;
+                Palette pal = ResourceManager.GetResource<Palette>(EditArranger.GetElement(0, 0).PaletteKey);
                 SetPixel(unscaledLoc.X, unscaledLoc.Y, Color.FromArgb((int)pal[SwatchControl.SelectedIndex].Color));
 
                 PencilDragActive = true;
@@ -244,7 +244,7 @@ namespace TileShop
             else if(DrawState == PixelDrawState.PickerState)
             {
                 Color c = rm.GetPixel(unscaledLoc.X, unscaledLoc.Y);
-                Palette pal = ResourceManager.Instance.GetResource(EditArranger.GetElement(0, 0).PaletteKey) as Palette;
+                Palette pal = ResourceManager.GetResource<Palette>(EditArranger.GetElement(0, 0).PaletteKey);
                 SwatchControl.SelectedIndex = pal.GetIndexByNativeColor(c.ToNativeColor(), true);
             }
         }
@@ -255,20 +255,20 @@ namespace TileShop
             {
                 if (DrawState == PixelDrawState.PencilState)
                 {
-                    PixelPanel.Cursor = ResourceManager.Instance.GetCursor("PencilCursor");
+                    PixelPanel.Cursor = ResourceManager.GetCursor("PencilCursor");
                     if(PencilDragActive)
                     {
                         Point unscaledLoc = new Point(); // Location in pixels
                         unscaledLoc.X = (e.Location.X - PixelMargin.Width) / Zoom;
                         unscaledLoc.Y = (e.Location.Y - PixelMargin.Height) / Zoom;
 
-                        Palette pal = ResourceManager.Instance.GetResource(EditArranger.GetElement(0, 0).PaletteKey) as Palette;
+                        Palette pal = ResourceManager.GetResource<Palette>(EditArranger.GetElement(0, 0).PaletteKey);
                         SetPixel(unscaledLoc.X, unscaledLoc.Y, Color.FromArgb((int)pal[SwatchControl.SelectedIndex].Color));
                     }
 
                 }
                 else if (DrawState == PixelDrawState.PickerState)
-                    PixelPanel.Cursor = ResourceManager.Instance.GetCursor("PickerCursor");
+                    PixelPanel.Cursor = ResourceManager.GetCursor("PickerCursor");
             }
             else
                 PixelPanel.Cursor = Cursors.Arrow;
@@ -276,8 +276,8 @@ namespace TileShop
 
         private void SetPixel(int X, int Y, Color color)
         {
-            Palette pal = ResourceManager.Instance.GetResource(EditArranger.GetElement(0, 0).PaletteKey) as Palette;
-            Color col = Color.FromArgb((int)pal[SwatchControl.SelectedIndex].Color);
+            Palette pal = ResourceManager.GetResource<Palette>(EditArranger.GetElement(0, 0).PaletteKey);
+            Color col = pal[SwatchControl.SelectedIndex].ToColor();
             if (rm.GetPixel(X, Y) != col)
             {
                 rm.SetPixel(X, Y, Color.FromArgb((int)pal[SwatchControl.SelectedIndex].Color));
