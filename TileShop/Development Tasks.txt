@@ -39,7 +39,7 @@ Pixel Editor
 	- Add support for palettes in pixel editor (gray out pixels that cannot be edited using the current palette)
 
 Refactoring
-	- Refactor exception throwing code to FluentAssertions
+	- Refactor exception throwing code to something more elegant; add exception logging
 	- Refactor ResourceManager public methods to not need .Instance
 	- Refactor ResourceManager GetResource into GetResource<T>
 	- Remove ProjectTreeForm AddDataFile method

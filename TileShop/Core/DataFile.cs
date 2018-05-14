@@ -15,8 +15,8 @@ namespace TileShop.Core
     {
         public string Location { get; private set; }
 
-        Lazy<FileStream> _stream;
         public FileStream Stream { get => _stream.Value; }
+        Lazy<FileStream> _stream;
 
         public DataFile(string name): this(name, "")
         {
@@ -59,7 +59,11 @@ namespace TileShop.Core
 
         public override XElement Serialize()
         {
-            throw new NotImplementedException();
+            XElement xe = new XElement("datafile");
+            xe.SetAttributeValue("name", Name);
+            xe.SetAttributeValue("location", Location);
+
+            return xe;
         }
 
         public override bool Deserialize(XElement element)

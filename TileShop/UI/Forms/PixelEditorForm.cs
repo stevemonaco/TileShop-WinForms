@@ -25,12 +25,7 @@ namespace TileShop
         /// <summary>
         /// Gets whether the form has closed
         /// </summary>
-        public bool IsClosed
-        {
-            get { return isClosed; }
-            set { isClosed = value; }
-        }
-        private bool isClosed = false;
+        public bool IsClosed { get; set; }
 
         public PixelEditorForm()
         {

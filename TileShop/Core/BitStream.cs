@@ -15,14 +15,14 @@ namespace TileShop.Core
         /// <summary>
         /// File offset in bytes
         /// </summary>
-        public long FileOffset;
+        public long FileOffset { get; set; }
 
         /// <summary>
         /// Number of bits to skip after FileOffset
         /// Valid range is 0-7 inclusive
         /// A zero value would result in a byte-aligned address
         /// </summary>
-        public int BitOffset;
+        public int BitOffset { get; set; }
 
         public FileBitAddress(long fileOffset, int bitOffset)
         {

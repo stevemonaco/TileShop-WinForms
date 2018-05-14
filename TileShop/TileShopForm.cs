@@ -2,8 +2,10 @@
 using System.Windows.Forms;
 using System.IO;
 using System.Drawing;
-using WeifenLuo.WinFormsUI.Docking;
+using System.Linq;
 using System.Collections.Generic;
+using MoreLinq;
+using WeifenLuo.WinFormsUI.Docking;
 using TileShop.Core;
 using TileShop.Plugins;
 
@@ -17,14 +19,14 @@ namespace TileShop
 
         public string ProjectFileName
         {
-            get { return projectFileName; }
+            get => _projectFileName;
             private set
             {
-                projectFileName = value;
+                _projectFileName = value;
                 RefreshTitle();
             }
         }
-        private string projectFileName = "";
+        private string _projectFileName = "";
 
         ProjectTreeForm ptf;
         PixelEditorForm pef;
@@ -41,7 +43,7 @@ namespace TileShop
             LoadCursors();
             //LoadPlugins();
 
-            this.Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
+            ProjectFileName = "";
 
             ptf = new ProjectTreeForm(this);
             pef = new PixelEditorForm();
@@ -53,7 +55,7 @@ namespace TileShop
 
         public void RefreshTitle()
         {
-            if (String.IsNullOrEmpty(ProjectFileName))
+            if (String.IsNullOrWhiteSpace(ProjectFileName))
                 this.Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
             else
                 this.Text = "TileShop " + Properties.Settings.Default.Version + " - " + ProjectFileName;
@@ -61,12 +63,8 @@ namespace TileShop
 
         public bool OpenExistingArranger(string arrangerName)
         {
-            // Check if the arranger is already an opened Document
-            foreach(Control c in DockPanel.Documents)
-            {
-                if (c.Text == arrangerName)
-                    return false;
-            }
+            if(DockPanel.Documents.Any(c => (c as DockContent).Text == arrangerName))
+                return false;
 
             ArrangerViewerForm avf = new ArrangerViewerForm(arrangerName);
             avf.Show(DockPanel, DockState.Document);
@@ -74,26 +72,15 @@ namespace TileShop
             return true;
         }
 
-        public void UpdateOffsetLabel(string offset)
-        {
-            FileOffsetLabel.Text = offset;
-        }
+        public void UpdateOffsetLabel(string offset) => FileOffsetLabel.Text = offset;
 
-        public void UpdateSelectionLabel(string text)
-        {
-            SelectionLabel.Text = text;
-        }
+        public void UpdateSelectionLabel(string text) => SelectionLabel.Text = text;
 
         #region Startup loading functions
         private void LoadCodecs(string path)
         {
-            string[] filenames = Directory.GetFiles(path);
-
-            foreach(string s in filenames)
-            {
-                if(Path.GetExtension(s) == ".xml")
-                    ResourceManager.Instance.LoadFormat(s);
-            }
+            var codecs = Directory.GetFiles(path).Where(s => Path.GetExtension(s) == ".xml");
+            codecs.ForEach((x) => ResourceManager.Instance.LoadFormat(x));
         }
 
         /// <summary>
@@ -102,13 +89,8 @@ namespace TileShop
         /// <param name="path">Path to the palettes directory</param>
         private void LoadPalettes(string path)
         {
-            string[] filenames = Directory.GetFiles(path);
-
-            foreach (string s in filenames)
-            {
-                if (Path.GetExtension(s) == ".pal")
-                    ResourceManager.Instance.LoadPalette(s, Path.GetFileNameWithoutExtension(s));
-            }
+            var palettes = Directory.GetFiles(path).Where(s => Path.GetExtension(s) == ".pal");
+            palettes.ForEach((x) => ResourceManager.Instance.LoadPalette(x, Path.GetFileNameWithoutExtension(x)));
         }
 
         private void LoadCursors()
@@ -162,8 +144,8 @@ namespace TileShop
         #region UI Events
         private void RunFileParserPlugin_Click(object sender, EventArgs e)
         {
-            ToolStripMenuItem viewItem = (ToolStripMenuItem)sender;
-            string pluginName = (string)viewItem.Tag;
+            ToolStripMenuItem viewItem = sender as ToolStripMenuItem;
+            string pluginName = viewItem.Tag as string;
 
             foreach (Lazy<IFileParserContract, IFileParserData> plugin in pm.ParserPlugins)
             {
@@ -195,20 +177,18 @@ namespace TileShop
 
         private void ViewFileParserPlugin_Click(object sender, EventArgs e)
         {
-            ToolStripMenuItem viewItem = (ToolStripMenuItem)sender;
-            string pluginName = (string)viewItem.Tag;
+            ToolStripMenuItem viewItem = sender as ToolStripMenuItem;
+            string pluginName = viewItem.Tag as string;
 
-            foreach (Lazy<IFileParserContract, IFileParserData> plugin in pm.ParserPlugins)
+            var plugin = pm.ParserPlugins.FirstOrDefault(x => x.Metadata.Name == pluginName);
+
+            if (plugin != null)
             {
-                if(plugin.Metadata.Name == pluginName)
-                {
-                    MessageBox.Show("Name: " + plugin.Metadata.Name +
-                        "\nAuthor: " + plugin.Metadata.Author +
-                        "\nVersion: " + plugin.Metadata.Version +
-                        "\nDescription: " + plugin.Metadata.Description,
-                        "Plugin Information");
-                    break;
-                }
+                MessageBox.Show($"Plugin Information\n" +
+                    $"Name: {plugin.Metadata.Name}\n" +
+                    $"\nAuthor: {plugin.Metadata.Author}\n" +
+                    $"\nVersion:  {plugin.Metadata.Version}\n" +
+                    $"\nDescription: {plugin.Metadata.Description}\n");
             }
         }
 
@@ -217,21 +197,24 @@ namespace TileShop
             WindowState = FormWindowState.Maximized;
 
             ProjectFileName = "D:\\Projects\\ff2newxml.xml";
-            GameDescriptorSerializer gds = new GameDescriptorSerializer();
-            //gds.LoadProject(ProjectFileName);
-            //var resourceTree = gds.DeserializeProject(File.OpenRead(ProjectFileName), Path.GetDirectoryName(ProjectFileName));
-            ResourceManager.Instance.LoadProject(File.OpenRead(ProjectFileName), Path.GetDirectoryName(ProjectFileName));
+            using (FileStream fs = File.OpenRead(ProjectFileName))
+            {
+                ResourceManager.Instance.LoadProject(fs, Path.GetDirectoryName(ProjectFileName));
+            }
         }
 
         private void SaveProjectToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Test equiv below
+            // DockPanel.Panes.Select(x => x.Contents).OfType<EditorDockContent>().ForEach(x => x.SaveContent());
+            
             // Save all EditorDockContents
             foreach (DockPane dp in DockPanel.Panes)
             {
                 foreach (DockContent dc in dp.Contents)
                 {
-                    if(dc is EditorDockContent)
-                        ((EditorDockContent)dc).SaveContent();
+                    if(dc is EditorDockContent edc)
+                        edc.SaveContent();
                 }
             }
 
@@ -248,15 +231,19 @@ namespace TileShop
 
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
-                    ProjectFileName = sfd.FileName;
-                    GameDescriptorSerializer gds = new GameDescriptorSerializer();
-                    gds.SerializeProject(ProjectFileName);
+                    using (FileStream fs = File.Open(sfd.FileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        ResourceManager.Instance.SaveProject(fs);
+                        ProjectFileName = sfd.FileName;
+                    }
                 }
             }
             else
             {
-                GameDescriptorSerializer gds = new GameDescriptorSerializer();
-                gds.SerializeProject(ProjectFileName);
+                using (FileStream fs = File.Open(ProjectFileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    ResourceManager.Instance.SaveProject(fs);
+                }
             }
         }
 
@@ -267,8 +254,8 @@ namespace TileShop
             {
                 foreach (DockContent dc in dp.Contents)
                 {
-                    if (dc is EditorDockContent)
-                        ((EditorDockContent)dc).SaveContent();
+                    if (dc is EditorDockContent edc)
+                        edc.SaveContent();
                 }
             }
 
@@ -280,12 +267,13 @@ namespace TileShop
                 Filter = "Xml Project File|*.xml",
                 Title = "Save Project"
             };
-            if (sfd.
-                ShowDialog() == DialogResult.OK)
+            if (sfd.ShowDialog() == DialogResult.OK)
             {
-                ProjectFileName = sfd.FileName;
-                GameDescriptorSerializer gds = new GameDescriptorSerializer();
-                gds.SerializeProject(ProjectFileName);
+                using (FileStream fs = File.Open(sfd.FileName, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    ResourceManager.Instance.SaveProject(fs);
+                    ProjectFileName = sfd.FileName;
+                }
             }
         }
 
@@ -298,7 +286,7 @@ namespace TileShop
             {
                 Palette pal = new Palette(npf.PaletteName);
                 pal.LazyLoadPalette(npf.FileName, new FileBitAddress(npf.FileOffset, 0), npf.ColorModel, true, npf.Entries); // TODO: Refactor for new FileBitAddress
-                ResourceManager.Instance.AddResource(pal.Name, pal); ;
+                ResourceManager.Instance.AddResource(pal.Name, pal);
             }
         }
 
@@ -308,16 +296,16 @@ namespace TileShop
 
             if (ActiveMdiChild is ArrangerViewerForm avf) // Initialize with defaults from the active MDI window
             {
-                Size ElementSize = avf.DisplayArranger.ElementPixelSize;
-                sapf.SetDefaults(true, "", "", new Size(ElementSize.Width, ElementSize.Height), new Size(16, 8), ArrangerLayout.TiledArranger);
+                Size elementSize = avf.DisplayArranger.ElementPixelSize;
+                sapf.SetDefaults(true, "", "", new Size(elementSize.Width, elementSize.Height), new Size(16, 8), ArrangerLayout.TiledArranger);
             }
 
             if (DialogResult.OK == sapf.ShowDialog())
             {
-                Size ArrSize = sapf.ArrangerSize;
-                Size ElementSize = sapf.ElementPixelSize;
+                Size arrSize = sapf.ArrangerSize;
+                Size elementSize = sapf.ElementPixelSize;
 
-                var arr = new ScatteredArranger(sapf.ArrangerLayout, ArrSize.Width, ArrSize.Height, ElementSize.Width, ElementSize.Height);
+                var arr = new ScatteredArranger(sapf.ArrangerLayout, arrSize.Width, arrSize.Height, elementSize.Width, elementSize.Height);
                 arr.Rename(sapf.ArrangerName);
                 ResourceManager.Instance.AddResource(arr.Name, arr);
             }
@@ -355,7 +343,10 @@ namespace TileShop
 
                     // Load new XML project file
                     ProjectFileName = ofd.FileName;
-                    ResourceManager.Instance.LoadProject(File.OpenRead(ofd.FileName), Path.GetDirectoryName(ofd.FileName));
+                    using (FileStream fs = File.OpenRead(ofd.FileName))
+                    {
+                        ResourceManager.Instance.LoadProject(File.OpenRead(ofd.FileName), Path.GetDirectoryName(ofd.FileName));
+                    }
                 }
                 else
                 {
@@ -456,14 +447,9 @@ namespace TileShop
         {
             // Minor bug: Can sometimes reload arranger of some DockContents twice
             // Example: A floating GraphicsViewerChild window (with multiple docks?)
-            foreach (DockPane dp in DockPanel.Panes)
-            {
-                foreach (DockContent dc in dp.Contents)
-                {
-                    if (dc is EditorDockContent && dc != sender)
-                        ((EditorDockContent)dc).RefreshContent();
-                }
-            }
+
+            var editorList = DockPanel.Panes.SelectMany(x => x.Contents).OfType<EditorDockContent>().Where(x => x != sender);
+            editorList.ForEach((edc) => edc.RefreshContent());
         }
 
         /// <summary>
@@ -486,48 +472,33 @@ namespace TileShop
         {
             // Minor bug: Can sometimes refresh some DockContents twice
             // Example: A floating GraphicsViewerChild window (with multiple docks?)
-            foreach (DockPane dp in DockPanel.Panes)
-            {
-                foreach (DockContent dc in dp.Contents)
-                {
-                    if (dc is EditorDockContent && dc != sender)
-                        ((EditorDockContent)dc).ReloadContent();
-                }
-            }
+
+            var editorList = DockPanel.Panes.SelectMany(x => x.Contents).OfType<EditorDockContent>().Where(x => x != sender);
+            editorList.ForEach((edc) => edc.RefreshContent());
         }
         #endregion
 
         private void CloseEditors()
         {
-            List<EditorDockContent> CloseList = new List<EditorDockContent>();
-
-            // Find all EditorDockContents within all Panes and populate the CloseList
-            foreach (DockPane dp in DockPanel.Panes)
-            {
-                foreach (DockContent dc in dp.Contents)
-                {
-                    if (dc is EditorDockContent)
-                        CloseList.Add((EditorDockContent)dc);
-                }
-            }
-
-            foreach (EditorDockContent edc in CloseList)
-                edc.Close();
+            var closeList = DockPanel.Panes.Select(x => x.Contents).OfType<EditorDockContent>();
+            closeList.ForEach(x => x.Close());
         }
 
         public List<EditorDockContent> GetActiveEditors()
         {
             List<EditorDockContent> editorList = new List<EditorDockContent>();
 
-            // Find all EditorDockContents within all Panes and populate the CloseList
             foreach (DockPane dp in DockPanel.Panes)
             {
                 foreach (DockContent dc in dp.Contents)
                 {
-                    if (dc is EditorDockContent && !(dc is PixelEditorForm))
-                        editorList.Add((EditorDockContent)dc);
+                    if (dc is EditorDockContent edc && !(dc is PixelEditorForm))
+                        editorList.Add(edc);
                 }
             }
+
+            // Test linq equiv
+            // var edList = DockPanel.Panes.SelectMany(x => x.Contents).Where(y => y is EditorDockContent && !(y is PixelEditorForm));
 
             return editorList;
         }

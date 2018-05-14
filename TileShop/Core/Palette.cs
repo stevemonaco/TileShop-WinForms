@@ -598,7 +598,17 @@ namespace TileShop.Core
 
         public override XElement Serialize()
         {
-            throw new NotImplementedException();
+            XElement xe = new XElement("palette");
+
+            xe.SetAttributeValue("name", Name);
+            xe.SetAttributeValue("fileoffset", String.Format("{0:X}", FileAddress.FileOffset));
+            xe.SetAttributeValue("bitoffset", String.Format("{0:X}", FileAddress.BitOffset));
+            xe.SetAttributeValue("datafile", DataFileKey);
+            xe.SetAttributeValue("format", ColorModelToString(ColorModel));
+            xe.SetAttributeValue("entries", Entries);
+            xe.SetAttributeValue("zeroindextransparent",ZeroIndexTransparent);
+
+            return xe;
         }
 
         public override bool Deserialize(XElement element)
