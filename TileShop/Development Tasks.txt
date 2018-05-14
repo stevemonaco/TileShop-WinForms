@@ -43,8 +43,8 @@ Refactoring
 	- Refactor ResourceManager public methods to not need .Instance
 	- Refactor ResourceManager GetResource into GetResource<T>
 	- Remove ProjectTreeForm AddDataFile method
-	- Change IsNullOrEmpty to IsNullOrWhiteSpace
-	- Replace == null with is null
+	x Change IsNullOrEmpty to IsNullOrWhiteSpace
+	x Replace == null with is null
 
 Beta 2 tasks:
 Allow multiple projects to be loaded into ProjectTreeForm (prefix project node name into XML, put each project into separate tab or just top-level folder)

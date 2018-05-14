@@ -167,7 +167,7 @@ namespace TIMParserPlugin
         /// <param name="BaseTimName"></param>
         void Arrange(TimData td, FileStream fs, string DataFileKey, string BaseTimName)
         {
-            if (td == null)
+            if (td is null)
                 throw new ArgumentNullException();
 
             for (int i = 0; i < td.ClutCount; i++)

@@ -10,7 +10,7 @@ namespace TileShop.ExtensionMethods
     {
         public static ProjectResourceBase FindResource(this IDictionary<string, ProjectResourceBase> tree, string resourceKey)
         {
-            if (String.IsNullOrEmpty(resourceKey))
+            if (String.IsNullOrWhiteSpace(resourceKey))
                 throw new ArgumentException();
 
             var paths = resourceKey.Split('\\');
@@ -36,7 +36,7 @@ namespace TileShop.ExtensionMethods
 
         public static bool TryGetResource(this IDictionary<string, ProjectResourceBase> tree, string resourceKey, out ProjectResourceBase resource)
         {
-            if (String.IsNullOrEmpty(resourceKey))
+            if (String.IsNullOrWhiteSpace(resourceKey))
                 throw new ArgumentException();
 
             var paths = resourceKey.Split('\\');

@@ -45,7 +45,7 @@ namespace TileShop.Core
             if (self.Mode != ArrangerMode.SequentialArranger)
                 throw new InvalidOperationException();
 
-            if (self.ElementGrid == null)
+            if (self.ElementGrid is null)
                 throw new NullReferenceException();
 
             FileBitAddress address = self.ElementGrid[0, 0].FileAddress;
@@ -113,7 +113,7 @@ namespace TileShop.Core
             if (self.Mode != ArrangerMode.SequentialArranger)
                 throw new InvalidOperationException();
 
-            if (self.ElementGrid == null)
+            if (self.ElementGrid is null)
                 throw new NullReferenceException();
 
             FileBitAddress address;

@@ -40,7 +40,7 @@ namespace TileShop.Core
 
         public bool TryGetValue(string path, out T value)
         {
-            if (String.IsNullOrEmpty(path))
+            if (String.IsNullOrWhiteSpace(path))
                 throw new ArgumentException();
 
             value = default(T);

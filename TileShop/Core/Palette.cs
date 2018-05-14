@@ -342,7 +342,7 @@ namespace TileShop.Core
         {
             get
             {
-                if (NativePalette == null)
+                if (NativePalette is null)
                     throw new ArgumentNullException();
 
                 return NativePalette[index];
@@ -357,7 +357,7 @@ namespace TileShop.Core
         /// <exception cref="ArgumentNullException"></exception>
         public NativeColor GetNativeColor(int index)
         {
-            if (NativePalette == null)
+            if (NativePalette is null)
                 throw new ArgumentNullException();
 
             return NativePalette[index];
@@ -365,7 +365,7 @@ namespace TileShop.Core
 
         public ForeignColor GetForeignColor(int index)
         {
-            if (ForeignPalette == null)
+            if (ForeignPalette is null)
                 throw new ArgumentNullException();
 
             return ForeignPalette[index];
@@ -378,7 +378,7 @@ namespace TileShop.Core
         /// <returns>Color</returns>
         public Color GetColor(int index)
         {
-            if (NativePalette == null)
+            if (NativePalette is null)
                 throw new ArgumentNullException();
 
             return Color.FromArgb((int)NativePalette[index].Color);
@@ -437,7 +437,7 @@ namespace TileShop.Core
         /// <param name=""></param>
         public void SetPaletteForeignColor(int index, ForeignColor foreignColor)
         {
-            if (ForeignPalette == null)
+            if (ForeignPalette is null)
                 throw new NullReferenceException();
 
             if (index >= Entries)
@@ -621,7 +621,7 @@ namespace TileShop.Core
             bool zeroIndexTransparent = bool.Parse(element.Attribute("zeroindextransparent").Value);
 
             FileBitAddress address;
-            if (element.Attribute("bitoffset") == null)
+            if (element.Attribute("bitoffset") is null)
                 address = new FileBitAddress(fileOffset, 0);
             else
                 address = new FileBitAddress(fileOffset, int.Parse(element.Attribute("bitoffset").Value));

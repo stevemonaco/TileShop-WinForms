@@ -78,7 +78,7 @@ namespace TileShop
 
         /*public void SetPaletteName(string PaletteName)
         {
-            if (String.IsNullOrEmpty(PaletteName))
+            if (String.IsNullOrWhiteSpace(PaletteName))
                 throw new ArgumentException();
             else
                 pal = FileManager.Instance.GetPalette(PaletteName);
@@ -87,7 +87,7 @@ namespace TileShop
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            if (pal == null)
+            if (pal is null)
                 return;
 
             int palx = 0, paly = 0;
@@ -124,7 +124,7 @@ namespace TileShop
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            if (pal == null)
+            if (pal is null)
                 return;
 
             int x = e.Location.X;

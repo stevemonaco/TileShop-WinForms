@@ -56,9 +56,9 @@ namespace TileShop
         public void RefreshTitle()
         {
             if (String.IsNullOrWhiteSpace(ProjectFileName))
-                this.Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
+                Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
             else
-                this.Text = "TileShop " + Properties.Settings.Default.Version + " - " + ProjectFileName;
+                Text = "TileShop " + Properties.Settings.Default.Version + " - " + ProjectFileName;
         }
 
         public bool OpenExistingArranger(string arrangerName)
@@ -157,7 +157,7 @@ namespace TileShop
 
                 var resources = plugin.Value.RetrieveResourceMap();
 
-                if (resources == null)
+                if (resources is null)
                 {
                     MessageBox.Show($"Plugin '{pluginName}' returned no resources to add");
                     return;
@@ -218,7 +218,7 @@ namespace TileShop
                 }
             }
 
-            if (String.IsNullOrEmpty(ProjectFileName)) // First save, need a filename
+            if (String.IsNullOrWhiteSpace(ProjectFileName)) // First save, need a filename
             {
                 SaveFileDialog sfd = new SaveFileDialog()
                 {
@@ -365,11 +365,11 @@ namespace TileShop
             /*if(pec.IsProjectModified)
             {
                 DialogResult dr = MessageBox.Show("The project has been modified. Save?", "Save Project", MessageBoxButtons.YesNoCancel);
-                if (dr == DialogResult.Yes && !String.IsNullOrEmpty(ProjectFileName)) // Project has a filename due to being previously saved or opened
+                if (dr == DialogResult.Yes && !String.IsNullOrWhiteSpace(ProjectFileName)) // Project has a filename due to being previously saved or opened
                 {
                     pec.SaveProject(ProjectFileName);
                 }
-                if(dr == DialogResult.Yes && String.IsNullOrEmpty(ProjectFileName)) // Project has no filename because it has never been saved
+                if(dr == DialogResult.Yes && String.IsNullOrWhiteSpace(ProjectFileName)) // Project has no filename because it has never been saved
                 {
                     OpenFileDialog ofd = new OpenFileDialog()
                     {

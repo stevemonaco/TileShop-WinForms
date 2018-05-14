@@ -35,7 +35,7 @@ namespace TileShop
         /// <param name="layoutMode">Layout mode of the arranger</param>
         public void SetDefaults(bool createMode, string name, string key, Size elementSize, Size arrangerSize, ArrangerLayout layoutMode)
         {
-            if (key == null)
+            if (key is null)
                 throw new ArgumentNullException();
             if(elementSize.Width <= 0 || elementSize.Height <= 0 || arrangerSize.Width <= 0 || arrangerSize.Height <= 0)
                 throw new ArgumentOutOfRangeException();
@@ -44,7 +44,7 @@ namespace TileShop
 
             if(CreateMode)
             {
-                this.Text = "Create New Scattered Arranger";
+                Text = "Create New Scattered Arranger";
                 ConfirmButton.Text = "Create";
             }
             else // Modify an existing arranger
@@ -138,7 +138,7 @@ namespace TileShop
             }
 
             DialogResult = DialogResult.OK;
-            this.Close();
+            Close();
         }
     }
 }

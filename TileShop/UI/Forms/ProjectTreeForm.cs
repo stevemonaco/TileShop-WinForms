@@ -37,7 +37,7 @@ namespace TileShop
         /// <returns></returns>
         public bool AddDataFile(DataFile df, string NodePath, bool Show = false)
         {
-            if (df == null || NodePath == null)
+            if (df is null || NodePath is null)
                 throw new ArgumentNullException();
 
             // Ensure the file has not been previously added
@@ -100,7 +100,7 @@ namespace TileShop
         {
             TreeNode tn = FindNode(Filename, NodePath);
 
-            if (tn == null) // Not found
+            if (tn is null) // Not found
                 return false;
 
             if (!(tn is DataFileNode))
@@ -123,7 +123,7 @@ namespace TileShop
         {
             TreeNode tn = FindNode(Filename, NodePath);
 
-            if (tn == null) // Not found
+            if (tn is null) // Not found
                 return false;
 
             if (!(tn is DataFileNode))
@@ -148,7 +148,7 @@ namespace TileShop
         {
             TreeNode tn = FindNode(PaletteName, NodePath);
 
-            if (tn == null) // Not found
+            if (tn is null) // Not found
                 return false;
 
             if (!(tn is PaletteNode))
@@ -172,7 +172,7 @@ namespace TileShop
         {
             TreeNode tn = FindNode(ArrangerName, NodePath);
 
-            if (tn == null)
+            if (tn is null)
                 return false;
 
             if (!(tn is ArrangerNode))
@@ -191,7 +191,7 @@ namespace TileShop
         {
             TreeNode tn = FindNode(PaletteName, NodePath);
 
-            if (tn == null)
+            if (tn is null)
                 return false;
 
             if (!(tn is ArrangerNode))
@@ -327,7 +327,7 @@ namespace TileShop
 
             ResourceNode parentNode = FindOrAddParentNode(keyParent);
 
-            if (parentNode == null) // Add to root
+            if (parentNode is null) // Add to root
                 ProjectTreeView.Nodes.Add(rn);
             else
                 parentNode.Nodes.Add(rn);
@@ -549,7 +549,7 @@ namespace TileShop
         /// <returns>A folder node at the specified path or null if </returns>
         public ResourceNode FindOrAddParentNode(string NodePath)
         {
-            if (NodePath == null)
+            if (NodePath is null)
                 throw new ArgumentNullException();
 
             string[] nodepaths = NodePath.Split(new char[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
@@ -585,7 +585,7 @@ namespace TileShop
         /// <returns>The FolderNode that was added or found on success. Null on failure.</returns>
         public FolderNode AddFolderNode(string FolderNodePath)
         {
-            if (FolderNodePath == null)
+            if (FolderNodePath is null)
                 throw new ArgumentNullException();
 
             if (FolderNodePath == "")
@@ -642,7 +642,7 @@ namespace TileShop
         /// <returns>A FolderNode on success, null on failure</returns>
         private FolderNode FindFolderNode(string NodePath)
         {
-            if (NodePath == null)
+            if (NodePath is null)
                 throw new ArgumentNullException();
 
             if (NodePath == "")
@@ -684,7 +684,7 @@ namespace TileShop
         {
             FolderNode fn = FindFolderNode(NodePath);
 
-            if (fn == null)
+            if (fn is null)
                 return null;
 
             foreach (TreeNode tn in fn.Nodes)
