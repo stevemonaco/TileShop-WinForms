@@ -1,25 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MoreLinq;
-using System.Xml;
 using System.Xml.Linq;
 using System.IO;
-using System.Reflection;
-using TileShop.ExtensionMethods;
+using MoreLinq;
 
 namespace TileShop.Core
 {
     /// <summary>
     /// Provides XML support for reading/writing Game Descriptor Files and loading the content into the ProjectExplorerControl
     /// </summary>
-    public class GameDescriptorSerializer
+    static class GameDescriptorSerializer
     {
-        /// <summary>
-        /// Base directory for all file locations on disk
-        /// </summary>
-        private string BaseDirectory = null;
-
         #region XML Deserialization methods        
         /// <summary>
         /// Deserializes a Stream of XML data
@@ -29,7 +21,7 @@ namespace TileShop.Core
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">LoadProject was called with a null stream</exception>
         /// <exception cref="ArgumentException">LoadProject was called with a null or empty baseDirectory</exception>
-        public Dictionary<string, ProjectResourceBase> DeserializeProject(Stream stream, string baseDirectory)
+        public static Dictionary<string, ProjectResourceBase> DeserializeProject(Stream stream, string baseDirectory)
         {
             if (stream == null)
                 throw new ArgumentNullException("LoadProject was called with a null stream");
@@ -40,7 +32,6 @@ namespace TileShop.Core
             XElement projectNode = doc.Element("project");
 
             Directory.SetCurrentDirectory(baseDirectory);
-            BaseDirectory = baseDirectory;
 
             /*var settings = xe.Descendants("settings")
                 .Select(e => new
@@ -84,12 +75,34 @@ namespace TileShop.Core
         #endregion
 
         #region XML Serialization methods
+        public static void SerializeProject(Dictionary<string, ProjectResourceBase> projectTree, Stream stream)
+        {
+            if (projectTree == null)
+                throw new ArgumentNullException($"SerializeProject was called with a null {nameof(projectTree)}");
+            if (stream == null)
+                throw new ArgumentNullException("SerializeProject was called with a null stream");
+            if (!stream.CanWrite)
+                throw new ArgumentException("SerializeProject was called with a stream without write access");
+
+            var xmlRoot = new XElement("gdf");
+            var projectRoot = new XElement("project");
+            var settingsRoot = new XElement("settings");
+
+            xmlRoot.Add(settingsRoot);
+            xmlRoot.Add(projectRoot);
+
+            var orderedNodes = projectTree.Values.OrderBy(x => x, new ProjectResourceBaseComparer()).Where(x => x.ShouldBeSerialized);
+            orderedNodes.ForEach(x => projectRoot.Add(x.Serialize()));
+
+            xmlRoot.Save(stream);
+        }
+
         /// <summary>
         /// Iterates over tree nodes and saves project settings to XML
         /// </summary>
         /// <param name="XmlFileName"></param>
         /// <returns></returns>
-        public bool SerializeProject(string XmlFileName)
+        /*public bool SerializeProject(string XmlFileName)
         {
             if (String.IsNullOrEmpty(XmlFileName))
                 throw new ArgumentException();
@@ -101,10 +114,10 @@ namespace TileShop.Core
             xmlRoot.Add(settingsRoot);
 
             // Sort so that we create 
-            /*var sortedKeys = from string res in ResourceManager.Instance.ResourceKeys
-                             orderby res.Count(x => x == Path.DirectorySeparatorChar)
-                             orderby res
-                             select res;*/
+            //var sortedKeys = from string res in ResourceManager.Instance.ResourceKeys
+            //                 orderby res.Count(x => x == Path.DirectorySeparatorChar)
+            //                 orderby res
+            //                 select res;
 
             // Create a map of referenceable XElement folder nodes
 
@@ -181,26 +194,28 @@ namespace TileShop.Core
                 }
             }
 
-            /*foreach (TreeNode tn in tnc)
-            {
-                if (tn is FolderNode folderNode)
-                    projectRoot.Add(SaveFolderNode(folderNode));
-                else if (tn is DataFileNode fileNode)
-                    projectRoot.Add(SaveDataFileNode(fileNode));
-                else if (tn is PaletteNode paletteNode)
-                    projectRoot.Add(SavePaletteNode(paletteNode));
-                else if (tn is ArrangerNode arrangerNode)
-                    projectRoot.Add(SaveArrangerNode(arrangerNode));
-            }*/
+            //foreach (TreeNode tn in tnc)
+            //{
+            //    if (tn is FolderNode folderNode)
+            //        projectRoot.Add(SaveFolderNode(folderNode));
+            //    else if (tn is DataFileNode fileNode)
+            //        projectRoot.Add(SaveDataFileNode(fileNode));
+            //    else if (tn is PaletteNode paletteNode)
+            //        projectRoot.Add(SavePaletteNode(paletteNode));
+            //    else if (tn is ArrangerNode arrangerNode)
+            //        projectRoot.Add(SaveArrangerNode(arrangerNode));
+            //}
 
             xmlRoot.Add(projectRoot);
 
             xmlRoot.Save(XmlFileName);
 
             return true;
-        }
+        }*/
 
-        public XElement SaveFolderNode(FolderNode fn)
+
+
+        public static XElement SaveFolderNode(FolderNode fn)
         {
             XElement xe = new XElement("folder");
             xe.SetAttributeValue("name", fn.Name);
@@ -220,7 +235,7 @@ namespace TileShop.Core
             return xe;
         }
 
-        public XElement SaveDataFile(DataFile df)
+        public static XElement SaveDataFile(DataFile df)
         {
             XElement xe = new XElement("datafile");
             xe.SetAttributeValue("name", df.Name);
@@ -229,7 +244,7 @@ namespace TileShop.Core
             return xe;
         }
 
-        public XElement SavePalette(Palette pal)
+        public static XElement SavePalette(Palette pal)
         {
             XElement xe = new XElement("palette");
 
@@ -244,7 +259,7 @@ namespace TileShop.Core
             return xe;
         }
 
-        public XElement SaveArranger(Arranger arr)
+        public static XElement SaveArranger(Arranger arr)
         {
             XElement xe = new XElement("arranger");
 
@@ -259,9 +274,9 @@ namespace TileShop.Core
             else if (arr.Layout == ArrangerLayout.LinearArranger)
                 xe.SetAttributeValue("layout", "linear");
 
-            string DefaultPalette = FindMostFrequentElementValue(arr, "PaletteKey");
-            string DefaultFile = FindMostFrequentElementValue(arr, "DataFileKey");
-            string DefaultFormat = FindMostFrequentElementValue(arr, "FormatName");
+            string DefaultPalette = arr.FindMostFrequentElementValue("PaletteKey");
+            string DefaultFile = arr.FindMostFrequentElementValue("DataFileKey");
+            string DefaultFormat = arr.FindMostFrequentElementValue("FormatName");
 
             xe.SetAttributeValue("defaultformat", DefaultFormat);
             xe.SetAttributeValue("defaultdatafile", DefaultFile);
@@ -293,44 +308,5 @@ namespace TileShop.Core
             return xe;
         }
         #endregion
-
-        /// <summary>
-        /// Find most frequent of an attribute within an arranger's elements
-        /// </summary>
-        /// <param name="arr">Arranger to search</param>
-        /// <param name="attributeName">Name of the attribute to find most frequent value of</param>
-        /// <returns></returns>
-        private string FindMostFrequentElementValue(Arranger arr, string attributeName)
-        {
-            Type T = typeof(ArrangerElement);
-            PropertyInfo P = T.GetProperty(attributeName);
-
-            var query = from ArrangerElement el in arr.ElementGrid
-                        group el by P.GetValue(el) into grp
-                        select new { key = grp.Key, count = grp.Count() };
-
-            return query.MaxBy(x => x.count).key as string;
-
-            /*Dictionary<string, int> freq = new Dictionary<string, int>();
-            Type T = typeof(ArrangerElement);
-            PropertyInfo P = T.GetProperty(attributeName);
-
-            foreach (ArrangerElement el in arr.ElementGrid)
-            {
-                string s = (string)P.GetValue(el);
-
-                if (s == "")
-                    continue;
-
-                if (freq.ContainsKey(s))
-                    freq[s]++;
-                else
-                    freq.Add(s, 1);
-            }
-
-            var max = freq.FirstOrDefault(x => x.Value == freq.Values.Max()).Key;*/
-
-            //return max;
-        }
     }
 }

@@ -17,12 +17,12 @@ namespace TileShop.Core
     /// </summary>
     public sealed class ResourceManager
     {
-        private Dictionary<string, ProjectResourceBase> ResourceTree;
+        private Dictionary<string, ProjectResourceBase> ResourceTree = new Dictionary<string, ProjectResourceBase>();
 
         /// <summary>
         /// Maps resource keys to resources
         /// </summary>
-        private Dictionary<string, ProjectResourceBase> ResourceMap = new Dictionary<string, ProjectResourceBase>();
+        //private Dictionary<string, ProjectResourceBase> ResourceMap = new Dictionary<string, ProjectResourceBase>();
         /// <summary>
         /// Maps resource keys to copies of resources that are currently leased
         /// </summary>
@@ -71,10 +71,11 @@ namespace TileShop.Core
                 throw new ArgumentNullException("Null argument passed into AddResource");
             if (Resource.Name == null)
                 throw new ArgumentException("Argument with null Name property passed into AddResource");
-            if (ResourceMap.ContainsKey(ResourceKey))
+
+            if (ResourceTree.ContainsResource(ResourceKey))
                 return false;
 
-            ResourceMap.Add(ResourceKey, Resource);
+            ResourceTree.AddResource(ResourceKey, Resource);
             ResourceAdded?.Invoke(this, new ResourceEventArgs(ResourceKey));
             return true;
         }
@@ -91,29 +92,11 @@ namespace TileShop.Core
             if (LeasedResourceMap.ContainsKey(ResourceKey)) // Resource still in use
                 return false;
 
-            if (ResourceMap.ContainsKey(ResourceKey))
-                ResourceMap.Remove(ResourceKey);
+            if (ResourceTree.ContainsResource(ResourceKey))
+                ResourceTree.Remove(ResourceKey);
 
             return true;
         }
-
-        /// <summary>
-        /// Gets a resource by key
-        /// </summary>
-        /// <param name="ResourceKey"></param>
-        /// <returns>A leased resource if available, otherwise the original resource</returns>
-        /*public ProjectResourceBase GetResource(string ResourceKey)
-        {
-            if (ResourceKey == null)
-                throw new ArgumentException("Null name argument passed into GetResource");
-            if (LeasedResourceMap.ContainsKey(ResourceKey))
-                return LeasedResourceMap[ResourceKey];
-
-            if (ResourceMap.ContainsKey(ResourceKey))
-                return ResourceMap[ResourceKey];
-
-            throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
-        }*/
 
         /// <summary>
         /// Gets a resource by key
@@ -143,40 +126,39 @@ namespace TileShop.Core
         /// <summary>
         /// Determines if the ResourceManager has a resource associated with the specified key
         /// </summary>
-        /// <param name="ResourceKey"></param>
+        /// <param name="resourceKey"></param>
         /// <returns>True if the key is in use</returns>
-        public bool HasResource(string ResourceKey)
+        public bool HasResource(string resourceKey)
         {
-            if (ResourceKey == null)
+            if (resourceKey == null)
                 throw new ArgumentException("Null name argument passed into HasResource");
 
-            if (ResourceMap.ContainsKey(ResourceKey))
-                return true;
-            else
-                return false;
+            return ResourceTree.ContainsResource(resourceKey);
         }
 
         /// <summary>
         /// Leases a resource by key
         /// </summary>
-        /// <param name="ResourceKey"></param>
+        /// <param name="resourceKey"></param>
         /// <returns>A leased resource</returns>
-        public ProjectResourceBase LeaseResource(string ResourceKey)
+        public ProjectResourceBase LeaseResource(string resourceKey)
         {
-            if (ResourceKey == null)
+            if (resourceKey == null)
                 throw new ArgumentException("Null name argument passed into LeaseResource");
 
-            if (LeasedResourceMap.ContainsKey(ResourceKey))
-                throw new InvalidOperationException($"Key {ResourceKey} is already being leased");
+            if (LeasedResourceMap.ContainsKey(resourceKey))
+                throw new InvalidOperationException($"Key {resourceKey} is already being leased");
 
-            if(ResourceMap.ContainsKey(ResourceKey))
+            ProjectResourceBase resource;
+
+            if(ResourceTree.TryGetResource(resourceKey, out resource))
             {
-                ProjectResourceBase resource = ResourceMap[ResourceKey];
-                LeasedResourceMap.Add(ResourceKey, resource);
-                return resource;
+                ProjectResourceBase clonedResource = resource.Clone();
+                LeasedResourceMap.Add(resourceKey, clonedResource);
+                return clonedResource;
             }
 
-            throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
+            throw new KeyNotFoundException($"Key '{resourceKey}' not found in ResourceManager");
         }
 
         /// <summary>
@@ -188,7 +170,7 @@ namespace TileShop.Core
         {
             if (ResourceKey == null)
                 throw new ArgumentNullException("Null name argument passed into IsResourceLeased");
-            if (!ResourceMap.ContainsKey(ResourceKey))
+            if (!ResourceTree.ContainsResource(ResourceKey))
                 throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
 
             if (LeasedResourceMap.ContainsKey(ResourceKey))
@@ -202,12 +184,12 @@ namespace TileShop.Core
             if (!LeasedResourceMap.ContainsKey(ResourceKey))
                 throw new KeyNotFoundException($"Key '{ResourceKey}' attempted to return its lease but one is not active");
 
-            if (!ResourceMap.ContainsKey(ResourceKey))
+            if (!ResourceTree.ContainsResource(ResourceKey))
                 throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
 
             // TODO: Save leased object
 
-            ResourceMap[ResourceKey] = LeasedResourceMap[ResourceKey];
+            //ResourceMap[ResourceKey] = LeasedResourceMap[ResourceKey];
             LeasedResourceMap.Remove(ResourceKey);
         }
 
@@ -230,13 +212,7 @@ namespace TileShop.Core
             return true;
         }
 
-        /// <summary>
-        /// Rename a resource in ResourceManager
-        /// </summary>
-        /// <param name="OldResourceName"></param>
-        /// <param name="NewResourceName"></param>
-        /// <returns></returns>
-        public bool RenameResource(string OldResourceName, string NewResourceName)
+        public bool MoveResource(string OldResourceKey, string NewResourceKey)
         {
             throw new NotImplementedException();
         }
@@ -248,16 +224,17 @@ namespace TileShop.Core
         /// <returns></returns>
         public void ClearResources()
         {
-            foreach (KeyValuePair<string, ProjectResourceBase> resource in ResourceMap)
+            /*ResourceTree.SelfAndDescendants().ForEach((x) =>
             {
-                if (resource.Value is DataFile df)
+                if (x.Value is DataFile df)
                     df.Close();
-            }
+            });(
+
             LeasedResourceMap.Clear();
-            ResourceMap.Clear();
+            ResourceTree.Clear();*/
         }
 
-        public IEnumerable<string> ResourceKeys { get => ResourceMap.Keys; }
+        //public IEnumerable<string> ResourceKeys { get => ResourceMap.Keys; }
         #endregion
 
         #region XML Management        
@@ -269,17 +246,22 @@ namespace TileShop.Core
         /// <returns></returns>
         public void LoadProject(Stream stream, string baseDirectory)
         {
-            var gds = new GameDescriptorSerializer();
-            var tree = gds.DeserializeProject(stream, baseDirectory);
+            var tree = GameDescriptorSerializer.DeserializeProject(stream, baseDirectory);
 
-            ResourceTree?.Clear();
-            ResourceTree = tree;
-            ResourceTree.SelfAndDescendants().ForEach((x) => ResourceAdded?.Invoke(this, new ResourceEventArgs(x.Value.ResourceKey)));
+            // Add root-level nodes to the ResourceTree
+            foreach (var item in tree)
+                ResourceTree.AddResource(item.Key, item.Value);
+
+            // Invoke ResourceAdded event for every deserialized node
+            foreach (var item in tree.SelfAndDescendants())
+                ResourceAdded?.Invoke(this, new ResourceEventArgs(item.ResourceKey));
+
+            return;
         }
 
         public void SaveProject(Stream stream)
         {
-
+            GameDescriptorSerializer.SerializeProject(ResourceTree, stream);
         }
 
         #endregion
@@ -394,6 +376,8 @@ namespace TileShop.Core
             Palette pal = new Palette(PaletteName);
             if (!pal.LoadPalette(Filename))
                 return false;
+
+            pal.ShouldBeSerialized = false;
 
             AddResource(pal.Name, pal);
 
