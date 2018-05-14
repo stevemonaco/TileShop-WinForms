@@ -101,21 +101,21 @@ namespace TileShop.Core
         /// <summary>
         /// Gets a resource by key
         /// </summary>
-        /// <param name="ResourceKey"></param>
+        /// <param name="resourceKey"></param>
         /// <returns>A leased resource if available, otherwise the original resource</returns>
-        public ProjectResourceBase GetResource(string ResourceKey)
+        public ProjectResourceBase GetResource(string resourceKey)
         {
-            if (ResourceKey is null)
+            if (resourceKey is null)
                 throw new ArgumentException("Null name argument passed into GetResource");
-            if (LeasedResourceMap.ContainsKey(ResourceKey))
-                return LeasedResourceMap[ResourceKey];
+            if (LeasedResourceMap.ContainsKey(resourceKey))
+                return LeasedResourceMap[resourceKey];
 
-            var res = ResourceTree.FindResource(ResourceKey);
+            ProjectResourceBase res;
 
-            if(res is null)
-                throw new KeyNotFoundException($"Key '{ResourceKey}' not found in ResourceManager");
+            if (ResourceTree.TryGetResource(resourceKey, out res))
+                return res;
 
-            return res;
+            throw new KeyNotFoundException($"Key '{resourceKey}' not found in ResourceManager");
 
             //if (ResourceMap.ContainsKey(ResourceKey))
             //    return ResourceMap[ResourceKey];
@@ -224,17 +224,17 @@ namespace TileShop.Core
         /// <returns></returns>
         public void ClearResources()
         {
-            /*ResourceTree.SelfAndDescendants().ForEach((x) =>
+            ResourceTree.SelfAndDescendants().ForEach((x) =>
             {
-                if (x.Value is DataFile df)
+                if (x is DataFile df)
                     df.Close();
-            });(
+            });
 
             LeasedResourceMap.Clear();
-            ResourceTree.Clear();*/
+            ResourceTree.Clear();
         }
 
-        //public IEnumerable<string> ResourceKeys { get => ResourceMap.Keys; }
+        public IEnumerable<string> ResourceKeys { get => ResourceTree.SelfAndDescendants().Select(x => x.ResourceKey); }
         #endregion
 
         #region XML Management        

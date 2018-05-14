@@ -55,7 +55,7 @@ namespace TileShop.ExtensionMethods
             }
 
             resource = node;
-            return false;
+            return true;
         }
 
         public static bool ContainsResource(this IDictionary<string, ProjectResourceBase> tree, string resourceKey)
@@ -84,7 +84,6 @@ namespace TileShop.ExtensionMethods
                 throw new ArgumentException();
 
             string parentResourceKey = Path.GetDirectoryName(resourceKey);
-            string resourceName = Path.GetDirectoryName(resourceKey);
 
             if (String.IsNullOrWhiteSpace(parentResourceKey)) // Add to root
             {
@@ -96,7 +95,7 @@ namespace TileShop.ExtensionMethods
                 if (!tree.TryGetResource(parentResourceKey, out parent))
                     throw new KeyNotFoundException($"{nameof(AddResource)} could not locate parent resource {parentResourceKey} for {resource.Name}");
 
-                parent.ChildResources.Add(resourceName, resource);
+                parent.ChildResources.Add(resource.Name, resource);
             }
         }
 

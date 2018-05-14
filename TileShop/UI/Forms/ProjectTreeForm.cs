@@ -80,14 +80,15 @@ namespace TileShop
             ProjectResourceBase res = ResourceManager.Instance.GetResource(e.ResourceKey);
             AddResourceAsNode(e.ResourceKey, res);
 
-            /*if(res is DataFile df) // Add sequential arranger below
+            if(res is DataFile df) // Add sequential arranger below
             {
                 FileTypeLoader ftl = new FileTypeLoader();
                 var arr = new SequentialArranger(8, 16, e.ResourceKey, ftl.GetDefaultFormat(df.Location));
                 string arrangerName = res.Name + ".SequentialArranger";
                 arr.Rename(arrangerName);
+                arr.Parent = res;
                 ResourceManager.Instance.AddResource(Path.Combine(e.ResourceKey, arrangerName), arr);
-            }*/
+            }
         }
 
         /// <summary>
