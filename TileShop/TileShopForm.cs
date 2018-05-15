@@ -23,10 +23,13 @@ namespace TileShop
             private set
             {
                 _projectFileName = value;
-                RefreshTitle();
+                if (ProjectFileName == "")
+                    Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
+                else
+                    Text = "TileShop " + Properties.Settings.Default.Version + " - " + ProjectFileName;
             }
         }
-        private string _projectFileName = "";
+        private string _projectFileName;
 
         ProjectTreeForm ptf;
         PixelEditorForm pef;
@@ -51,14 +54,6 @@ namespace TileShop
 
             pef.Show(DockPanel, DockState.DockRight);
             ptf.Show(DockPanel, DockState.DockLeft); // Showing this last makes the ProjectExplorerControl focused upon launch
-        }
-
-        public void RefreshTitle()
-        {
-            if (String.IsNullOrWhiteSpace(ProjectFileName))
-                Text = "TileShop " + Properties.Settings.Default.Version + " - No project loaded";
-            else
-                Text = "TileShop " + Properties.Settings.Default.Version + " - " + ProjectFileName;
         }
 
         public bool OpenExistingArranger(string arrangerName)
@@ -322,41 +317,37 @@ namespace TileShop
                 Title = "File Location"
             };
 
-            if (ofd.ShowDialog() == DialogResult.OK)
+            if (ofd.ShowDialog() != DialogResult.OK)
+                return;
+
+            if (Path.GetExtension(ofd.FileName) == ".xml") // Load an XML project
             {
-                if (Path.GetExtension(ofd.FileName) == ".xml") // Load an XML project
+                // TODO: Handle opening a new XML project while one is already loaded
+
+                // Clear all files/arrangers/palettes
+                /*FileManager.Instance.ClearAll();
+                pec.ClearAll();
+
+                // Add saving for modified viewers here
+                foreach (Control c in this.Controls)
                 {
-                    // TODO: Handle opening a new XML project while one is already loaded
-
-                    // Clear all files/arrangers/palettes
-                    /*FileManager.Instance.ClearAll();
-                    pec.ClearAll();
-
-                    // Add saving for modified viewers here
-                    foreach (Control c in this.Controls)
+                    if (c.GetType() == typeof(GraphicsViewerChild))
                     {
-                        if (c.GetType() == typeof(GraphicsViewerChild))
-                        {
-                            c.Dispose();
-                        }
-                    }*/
-
-                    // Load new XML project file
-                    ProjectFileName = ofd.FileName;
-                    using (FileStream fs = File.OpenRead(ofd.FileName))
-                    {
-                        ResourceManager.LoadProject(File.OpenRead(ofd.FileName), Path.GetDirectoryName(ofd.FileName));
+                        c.Dispose();
                     }
-                }
-                else
+                }*/
+
+                // Load new XML project file
+                ProjectFileName = ofd.FileName;
+                using (FileStream fs = File.OpenRead(ofd.FileName))
                 {
-                    DataFile df = new DataFile(Path.GetFileNameWithoutExtension(ofd.FileName));
-                    if (!ptf.AddDataFile(df, "", true))
-                    {
-                        MessageBox.Show("Could not open file " + ofd.FileName);
-                        return;
-                    }
+                    ResourceManager.LoadProject(File.OpenRead(ofd.FileName), Path.GetDirectoryName(ofd.FileName));
                 }
+            }
+            else if (!ptf.AddDataFile(ofd.FileName, "", true)) // Add a new file to the project
+            {
+                MessageBox.Show("Could not open file " + ofd.FileName);
+                return;
             }
         }
 
@@ -427,14 +418,8 @@ namespace TileShop
         /// <param name="e"></param>
         public void PixelContentModified(object sender, EventArgs e)
         {
-            foreach (DockPane dp in DockPanel.Panes)
-            {
-                foreach (DockContent dc in dp.Contents)
-                {
-                    if (dc is ArrangerViewerForm avf)
-                        avf.RefreshContent();
-                }
-            }
+            var arrangerViewers = DockPanel.Panes.SelectMany(x => x.Contents).OfType<ArrangerViewerForm>();
+            arrangerViewers.ForEach(x => { x.RefreshContent(); });
         }
 
         /// <summary>
@@ -448,8 +433,8 @@ namespace TileShop
             // Minor bug: Can sometimes reload arranger of some DockContents twice
             // Example: A floating GraphicsViewerChild window (with multiple docks?)
 
-            var editorList = DockPanel.Panes.SelectMany(x => x.Contents).OfType<EditorDockContent>().Where(x => x != sender);
-            editorList.ForEach(x => x.RefreshContent());
+            var palEditors = DockPanel.Panes.SelectMany(x => x.Contents).OfType<EditorDockContent>().Where(x => x != sender);
+            palEditors.ForEach(x => x.RefreshContent());
         }
 
         /// <summary>

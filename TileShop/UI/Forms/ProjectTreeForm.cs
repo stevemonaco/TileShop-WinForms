@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Xml;
-using System.Xml.Linq;
-using System.Reflection;
+using MoreLinq;
 using System.IO;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
@@ -31,19 +29,19 @@ namespace TileShop
         /// <summary>
         /// Adds a DataFile to the ProjectTreeView and to FileManager
         /// </summary>
-        /// <param name="Filename">Filename of the file to add</param>
-        /// <param name="NodePath">Folder node path into the TreeView</param>
-        /// <param name="Show">Optionally displays the file using a sequential arranger immediately</param>
+        /// <param name="Filename">Absolute path of the file to add</param>
+        /// <param name="nodeKey">Key to store the DataFile</param>
+        /// <param name="show">Optionally displays the file using a sequential arranger immediately</param>
         /// <returns></returns>
-        public bool AddDataFile(DataFile df, string NodePath, bool Show = false)
+        public bool AddDataFile(string filename, string nodeKey, bool show = false)
         {
-            if (df is null || NodePath is null)
+            if (String.IsNullOrWhiteSpace(filename) || nodeKey is null)
                 throw new ArgumentNullException();
 
-            // Ensure the file has not been previously added
-            TreeNode tn = FindNode(df.Name, NodePath); // Refactor to HasDataFile checks
+            DataFile df = new DataFile(Path.GetFileNameWithoutExtension(filename), filename);
 
-            if (tn != null) // File has already been added
+            // Ensure the file has not been previously added
+            if(!ProjectTreeView.Nodes.TryGetNode(df.Name, out _))// File has already been added
                 return false;
 
             DataFileNode fileNode = new DataFileNode()
@@ -52,24 +50,15 @@ namespace TileShop
                 Tag = df.Name
             };
 
-            string fileKey = Path.Combine(NodePath, df.Name);
-            if (!ResourceManager.AddResource(fileKey, df))
+            if (!ResourceManager.AddResource(nodeKey, df))
                 return false;
 
-            // TODO: Refactor
+            AddSequentialArranger(df);
 
-            if (NodePath == "") // Add to root
-                ProjectTreeView.Nodes.Add(fileNode);
-            else // Add to folder
-            {
-                FolderNode folderNode = AddFolderNode(NodePath);
-                folderNode.Nodes.Add(fileNode);
-            }
-
-            if (Show)
+            if (show)
             {
                 ProjectTreeView.SelectedNode = fileNode;
-                return ShowArranger(fileKey);
+                return ShowArranger(Path.Combine(nodeKey, df.Name + ".SequentialArranger"));
             }
 
             return true;
@@ -77,27 +66,40 @@ namespace TileShop
 
         internal void OnResourceAdded(object sender, ResourceEventArgs e)
         {
-            ProjectResourceBase res = ResourceManager.GetResource<ProjectResourceBase>(e.ResourceKey);
-            AddResourceAsNode(e.ResourceKey, res);
+            // Ensure the resource wasn't already added
+            // This is a workaround for DataFiles loaded via XML projects having
+            // their SequentialArranger nodes created twice otherwise.
 
-            if(res is DataFile df) // Add sequential arranger below
+            if (!ProjectTreeView.Nodes.TryGetNode(e.ResourceKey, out _))
             {
-                FileTypeLoader ftl = new FileTypeLoader();
-                var arr = new SequentialArranger(8, 16, e.ResourceKey, ftl.GetDefaultFormat(df.Location));
-                string arrangerName = res.Name + ".SequentialArranger";
-                arr.Rename(arrangerName);
-                arr.Parent = res;
-                ResourceManager.AddResource(Path.Combine(e.ResourceKey, arrangerName), arr);
+                ProjectResourceBase res = ResourceManager.GetResource<ProjectResourceBase>(e.ResourceKey);
+                AddResourceAsNode(e.ResourceKey, res);
+
+                if (res is DataFile df)
+                {
+                    AddSequentialArranger(df);
+                }
             }
         }
 
+        internal void AddSequentialArranger(DataFile df)
+        {
+            FileTypeLoader ftl = new FileTypeLoader();
+            var arr = new SequentialArranger(8, 16, df.ResourceKey, ftl.GetDefaultFormat(df.Location));
+            string arrangerName = df.Name + ".SequentialArranger";
+            arr.Rename(arrangerName);
+            arr.Parent = df;
+            ResourceManager.AddResource(Path.Combine(df.ResourceKey, arrangerName), arr);
+        }
+
+        #region Remove* functions to refactor elsewhere later
         /// <summary>
         /// Removes a file from the TreeView
         /// </summary>
         /// <param name="Filename">Fully qualified filename</param>
         /// <param name="NodePath">Folder node path into the TreeView</param>
         /// <returns></returns>
-        public bool RemoveFile(string Filename, string NodePath)
+        /*public bool RemoveFile(string Filename, string NodePath)
         {
             TreeNode tn = FindNode(Filename, NodePath);
 
@@ -199,7 +201,8 @@ namespace TileShop
                 throw new InvalidOperationException("Attempted to RemovePalette on a TreeView node that is not an PaletteNode");
 
             return false;
-        }
+        }*/
+        #endregion
 
         /// <summary>
         /// Shows an Arranger
@@ -244,18 +247,18 @@ namespace TileShop
 
             IEnumerable<EditorDockContent> activeEditors = tsf.GetActiveEditors();
 
-            // If the Palette has an active editor, switch to it. Do not create a new one.
             var openedEditor = activeEditors.OfType<PaletteEditorForm>().FirstOrDefault(x => x.ContentSourceKey == paletteKey);
-            if (openedEditor != null)
+            if (openedEditor != null) // If the Palette has an active editor, show it. Do not create a new one.
             {
                 openedEditor.Show();
-                return true;
             }
-
-            PaletteEditorForm pef = new PaletteEditorForm(paletteKey);
-            pef.ContentModified += tsf.PaletteContentModified;
-            pef.ContentSaved += tsf.ContentSaved;
-            pef.Show(tsf.DockPanel, DockState.Document);
+            else // Create a new editor and show it.
+            {
+                PaletteEditorForm pef = new PaletteEditorForm(paletteKey);
+                pef.ContentModified += tsf.PaletteContentModified;
+                pef.ContentSaved += tsf.ContentSaved;
+                pef.Show(tsf.DockPanel, DockState.Document);
+            }
 
             return true;
         }
@@ -292,60 +295,23 @@ namespace TileShop
             else
                 keyParent = key.Substring(0, index);
 
-            ResourceNode parentNode = FindOrAddParentNode(keyParent);
-
-            if (parentNode is null) // Add to root
-                ProjectTreeView.Nodes.Add(rn);
-            else
+            TreeNode parentNode;
+            if (ProjectTreeView.Nodes.TryGetParentNode(key, out parentNode))
                 parentNode.Nodes.Add(rn);
+            else
+                ProjectTreeView.Nodes.Add(rn); // Add to the root
 
             return true;
         }
 
-        /// <summary>
-        /// Gets a list of all filenames loaded into the FileManager
-        /// </summary>
-        /// <returns></returns>
         public IEnumerable<string> GetFileNameList()
         {
-            List<string> list = new List<string>();
+            List<string> nameList = new List<string>();
 
-            foreach (TreeNode tn in ProjectTreeView.Nodes)
-            {
-                if (tn is FolderNode)
-                {
-                    List<string> nodeFileNameList = GetChildFileNames(tn);
-                    foreach (string s in nodeFileNameList)
-                        list.Add(s);
-                }
-                else if (tn is DataFileNode)
-                    list.Add(tn.Text);
-            }
+            var fileNodes = ProjectTreeView.Nodes.SelfAndDescendants().OfType<DataFileNode>();
+            fileNodes.ForEach(x => { nameList.Add(x.NodeKey); });
 
-            return list;
-        }
-
-        /// <summary>
-        /// Gets a list of all filenames from all children nodes. Recursive method.
-        /// </summary>
-        /// <param name="parentNode"></param>
-        /// <returns></returns>
-        private List<string> GetChildFileNames(TreeNode parentNode)
-        {
-            List<string> ret = new List<string>();
-            foreach (TreeNode childNode in parentNode.Nodes)
-            {
-                if (childNode is FolderNode)
-                {
-                    List<string> childFileNames = GetChildFileNames(childNode);
-                    foreach (string s in childFileNames)
-                        ret.Add(s);
-                }
-                else if (childNode is DataFileNode)
-                    ret.Add(childNode.Text);
-            }
-
-            return ret;
+            return nameList;
         }
 
         private void ProjectTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
@@ -375,160 +341,6 @@ namespace TileShop
             }
         }
 
-        /// <summary>
-        /// Finds or creates folder nodes leading to the specifed NodePath
-        /// </summary>
-        /// <param name="nodePath">Fully qualified path</param>
-        /// <returns>A folder node at the specified path or null if </returns>
-        public ResourceNode FindOrAddParentNode(string nodePath)
-        {
-            if (nodePath is null)
-                throw new ArgumentNullException();
-
-            string[] nodepaths = nodePath.Split(new char[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
-
-            if (nodepaths.Length == 0) // No separators implies a root level path was specified
-                return null;
-
-            TreeNodeCollection tnc = ProjectTreeView.Nodes;
-            ResourceNode node = null;
-
-            for(int i = 0; i < nodepaths.Length; i++)
-            {
-                TreeNode[] nodeList = tnc.Find(nodepaths[i], false);
-
-                if (nodeList.Length == 0) // No entry, must create a new FolderNode
-                {
-                    node = new FolderNode(nodepaths[i]);
-                    tnc.Add(node);
-                }
-                else
-                    node = nodeList[0] as ResourceNode;
-
-                tnc = node.Nodes;
-            }
-
-            return node;
-        }
-
-        /// <summary>
-        /// Adds a folder node (and any necessary parent folder nodes) to the TreeView
-        /// </summary>
-        /// <param name="folderNodePath">Full path of the folder node to add</param>
-        /// <returns>The FolderNode that was added or found on success. Null on failure.</returns>
-        public FolderNode AddFolderNode(string folderNodePath)
-        {
-            if (folderNodePath is null)
-                throw new ArgumentNullException();
-
-            if (folderNodePath == "")
-                throw new ArgumentNullException();
-
-            string[] nodepaths = folderNodePath.Split(new char[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
-
-            // Find deepest node collection that matches as much of the path as possible
-            TreeNodeCollection deepestCollection = ProjectTreeView.Nodes;
-            FolderNode fn = null;
-            int idx = 0; // Index of nodepath to start adding nodes with
-            string currentPath = "";
-
-            foreach (string path in nodepaths)
-            {
-                bool nodeExists = false;
-                foreach (TreeNode tn in deepestCollection)
-                {
-                    if (tn.Text == path && tn is FolderNode) // Found next segment of path
-                    {
-                        deepestCollection = tn.Nodes;
-                        fn = (FolderNode)tn;
-                        nodeExists = true;
-                        currentPath = currentPath + nodepaths[idx] + "\\";
-                        idx++;
-                        break;
-                    }
-                }
-
-                if (!nodeExists)
-                    break;
-            }
-
-            if (currentPath != "")
-                currentPath.Remove(currentPath.Length - 1, 1);
-
-            for (int i = idx; i < nodepaths.Length; i++)
-            {
-                FolderNode fnadd = new FolderNode();
-                currentPath = currentPath + "\\" + nodepaths[i];
-                fnadd.Text = nodepaths[i];
-                deepestCollection.Add(fnadd);
-                deepestCollection = fnadd.Nodes;
-                fn = fnadd;
-            }
-
-            return fn;
-        }
-
-        /// <summary>
-        /// Finds a folder node associated with a path
-        /// </summary>
-        /// <param name="nodePath">Path to folder node</param>
-        /// <returns>A FolderNode on success, null on failure</returns>
-        private FolderNode FindFolderNode(string nodePath)
-        {
-            if (nodePath is null)
-                throw new ArgumentNullException();
-
-            if (nodePath == "")
-                return null;
-
-            string[] nodePaths = nodePath.Split('\\');
-
-            TreeNodeCollection nodeLevel = ProjectTreeView.Nodes;
-            FolderNode matchedNode = null;
-
-            foreach (string path in nodePaths)
-            {
-                bool nodeExists = false;
-                foreach (TreeNode tn in nodeLevel)
-                {
-                    if (tn.Text == path && tn is FolderNode) // Found next segment of path
-                    {
-                        matchedNode = (FolderNode)tn;
-                        nodeLevel = tn.Nodes;
-                        nodeExists = true;
-                        break;
-                    }
-                }
-
-                if (!nodeExists)
-                    return null;
-            }
-
-            return matchedNode;
-        }
-
-        /// <summary>
-        /// Finds a node within the ProjectTreeView
-        /// </summary>
-        /// <param name="nodeName">Name of the node</param>
-        /// <param name="nodePath">Path to the node</param>
-        /// <returns>The found TreeNode on success, null on failure</returns>
-        private TreeNode FindNode(string nodeName, string nodePath)
-        {
-            FolderNode fn = FindFolderNode(nodePath);
-
-            if (fn is null)
-                return null;
-
-            foreach (TreeNode tn in fn.Nodes)
-            {
-                if (tn.Text == nodeName)
-                    return tn;
-            }
-
-            return null;
-        }
-
         private void ProjectTreeView_ItemDrag(object sender, ItemDragEventArgs e)
         {
             DoDragDrop(e.Item, DragDropEffects.Move);
@@ -545,16 +357,16 @@ namespace TileShop
             bool moveChildren = false;
 
             if (e.Data.GetDataPresent(typeof(DataFileNode)))
-                dragNode = (DataFileNode)e.Data.GetData(typeof(DataFileNode));
+                dragNode = e.Data.GetData(typeof(DataFileNode)) as DataFileNode;
             if (e.Data.GetDataPresent(typeof(FolderNode)))
-                dragNode = (FolderNode)e.Data.GetData(typeof(FolderNode));
+                dragNode = e.Data.GetData(typeof(FolderNode)) as FolderNode;
             if (e.Data.GetDataPresent(typeof(PaletteNode)))
             {
-                dragNode = (PaletteNode)e.Data.GetData(typeof(PaletteNode));
+                dragNode = e.Data.GetData(typeof(PaletteNode)) as PaletteNode;
                 moveChildren = true;
             }
             if (e.Data.GetDataPresent(typeof(ArrangerNode)))
-                dragNode = (ArrangerNode)e.Data.GetData(typeof(ArrangerNode));
+                dragNode = e.Data.GetData(typeof(ArrangerNode)) as ArrangerNode;
             else
                 return;
 
@@ -606,11 +418,6 @@ namespace TileShop
         private void ProjectTreeView_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
         {
             // Check for naming conflicts
-        }
-
-        public TreeNodeCollection ProjectNodes
-        {
-            get { return ProjectTreeView.Nodes; }
         }
     }
 

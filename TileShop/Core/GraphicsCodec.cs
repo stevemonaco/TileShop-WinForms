@@ -226,7 +226,6 @@ namespace TileShop.Core
             Graphics g = Graphics.FromImage(bmp);
             g.FillRectangle(b, r);
         }
-
         #endregion
 
         #region Graphics Encoding Functions

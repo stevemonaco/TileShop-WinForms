@@ -233,7 +233,7 @@ namespace TileShop.Core
         /// <returns></returns>
         private Rectangle GetExpandedSelectionPixelRect(Rectangle partialRectangle)
         {
-            Arranger arr = ResourceManager.GetResource<Arranger>(ArrangerKey);
+            Arranger arr = ResourceManager.GetResource<Arranger>(ArrangerKey) ;
 
             int x1 = partialRectangle.Left;
             int x2 = partialRectangle.Right;

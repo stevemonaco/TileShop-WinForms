@@ -19,10 +19,10 @@ namespace TileShop
 
             // Populate the dropdown with all supported ColorModels
             colorFormatBox.Items.Clear();
-            List<string> formatlist = Palette.GetColorModelNames();
+            List<string> formatList = Palette.GetColorModelNames();
 
-            foreach (string s in formatlist)
-                colorFormatBox.Items.Add(s);
+            foreach (var item in formatList)
+                colorFormatBox.Items.Add(item);
 
             colorFormatBox.SelectedIndex = 0;
         }
@@ -38,26 +38,26 @@ namespace TileShop
             }
             if(ResourceManager.HasResource(paletteNameBox.Text))
             {
-                MessageBox.Show("Palette " + paletteNameBox.Text + " already exists. Please choose an alternate name.");
+                MessageBox.Show($"Palette {paletteNameBox.Text} already exists. Please choose an alternate name.");
                 return;
             }
 
             PaletteName = paletteNameBox.Text;
-            FileName = (string)projectFileBox.SelectedItem;
+            FileName = projectFileBox.SelectedItem as string;
             Entries = int.Parse(entriesBox.Text);
             FileOffset = long.Parse(offsetBox.Text);
-            ColorModel = Palette.StringToColorModel((string)colorFormatBox.Text);
+            ColorModel = Palette.StringToColorModel(colorFormatBox.Text);
 
             DialogResult = DialogResult.OK;
-            this.Close();
+            Close();
         }
 
         public void AddFileNames(IEnumerable<string> filenames)
         {
             projectFileBox.Items.Clear();
 
-            foreach (string s in filenames)
-                projectFileBox.Items.Add(s);
+            foreach (var item in filenames)
+                projectFileBox.Items.Add(item);
 
             projectFileBox.SelectedIndex = 0;
         }
@@ -66,15 +66,15 @@ namespace TileShop
         {
             // Populate the dropdown with all supported ColorModels
             colorFormatBox.Items.Clear();
-            List<string> formatlist = Palette.GetColorModelNames();
+            List<string> formatList = Palette.GetColorModelNames();
 
-            if (formatlist.Count == 0)
+            if (formatList.Count == 0)
             {
                 MessageBox.Show("Please add files to the project before adding palettes");
                 Close();
             }
-            foreach (string s in formatlist)
-                colorFormatBox.Items.Add(s);
+            foreach (var item in formatList)
+                colorFormatBox.Items.Add(item);
 
             colorFormatBox.SelectedIndex = 0;
         }
