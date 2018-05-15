@@ -8,15 +8,7 @@ namespace TileShop
         public abstract void BuildContextMenu(ContextMenu Menu);
         protected bool AcceptsChildren = false;
 
-        public string GetNodeKey()
-        {
-            return this.FullPath + this.Name;
-        }
-
-        public string GetNodePath()
-        {
-            return this.FullPath;
-        }
+        public string NodeKey { get => FullPath; }
 
         /*private void MoveNodeToPath()
         {
@@ -91,14 +83,7 @@ namespace TileShop
         public override void BuildContextMenu(ContextMenu Menu)
         {
             Menu.MenuItems.Clear();
-
-            Menu.MenuItems.Add(new MenuItem("Open File in Viewer", OpenFile_Click));
             Menu.MenuItems.Add(new MenuItem("Remove File from Project", RemoveFile_Click));
-        }
-
-        public void OpenFile_Click(object sender, System.EventArgs e)
-        {
-
         }
 
         public void RemoveFile_Click(object sender, System.EventArgs e)
@@ -134,8 +119,6 @@ namespace TileShop
 
         public void EditPalette_Click(object sender, System.EventArgs e)
         {
-            //PaletteEditor pe = new PaletteEditor("CharMapPal1");
-
 
         }
 

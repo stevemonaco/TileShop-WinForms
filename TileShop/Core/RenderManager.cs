@@ -31,7 +31,7 @@ namespace TileShop.Core
             if (arranger.ArrangerPixelSize.Width <= 0 || arranger.ArrangerPixelSize.Height <= 0)
                 throw new ArgumentException();
 
-            if (Image is null || arranger.ArrangerPixelSize.Width != Image.Width || arranger.ArrangerPixelSize.Height != Image.Height)
+            if (Image is null || arranger.ArrangerPixelSize != Image.Size)
                 Image = new Bitmap(arranger.ArrangerPixelSize.Width, arranger.ArrangerPixelSize.Height, PixelFormat.Format32bppArgb);
 
             if(Image is null)
@@ -43,36 +43,36 @@ namespace TileShop.Core
             // TODO: Consider using Tile Cache
 
             FileStream fs = null;
-            bool IsSequential = arranger is SequentialArranger;
+            bool isSequential = arranger is SequentialArranger;
 
-            if(IsSequential) // Sequential requires only one seek per render
+            if(isSequential) // Sequential requires only one seek per render
             {
                 fs = ResourceManager.GetResource<DataFile>(arranger.ElementGrid[0, 0].DataFileKey).Stream;
                 fs.Seek(arranger.ElementGrid[0, 0].FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise
             }
 
-            string PrevFileKey = "";
+            string prevFileKey = "";
 
             for(int y = 0; y < arranger.ArrangerElementSize.Height; y++)
             {
                 for(int x = 0; x < arranger.ArrangerElementSize.Width; x++)
                 {
                     ArrangerElement el = arranger.ElementGrid[x, y];
-                    if (!IsSequential) // Non-sequential requires a seek for each element rendered
+                    if (!isSequential) // Non-sequential requires a seek for each element rendered
                     {
                         if (el.IsBlank())
                         {
                             GraphicsCodec.DecodeBlank(Image, el);
                             continue;
                         }
-                        if(PrevFileKey != el.DataFileKey) // Only create a new binary reader when necessary
+                        if(prevFileKey != el.DataFileKey) // Only create a new binary reader when necessary
                             fs = ResourceManager.GetResource<DataFile>(el.DataFileKey).Stream;
 
                         fs.Seek(el.FileAddress.FileOffset, SeekOrigin.Begin); // TODO: Fix for bitwise seeking
-                        PrevFileKey = el.DataFileKey;
+                        prevFileKey = el.DataFileKey;
                     }
 
-                    GraphicsCodec.Decode(Image, el);
+                     GraphicsCodec.Decode(Image, el);
                 }
             }
 

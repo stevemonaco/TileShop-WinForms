@@ -109,7 +109,6 @@
     <Compile Include="ExtensionMethods\ColorExtensions.cs" />
     <Compile Include="ExtensionMethods\RectangularArrayExtensions.cs" />
     <Compile Include="ExtensionMethods\ResourceTreeExtensions.cs" />
-    <Compile Include="ExtensionMethods\TreeNodeExtensions.cs" />
     <Compile Include="UI\Controls\CheckedDropDownButton.cs">
       <SubType>Component</SubType>
     </Compile>

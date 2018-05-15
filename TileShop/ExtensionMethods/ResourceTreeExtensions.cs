@@ -8,32 +8,6 @@ namespace TileShop.ExtensionMethods
 {
     public static class ResourceTreeExtensions
     {
-        public static ProjectResourceBase FindResource(this IDictionary<string, ProjectResourceBase> tree, string resourceKey)
-        {
-            if (String.IsNullOrWhiteSpace(resourceKey))
-                throw new ArgumentException();
-
-            var paths = resourceKey.Split('\\');
-            ProjectResourceBase node;
-
-            if (tree.ContainsKey(paths[0]))
-                node = tree[paths[0]];
-            else
-                return null;
-                //throw new KeyNotFoundException($"Resource {paths[0]} in {searchPath} not found");
-
-            for(int i = 1; i < paths.Length; i++)
-            {
-                if (node.ChildResources.ContainsKey(paths[i]))
-                    node = node.ChildResources[paths[i]];
-                else
-                    return null;
-                    //throw new KeyNotFoundException($"Resource {paths[i]} in {searchPath} not found");
-            }
-
-            return node;
-        }
-
         public static bool TryGetResource(this IDictionary<string, ProjectResourceBase> tree, string resourceKey, out ProjectResourceBase resource)
         {
             if (String.IsNullOrWhiteSpace(resourceKey))
@@ -43,9 +17,9 @@ namespace TileShop.ExtensionMethods
             var nodeVisitor = tree;
             ProjectResourceBase node = null;
 
-            for(int i = 0; i < paths.Length; i++)
+            foreach(var name in paths)
             {
-                if(nodeVisitor.TryGetValue(paths[i], out node))
+                if (nodeVisitor.TryGetValue(name, out node))
                     nodeVisitor = node.ChildResources;
                 else
                 {
@@ -60,22 +34,7 @@ namespace TileShop.ExtensionMethods
 
         public static bool ContainsResource(this IDictionary<string, ProjectResourceBase> tree, string resourceKey)
         {
-            if (String.IsNullOrWhiteSpace(resourceKey))
-                throw new ArgumentException();
-
-            var paths = resourceKey.Split('\\');
-            var nodeVisitor = tree;
-            ProjectResourceBase node = null;
-
-            for (int i = 0; i < paths.Length; i++)
-            {
-                if (nodeVisitor.TryGetValue(paths[i], out node))
-                    nodeVisitor = node.ChildResources;
-                else
-                    return false;
-            }
-
-            return true;
+            return TryGetResource(tree, resourceKey, out _);
         }
 
         public static void AddResource(this IDictionary<string, ProjectResourceBase> tree, string resourceKey, ProjectResourceBase resource)
