@@ -118,9 +118,9 @@ namespace TileShop
             pal = ResourceManager.GetResource<Palette>(paletteKey);
 
             ColorFormatBox.Enabled = false;
-            List<string> colorList = Palette.GetColorModelNames();
-            foreach (string s in colorList)
-                ColorFormatBox.Items.Add(s);
+            IEnumerable<string> modelList = Palette.GetColorModelNames();
+            foreach (string colorModelName in modelList)
+                ColorFormatBox.Items.Add(colorModelName);
             ColorFormatBox.Enabled = true;
 
             PaletteNameBox.Text = pal.Name;

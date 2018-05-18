@@ -137,10 +137,7 @@ namespace TileShop.Core
         /// <param name="ElementX"></param>
         /// <param name="ElementY"></param>
         /// <returns></returns>
-        public ArrangerElement GetElement(int ElementX, int ElementY)
-        {
-            return ElementList[ElementX, ElementY];
-        }
+        public ArrangerElement GetElement(int ElementX, int ElementY) => ElementList[ElementX, ElementY];
 
         /// <summary>
         /// Begins a new selection
@@ -193,18 +190,12 @@ namespace TileShop.Core
         /// <summary>
         /// Begins the drag and drop state for the current finalized selection
         /// </summary>
-        public void BeginDragDrop()
-        {
-            InDragState = true;
-        }
+        public void BeginDragDrop() => InDragState = true;
 
         /// <summary>
         /// Ends the drag and drop state for the current finalized selection
         /// </summary>
-        public void EndDragDrop()
-        {
-            InDragState = false;
-        }
+        public void EndDragDrop() => InDragState = false;
 
         /// <summary>
         /// Calculates a resized selection rectangle in zoomed coordinates (to fully cover tiles that are half-moused over) and populates

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using TileShop.Core;
@@ -19,7 +20,7 @@ namespace TileShop
 
             // Populate the dropdown with all supported ColorModels
             colorFormatBox.Items.Clear();
-            List<string> formatList = Palette.GetColorModelNames();
+            var formatList = Palette.GetColorModelNames();
 
             foreach (var item in formatList)
                 colorFormatBox.Items.Add(item);
@@ -66,17 +67,19 @@ namespace TileShop
         {
             // Populate the dropdown with all supported ColorModels
             colorFormatBox.Items.Clear();
-            List<string> formatList = Palette.GetColorModelNames();
+            var formatList = Palette.GetColorModelNames();
 
-            if (formatList.Count == 0)
+            if(formatList.Any())
+            {
+                foreach (var item in formatList)
+                    colorFormatBox.Items.Add(item);
+                colorFormatBox.SelectedIndex = 0;
+            }
+            else
             {
                 MessageBox.Show("Please add files to the project before adding palettes");
                 Close();
             }
-            foreach (var item in formatList)
-                colorFormatBox.Items.Add(item);
-
-            colorFormatBox.SelectedIndex = 0;
         }
     }
 }

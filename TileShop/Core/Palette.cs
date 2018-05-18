@@ -180,77 +180,11 @@ namespace TileShop.Core
             return true;
         }
 
-        /// <summary>
-        /// Loads the NativePalette from current settings
-        /// </summary>
-        /// <exception cref="NotSupportedException">
-        /// An unsupported palette format was attempted to be read
-        /// or
-        /// Palette formats with entry sizes larger than 4 bytes are not supported
-        /// </exception>
         private NativeColor[] LoadNativePalette()
         {
-            int readSize;
-
-            switch (ColorModel)
-            {
-                case ColorModel.BGR15:
-                case ColorModel.RGB15:
-                    readSize = 2;
-                    HasAlpha = false;
-                    break;
-                case ColorModel.ABGR16:
-                    readSize = 2;
-                    HasAlpha = true;
-                    break;
-                case ColorModel.RGB24:
-                    readSize = 3;
-                    HasAlpha = false;
-                    break;
-                case ColorModel.ARGB32:
-                    readSize = 4;
-                    HasAlpha = true;
-                    break;
-                default:
-                    throw new NotSupportedException("An unsupported palette format was attempted to be read");
-            }
-
-            FileStream fs = ResourceManager.GetResource<DataFile>(DataFileKey).Stream;
-            byte[] tempPalette = fs.ReadUnshifted(FileAddress, readSize * 8 * Entries, true);
-            BitStream bs = BitStream.OpenRead(tempPalette, readSize * 8 * Entries);
             var nativePalette = new NativeColor[Entries];
-
-            for (int i = 0; i < Entries; i++)
-            {
-                uint readColor;
-
-                if (readSize == 1)
-                    readColor = bs.ReadByte();
-                else if (readSize == 2)
-                {
-                    readColor = bs.ReadByte();
-                    readColor |= ((uint)bs.ReadByte()) << 8;
-                }
-                else if (readSize == 3)
-                {
-                    readColor = bs.ReadByte();
-                    readColor |= ((uint)bs.ReadByte()) << 8;
-                    readColor |= ((uint)bs.ReadByte()) << 16;
-                }
-                else if (readSize == 4)
-                {
-                    readColor = bs.ReadByte();
-                    readColor |= ((uint)bs.ReadByte()) << 8;
-                    readColor |= ((uint)bs.ReadByte()) << 16;
-                    readColor |= ((uint)bs.ReadByte()) << 24;
-                }
-                else
-                    throw new NotSupportedException("Palette formats with entry sizes larger than 4 bytes are not supported");
-
-                ForeignColor foreignColor = (ForeignColor)readColor;
-                NativeColor nativeColor = foreignColor.ToNativeColor(ColorModel);
-                nativePalette[i] = nativeColor;
-            }
+            for(int i = 0; i < Entries; i++)
+                nativePalette[i] = ForeignPalette[i].ToNativeColor(ColorModel); // Will load ForeignPalette if not already loaded
 
             if (ZeroIndexTransparent)
                 nativePalette[0].Color &= 0x00FFFFFF;
@@ -566,9 +500,9 @@ namespace TileShop.Core
             }
         }
 
-        public static List<string> GetColorModelNames()
+        public static IEnumerable<string> GetColorModelNames()
         {
-            return Enum.GetNames(typeof(ColorModel)).Cast<string>().ToList<string>();
+            return Enum.GetNames(typeof(ColorModel)).Cast<string>().ToList();
         }
 
         /// <summary>

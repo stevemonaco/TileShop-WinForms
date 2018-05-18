@@ -316,7 +316,7 @@ namespace TileShop.Core
                 throw new KeyNotFoundException();
         }
 
-        public static List<string> GetGraphicsFormatsNameList()
+        public static IEnumerable<string> GetGraphicsFormatsNameList()
         {
             var keyList = Instance.FormatList.Keys.ToList();
             keyList.Sort();

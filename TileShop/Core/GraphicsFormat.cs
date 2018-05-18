@@ -39,29 +39,25 @@ namespace TileShop.Core
             RowExtendedPixelPattern = RowPixelPattern;
         }
 
-        public void ExtendRowPattern(int Width)
+        /// <summary>
+        /// Extends the RowPixelPattern to the required image width
+        /// </summary>
+        /// <param name="width">The width of the ArrangerElement to be decoded</param>
+        public void ExtendRowPattern(int width)
         {
-            if (RowExtendedPixelPattern.Length >= Width) // Previously sized to be at least as large
+            if (RowExtendedPixelPattern.Length >= width) // Previously sized to be sufficiently large
                 return;
 
-            int cycles = (Width + RowPixelPattern.Length - 1) / RowPixelPattern.Length;
+            RowExtendedPixelPattern = new int[width];
 
-            RowExtendedPixelPattern = new int[Width];
+            int patternIndex = 0; // Index into RowPixelPattern
+            int extendedIndex = 0;   // Index into RowExtendedPixelPattern
 
-            int index = 0; // Index into RowExtendedPixelPattern
-            int pix = 0;   // Starting pixel location along scanline for current pattern
-
-            for(int i = 0; i < cycles; i++)
+            while(extendedIndex < width)
             {
-                for (int j = 0; j < RowPixelPattern.Length; j++, index++)
-                {
-                    if (index >= RowExtendedPixelPattern.Length)
-                        break;
-
-                    RowExtendedPixelPattern[index] = pix + RowPixelPattern[j];
-                }
-
-                pix += RowPixelPattern.Length;
+                RowExtendedPixelPattern[patternIndex] = extendedIndex + RowPixelPattern[patternIndex];
+                extendedIndex++;
+                patternIndex = (patternIndex + 1) & RowPixelPattern.Length;
             }
         }
     }

@@ -100,9 +100,9 @@ namespace TileShop
                 PaletteDropDownButton.Visible = false;
 
                 // Initialize the codec select box
-                List<string> formatList = ResourceManager.GetGraphicsFormatsNameList();
-                foreach (string s in formatList)
-                    FormatSelectBox.Items.Add(s);
+                var formatList = ResourceManager.GetGraphicsFormatsNameList();
+                foreach (var formatName in formatList)
+                    FormatSelectBox.Items.Add(formatName);
 
                 FormatSelectBox.SelectedIndex = FormatSelectBox.Items.IndexOf(graphicsFormat.Name);
             }
