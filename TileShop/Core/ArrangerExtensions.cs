@@ -179,27 +179,6 @@ namespace TileShop.Core
                         select new { key = grp.Key, count = grp.Count() };
 
             return query.MaxBy(x => x.count).key as string;
-
-            /*Dictionary<string, int> freq = new Dictionary<string, int>();
-            Type T = typeof(ArrangerElement);
-            PropertyInfo P = T.GetProperty(attributeName);
-
-            foreach (ArrangerElement el in arr.ElementGrid)
-            {
-                string s = (string)P.GetValue(el);
-
-                if (s == "")
-                    continue;
-
-                if (freq.ContainsKey(s))
-                    freq[s]++;
-                else
-                    freq.Add(s, 1);
-            }
-
-            var max = freq.FirstOrDefault(x => x.Value == freq.Values.Max()).Key;*/
-
-            //return max;
         }
     }
 }

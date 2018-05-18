@@ -41,7 +41,7 @@ namespace TileShop
             DataFile df = new DataFile(Path.GetFileNameWithoutExtension(filename), filename);
 
             // Ensure the file has not been previously added
-            if(!ProjectTreeView.Nodes.TryGetNode(df.Name, out _))// File has already been added
+            if(ProjectTreeView.Nodes.TryGetNode(df.Name, out _))// File has already been added
                 return false;
 
             DataFileNode fileNode = new DataFileNode()
@@ -50,7 +50,7 @@ namespace TileShop
                 Tag = df.Name
             };
 
-            if (!ResourceManager.AddResource(nodeKey, df))
+            if (!ResourceManager.AddResource(Path.Combine(nodeKey, df.Name), df))
                 return false;
 
             AddSequentialArranger(df);
@@ -58,7 +58,7 @@ namespace TileShop
             if (show)
             {
                 ProjectTreeView.SelectedNode = fileNode;
-                return ShowArranger(Path.Combine(nodeKey, df.Name + ".SequentialArranger"));
+                return ShowArranger(Path.Combine(nodeKey, df.Name, df.Name + ".SequentialArranger"));
             }
 
             return true;
@@ -306,7 +306,7 @@ namespace TileShop
 
         public IEnumerable<string> GetFileNameList()
         {
-            List<string> nameList = new List<string>();
+            var nameList = new List<string>();
 
             var fileNodes = ProjectTreeView.Nodes.SelfAndDescendants().OfType<DataFileNode>();
             fileNodes.ForEach(x => { nameList.Add(x.NodeKey); });

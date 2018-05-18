@@ -7,19 +7,9 @@ using System.Threading.Tasks;
 
 namespace TileShop.Core
 {
-    /*class PathTree<T>
+    class PathTree<T>
     {
-        PathTreeNode<T> Root;
-        IComparer<T> Comparer;
-
-        public PathTree() : this(Comparer<T>.Default)
-        { }
-
-        public PathTree(IComparer<T> nodeComparer)
-        {
-            Comparer = nodeComparer;
-            //Children = new SortedSet<PathTreeNode<T>>(nodeComparer);
-        }
+        PathTreeNode<T> Root = new PathTreeNode<T>();
 
         /// <summary>
         /// Adds the item to the specified path if the parent exists
@@ -28,49 +18,72 @@ namespace TileShop.Core
         /// <param name="item">The item</param>
         public void Add(string path, T item)
         {
-            string[] paths = path.Split(Path.PathSeparator);
-
-            //var listVisitor = Children;
-
-            //foreach (PathTreeNode<T> node in listVisitor)
-            //{
-                
-            //}
-        }
-
-        public bool TryGetValue(string path, out T value)
-        {
             if (String.IsNullOrWhiteSpace(path))
                 throw new ArgumentException();
 
-            value = default(T);
+            string parentPath = Path.GetDirectoryName(path);
+            string itemName = Path.GetFileName(path);
 
-            var paths = path.Split('\\');
-            var nodeVisitor = Root;
-
-            for (int i = 0; i < paths.Length; i++)
+            if (String.IsNullOrWhiteSpace(parentPath)) // Add to root
             {
-                if (!nodeVisitor.TryGetChildNode(paths[i], out nodeVisitor))
+                Root.Children.Add(itemName, new PathTreeNode<T>(item));
+            }
+            else // Add to Parent Resource
+            {
+                PathTreeNode<T> parent;
+                if (!Root.TryGetChild(parentPath, out parent))
+                    throw new KeyNotFoundException($"{nameof(TryGetItem)} could not locate parent path {parentPath}");
+
+                if (parent.Children.ContainsKey(itemName))
+                    throw new ArgumentException($"{path} already exists");
+                parent.Children.Add(itemName, new PathTreeNode<T>(item));
+            }
+        }
+
+        public bool TryGetItem(string itemPath, out T item)
+        {
+            if (String.IsNullOrWhiteSpace(itemPath))
+                throw new ArgumentException();
+
+            var paths = itemPath.Split('\\');
+            var nodeVisitor = Root.Children;
+            var node = new PathTreeNode<T>();
+
+            foreach(var path in paths)
+            {
+                if(nodeVisitor.TryGetValue(path, out node))
+                {
+                    nodeVisitor = node.Children;
+                }
+                else
+                {
+                    item = default(T);
                     return false;
+                }
+            }
+            if (Root.TryGetChild(itemPath, out node))
+            {
+                item = node.Item;
+                return true;
             }
 
-            //value = nodeVisitor;
-
-            //resource = node;
+            item = default(T);
             return false;
         }
 
-        private class PathTreeNode<V>
+        private class PathTreeNode<U>
         {
-            public Dictionary<string, PathTreeNode<V>> Children { get; private set; }
-            public PathTreeNode<V> Parent { get; set; }
+            public Dictionary<string, PathTreeNode<U>> Children { get; private set; }
+            public PathTreeNode<U> Parent { get; set; }
+            public U Item { get; set; }
 
             public PathTreeNode()
             {
-
             }
 
-            public bool TryGetChildNode(string name, out PathTreeNode<V> value)
+            public PathTreeNode(U item) => Item = item;
+
+            public bool TryGetChild(string name, out PathTreeNode<U> value)
             {
                 if (Children.TryGetValue(name, out value))
                     return true;
@@ -80,7 +93,5 @@ namespace TileShop.Core
         }
     }
 
-    //class PathTreeNodeComparer<T> : where T is PathTreeNode<>
-    //{
-    //}*/
+
 }

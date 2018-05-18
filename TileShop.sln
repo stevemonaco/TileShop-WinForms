@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TileShop", "TileShop\TileSh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TIMParserPlugin", "TIMParserPlugin\TIMParserPlugin.csproj", "{9CDFBFF3-AE36-4E22-9444-3BA2E3DCFDFE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TileShop.UnitTests", "TileShop.UnitTests\TileShop.UnitTests.csproj", "{61FB8866-D01D-43B4-8C33-B5DA4F256206}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{9CDFBFF3-AE36-4E22-9444-3BA2E3DCFDFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CDFBFF3-AE36-4E22-9444-3BA2E3DCFDFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CDFBFF3-AE36-4E22-9444-3BA2E3DCFDFE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{61FB8866-D01D-43B4-8C33-B5DA4F256206}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{61FB8866-D01D-43B4-8C33-B5DA4F256206}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{61FB8866-D01D-43B4-8C33-B5DA4F256206}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{61FB8866-D01D-43B4-8C33-B5DA4F256206}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

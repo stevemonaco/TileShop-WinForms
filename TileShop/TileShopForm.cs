@@ -16,6 +16,7 @@ namespace TileShop
         string CodecDirectoryPath = @"D:\Projects\TileShop\codecs\";
         string PaletteDirectoryPath = @"D:\Projects\TileShop\pal\";
         string PluginDirectoryPath = @"D:\Projects\TileShop\plugins\";
+        string DefaultProjectFile = @"D:\Projects\TileShop\defaultproject.xml";
 
         public string ProjectFileName
         {
@@ -54,6 +55,12 @@ namespace TileShop
 
             pef.Show(DockPanel, DockState.DockRight);
             ptf.Show(DockPanel, DockState.DockLeft); // Showing this last makes the ProjectExplorerControl focused upon launch
+
+            using (FileStream fs = File.OpenRead(DefaultProjectFile))
+            {
+                ResourceManager.LoadProject(fs, Path.GetDirectoryName(DefaultProjectFile));
+                ProjectFileName = DefaultProjectFile;
+            }
         }
 
         public bool OpenExistingArranger(string arrangerName)
@@ -341,7 +348,7 @@ namespace TileShop
                 ProjectFileName = ofd.FileName;
                 using (FileStream fs = File.OpenRead(ofd.FileName))
                 {
-                    ResourceManager.LoadProject(File.OpenRead(ofd.FileName), Path.GetDirectoryName(ofd.FileName));
+                    ResourceManager.LoadProject(fs, Path.GetDirectoryName(ofd.FileName));
                 }
             }
             else if (!ptf.AddDataFile(ofd.FileName, "", true)) // Add a new file to the project
@@ -466,7 +473,9 @@ namespace TileShop
         private void CloseEditors()
         {
             var closeList = DockPanel.Panes.SelectMany(x => x.Contents).OfType<EditorDockContent>();
-            closeList.ForEach(x => x.Close());
+            foreach (var editor in closeList)
+                editor.Close();
+            //closeList.ForEach(x => x.Close());
         }
 
         public IEnumerable<EditorDockContent> GetActiveEditors()
