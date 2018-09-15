@@ -3,6 +3,7 @@ TileShop is a work-in-progress graphics editor for console/handheld videogame sy
 
 ## Core features
 * Universal bitmap codec for tiled and linear formats
+* User-defined XML universal bitmap codec configurations
 * Project-based workflow
 * Plugin architecture for external file loaders
 
