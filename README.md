@@ -20,4 +20,7 @@ TileShop is a work-in-progress graphics editor for console/handheld videogame sy
 ![Basic view of editors](http://i.imgur.com/GYrc3zK.png)
 
 ## Project Status
-Slow. Experimenting with change to WPF.
+Slow.
+Experimenting with change to WPF.
+Experimenting with moving core functionality to a separate .NET Standard library.
+Developing a simple console interface for that .NET Standard library.
