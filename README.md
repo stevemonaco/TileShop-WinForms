@@ -1,5 +1,5 @@
 # Project Notice
-This project has been discontinued and superceded by ImageMagitek and TileShop.WPF.
+This project has been discontinued and superseded by ![ImageMagitek and TileShop.WPF](https://github.com/stevemonaco/ImageMagitek).
 
 # TileShop-WinForms
 TileShop is a work-in-progress graphics editor for console/handheld videogame system graphics
